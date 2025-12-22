@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 from functools import wraps
 from typing import Optional, Tuple, Dict
+from datetime import datetime, timedelta
 
 import requests
 import pandas as pd
@@ -333,6 +334,101 @@ def fetch_weather_data(
 
 
 @rate_limit(calls_per_second=1.0)
+def fetch_recent_weather_with_forecast(
+    latitude: float,
+    longitude: float,
+    start_date: str,
+    end_date: str,
+    cache_dir: str = "data/weather_cache/recent"
+) -> Optional[pd.DataFrame]:
+    """
+    Fetch recent weather data using forecast API with past_days parameter.
+    
+    This function handles the 5-day delay in historical weather data by using
+    the forecast API which can provide recent past weather data (up to 92 days).
+
+    Args:
+        latitude: Latitude coordinate
+        longitude: Longitude coordinate
+        start_date: Start date for weather data (YYYY-MM-DD)
+        end_date: End date for weather data (YYYY-MM-DD)
+        cache_dir: Directory for caching recent weather data
+
+    Returns:
+        DataFrame with columns: [date, temp_mean, temp_max, temp_min,
+                                  humidity_mean, humidity_min]
+        Returns None if fetch fails
+    """
+    # Create cache directory
+    cache_path = Path(cache_dir)
+    cache_path.mkdir(parents=True, exist_ok=True)
+
+    # Generate cache filename
+    cache_file = cache_path / f"{latitude:.4f}_{longitude:.4f}_{start_date}_{end_date}.parquet"
+
+    # Check cache first
+    if cache_file.exists():
+        print(f"Loading recent weather from cache: {cache_file.name}")
+        return pd.read_parquet(cache_file)
+
+    # Calculate how many past days we need
+    start_dt = pd.to_datetime(start_date)
+    end_dt = pd.to_datetime(end_date)
+    days_needed = (end_dt - start_dt).days + 1
+
+    # Forecast API can provide up to 92 past days
+    past_days = min(days_needed, 92)
+
+    print(f"Fetching recent weather data from Open-Meteo Forecast API...")
+    print(f"  Location: ({latitude:.4f}, {longitude:.4f})")
+    print(f"  Date range: {start_date} to {end_date}")
+    print(f"  Using past_days: {past_days}")
+
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        'latitude': latitude,
+        'longitude': longitude,
+        'daily': [
+            'temperature_2m_mean',
+            'temperature_2m_max',
+            'temperature_2m_min',
+            'relative_humidity_2m_mean',
+            'relative_humidity_2m_min'
+        ],
+        'past_days': past_days,
+        'timezone': 'UTC'
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        # Convert to DataFrame
+        df = pd.DataFrame({
+            'date': pd.to_datetime(data['daily']['time']),
+            'temp_mean': data['daily']['temperature_2m_mean'],
+            'temp_max': data['daily']['temperature_2m_max'],
+            'temp_min': data['daily']['temperature_2m_min'],
+            'humidity_mean': data['daily']['relative_humidity_2m_mean'],
+            'humidity_min': data['daily']['relative_humidity_2m_min'],
+        })
+
+        # Filter to requested date range
+        mask = (df['date'] >= start_date) & (df['date'] <= end_date)
+        result_df = df[mask].reset_index(drop=True)
+
+        # Cache the result
+        result_df.to_parquet(cache_file, index=False)
+        print(f"Cached recent weather data to {cache_file.name}")
+
+        return result_df
+
+    except Exception as e:
+        print(f"Failed to fetch recent weather: {e}")
+        return None
+
+
 def fetch_weather_forecast(
     latitude: float,
     longitude: float,
@@ -667,17 +763,37 @@ def get_weather_with_forecast(
     print(f"  Today: {today_str}")
     print(f"  Last ILI date: {last_ili_date}")
 
-    # Fetch historical weather: start_date → today
+    # Handle 5-day delay in historical data by combining historical + recent data
     print(f"\nFetching historical weather...")
+    
+    # Calculate cutoff for historical vs recent data (5 days ago)
+    historical_cutoff = today - timedelta(days=5)
+    historical_end = historical_cutoff.strftime('%Y-%m-%d')
+    
+    # 1. Fetch historical data (up to 5 days ago - no delay)
     historical_weather = fetch_weather_data(
         latitude=lat,
         longitude=lon,
         start_date=start_date,
-        end_date=today_str,
+        end_date=historical_end,
         cache_dir=cache_dir
     )
 
-    # Fetch forecast weather: today → today + 14 days
+    # 2. Fetch recent data (last 5 days to today) using forecast API with past_days
+    recent_start = (historical_cutoff + timedelta(days=1)).strftime('%Y-%m-%d')
+    recent_weather = pd.DataFrame()
+    
+    if recent_start <= today_str:  # Only fetch if we need recent data
+        print(f"\nFetching recent weather (last 5 days) using forecast API...")
+        recent_weather = fetch_recent_weather_with_forecast(
+            latitude=lat,
+            longitude=lon,
+            start_date=recent_start,
+            end_date=today_str,
+            cache_dir=os.path.join(cache_dir, "recent")
+        )
+
+    # 3. Fetch forecast weather: today → today + 14 days
     print(f"\nFetching weather forecast...")
     forecast_weather = fetch_weather_forecast(
         latitude=lat,
@@ -685,17 +801,30 @@ def get_weather_with_forecast(
         cache_dir=os.path.join(cache_dir, "forecast")
     )
 
-    # Combine historical and forecast
+    # Combine all three data sources
+    combined_parts = []
+    
+    if historical_weather is not None and len(historical_weather) > 0:
+        combined_parts.append(historical_weather)
+        print(f"  Historical data: {len(historical_weather)} days")
+    
+    if recent_weather is not None and len(recent_weather) > 0:
+        combined_parts.append(recent_weather)
+        print(f"  Recent data: {len(recent_weather)} days")
+    
     if forecast_weather is not None and len(forecast_weather) > 0:
-        print(f"Combining {len(historical_weather)} days of historical + "
-              f"{len(forecast_weather)} days of forecast data")
-        combined_daily = pd.concat([historical_weather, forecast_weather], ignore_index=True)
-        # Remove duplicates (today might be in both)
+        combined_parts.append(forecast_weather)
+        print(f"  Forecast data: {len(forecast_weather)} days")
+    
+    if combined_parts:
+        combined_daily = pd.concat(combined_parts, ignore_index=True)
+        # Remove duplicates (boundary dates might overlap)
         combined_daily = combined_daily.drop_duplicates(subset=['date'], keep='first')
         combined_daily = combined_daily.sort_values('date').reset_index(drop=True)
+        print(f"  Combined total: {len(combined_daily)} days")
     else:
-        print("Warning: No forecast data available, using historical data only")
-        combined_daily = historical_weather
+        print("Warning: No weather data available")
+        combined_daily = pd.DataFrame()
 
     # Create extended weekly date range
     # Start from first ILI date, extend beyond last ILI date for predictions

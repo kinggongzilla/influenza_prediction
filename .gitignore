@@ -1,2 +1,6 @@
 .claude
 __pycache__
+data/weather_cache
+results/*.png
+results/historic_weather_only
+results/univariate
