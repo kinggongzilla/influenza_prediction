@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Extract ILI data for a given country from the WHO FLUMART dataset
-and prepare it for use with TiRex time series forecasting.
+and prepare it for use with Chronos time series forecasting.
 
 Usage:
     python extract_country_data.py --country <COUNTRY_NAME_OR_CODE> --input <INPUT_CSV> --output <OUTPUT_CSV>
@@ -78,7 +78,7 @@ def extract_country_data(country, input_file, output_file):
     # ISO_WEEKSTARTDATE is the date, ILI_CASE is the ILI cases
     country_simple = country_all_ages[['ISO_WEEKSTARTDATE', 'ILI_CASE']].copy()
     
-    # Rename columns to match the format expected by tirex_inference.py
+    # Rename columns to match the format expected by chronos_inference.py
     country_simple.columns = ['Time', 'ILI_Cases']
     
     # Sort by date

@@ -9,14 +9,11 @@ Usage:
     python chronos_inference.py --help
 
 Examples:
-    # Basic usage with random data
-    python chronos_inference.py --prediction_length 24
-
-    # With custom data from CSV
-    python chronos_inference.py --data_file data.csv --prediction_length 48
+    # Basic usage with CSV data
+    python chronos_inference.py --data_file data.csv --prediction_length 24
 
     # Using GPU with CUDA backend
-    python chronos_inference.py --backend cuda --prediction_length 24
+    python chronos_inference.py --data_file data.csv --backend cuda --prediction_length 48
 """
 
 import argparse
@@ -24,194 +21,16 @@ import numpy as np
 import pandas as pd
 import torch
 import matplotlib.pyplot as plt
+import os
+import sys
+
+# Add src to path for imports
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Import model classes to register them
 from chronos.chronos2 import Chronos2Pipeline
+from data_loader import load_time_series_data, load_data_for_evaluation, load_time_series_with_weather, plot_forecast_results, print_inference_configuration
 
-# Import shared data loading module
-from data_loader import load_time_series_data, load_data_for_evaluation, load_time_series_with_weather
-
-
-def load_data_from_file(file_path, context_length=128, min_value=1e-6, max_value=None, clip_outliers=False):
-    """
-    Load time series data from a CSV file using the shared data loader.
-    
-    Args:
-        file_path: Path to CSV file
-        context_length: Number of time steps to use as context
-        min_value: Minimum value to use instead of 0 (to avoid Chronos's nan_mask_value=0)
-        max_value: Maximum value for clipping outliers (None to disable)
-        clip_outliers: Whether to clip outliers using IQR method
-        
-    Returns:
-        tuple: (torch.Tensor: weekly resampled time series data, list: weekly dates)
-    """
-    # Use the shared data loading function
-    data, dates, _ = load_time_series_data(
-        file_path,
-        context_length=context_length,
-        min_value=min_value,
-        max_value=max_value,
-        clip_outliers=clip_outliers
-    )
-    
-    return data, dates
-
-def generate_random_data(length=128):
-    """
-    Generate random time series data for testing.
-    
-    Args:
-        length: Length of the time series
-        
-    Returns:
-        torch.Tensor: Random time series data
-    """
-    # Generate random walk data
-    data = [100.0]
-    for _ in range(length - 1):
-        # Random walk with some trend and seasonality
-        trend = 0.1
-        seasonality = 5 * np.sin(2 * np.pi * (_ / length))
-        noise = np.random.normal(0, 2)
-        next_val = data[-1] + trend + seasonality + noise
-        data.append(max(0.1, next_val))
-    
-    return torch.tensor(data, dtype=torch.float32)
-
-
-def plot_results(context, forecast_mean, forecast_quantiles, prediction_length, model_quantiles, test_data=None, test_dates=None, data_file=None, dates=None, country_name=None, is_eval=False):
-    """
-    Plot the context data and forecast results.
-    
-    Args:
-        context: Context time series data
-        forecast_mean: Mean forecast
-        forecast_quantiles: Quantile forecasts (shape: [batch, time, quantiles])
-        prediction_length: Length of the forecast
-        model_quantiles: List of quantile values
-        test_data: Optional test data to plot against forecast (for evaluation)
-        test_dates: Optional dates for test data
-        data_file: Optional path to CSV file to extract actual dates for x-axis labels
-        dates: Optional list of dates for each time step in context
-        country_name: Optional country name for filename
-    """
-    plt.figure(figsize=(12, 6))
-    
-    # Plot context
-    time_context = torch.arange(len(context))
-    plt.plot(time_context, context, 'b-', label='Context', linewidth=2)
-    
-    # Plot forecast
-    time_forecast = torch.arange(len(context), len(context) + prediction_length)
-    plt.plot(time_forecast, forecast_mean, 'r--', label='Mean Forecast', linewidth=2)
-    
-    # Plot test data if provided
-    if test_data is not None:
-        # Only plot the portion of test data that corresponds to the forecast period
-        # Use min() to handle cases where test data is shorter than prediction length
-        test_data_to_plot = test_data[:min(prediction_length, len(test_data))]
-        if len(test_data_to_plot) > 0:
-            plt.plot(time_forecast[:len(test_data_to_plot)], test_data_to_plot, 'orange', label='Actual Test Data', linewidth=2)
-    
-    # Plot quantiles - select a few for visualization (skip 0.5 as it's same as mean)
-    selected_quantiles = [0.1, 0.9]  # Removed 0.5 to avoid duplication with mean forecast
-    for q in selected_quantiles:
-        if q in model_quantiles:
-            idx = model_quantiles.index(q)
-            plt.plot(time_forecast, forecast_quantiles[0, :, idx], 
-                    'g--', alpha=0.7, linewidth=1.5, label=f'Quantile {q}')
-    
-    # Plot uncertainty range
-    if 0.1 in model_quantiles and 0.9 in model_quantiles:
-        idx_low = model_quantiles.index(0.1)
-        idx_high = model_quantiles.index(0.9)
-        plt.fill_between(time_forecast, 
-                        forecast_quantiles[0, :, idx_low], 
-                        forecast_quantiles[0, :, idx_high], 
-                        color='g', alpha=0.2, label='10%-90% Quantile Range')
-    
-    # Set x-axis labels with dates if available
-    if dates:
-        try:
-            # Use the provided dates
-            # Create a list of formatted date labels
-            date_labels = [date.split('-')[1] + ' ' + date.split('-')[0][-2:] for date in dates]
-            
-            # Improved tick positioning for weekly data
-            total_length = len(context) + prediction_length
-            
-            # For weekly data, try to place ticks at yearly intervals
-            # Find positions that correspond to the same month/day across years
-            if len(dates) > 52:  # More than a year of weekly data
-                # Try to find January dates for yearly ticks
-                jan_positions = []
-                jan_labels = []
-                
-                for i, date in enumerate(dates):
-                    if i < len(context):  # Only consider context dates for ticks
-                        if date.endswith('-01'):  # January dates
-                            jan_positions.append(i)
-                            jan_labels.append(date_labels[i])
-                
-                # If we found enough January dates, use them
-                if len(jan_positions) >= 3:
-                    plt.xticks(jan_positions, jan_labels, rotation=45)
-                else:
-                    # Fallback to regular spacing
-                    n_ticks = min(10, total_length)
-                    tick_positions = np.linspace(0, total_length - 1, n_ticks, dtype=int)
-                    tick_labels = [date_labels[i] if i < len(date_labels) else '' for i in tick_positions]
-                    plt.xticks(tick_positions, tick_labels, rotation=45)
-            else:
-                # For shorter datasets, use regular spacing
-                n_ticks = min(10, total_length)
-                tick_positions = np.linspace(0, total_length - 1, n_ticks, dtype=int)
-                tick_labels = [date_labels[i] if i < len(date_labels) else '' for i in tick_positions]
-                plt.xticks(tick_positions, tick_labels, rotation=45)
-        except Exception as e:
-            print(f"Warning: Could not set date labels: {e}")
-    elif data_file:
-        try:
-            # Read the CSV file to get dates
-            date_df = pd.read_csv(data_file)
-            
-            # Extract dates (assuming first column is 'Time')
-            dates = date_df['Time'].tolist()
-            
-            # Create a list of formatted date labels
-            date_labels = [date.split('-')[1] + ' ' + date.split('-')[0][-2:] for date in dates]
-            
-            # Set x-axis ticks at regular intervals
-            total_length = len(context) + prediction_length
-            n_ticks = min(10, total_length)  # Show up to 10 ticks
-            tick_positions = np.linspace(0, total_length - 1, n_ticks, dtype=int)
-            
-            # Get labels for the tick positions - only show dates for context period
-            tick_labels = [date_labels[i] if i < len(date_labels) and i < len(context) else '' for i in tick_positions]
-            
-            plt.xticks(tick_positions, tick_labels, rotation=45)
-        except Exception as e:
-            print(f"Warning: Could not set date labels: {e}")
-    
-    plt.title(f'Chronos-2 Forecasting Results for {data_file}')
-    plt.xlabel('Time')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    
-    # Determine country name for filename
-    if country_name is None and data_file:
-        country_name = data_file.replace('_ili_extracted.csv', '').replace('data/', '')
-    
-    if country_name is None:
-        country_name = "unknown"
-    
-    eval_suffix = "_eval" if is_eval else ""
-    plot_filename = f'results/{country_name}_chronos_forecast_results{eval_suffix}.png'
-    plt.savefig(plot_filename, dpi=150, bbox_inches='tight')
-    print(f"Saved forecast plot to '{plot_filename}'")
 
 
 def main():
@@ -221,6 +40,7 @@ def main():
     )
     parser.add_argument(
         "--data_file",
+        required=True,
         help="Path to CSV file containing time series data (relative to data/ directory, second column will be used)"
     )
     parser.add_argument(
@@ -301,33 +121,13 @@ def main():
     
     args = parser.parse_args()
     
-    # Print configuration
-    print("=" * 80)
-    print("Chronos-2 Time Series Forecasting")
-    print("=" * 80)
-    print(f"Configuration:")
-    print(f"  - Context length: {args.context_length}")
-    print(f"  - Prediction length: {args.prediction_length}")
-    print(f"  - Backend: {args.backend}")
-    print(f"  - Quantiles: All model quantiles")
-    if args.data_file:
-        print(f"  - Data source: File: {args.data_file}")
-    else:
-        print(f"  - Data source: Random data")
-    if args.test_split:
-        print(f"  - Test split: {args.test_split}")
-    print(f"  - Min value (for 0 replacement): {args.min_value}")
-    print(f"  - Max value (for outlier clipping): {args.max_value}")
-    print(f"  - Clip outliers (IQR method): {args.clip_outliers}")
-    if args.use_weather:
-        print(f"  - Weather covariates: Enabled")
-        print(f"  - Country: {args.country_name}")
-        print(f"  - Normalize weather: {args.normalize_weather}")
-    else:
-        print(f"  - Weather covariates: Disabled")
-
-    print("=" * 80)
-    print()
+    # Print configuration using standardized function
+    print_inference_configuration(
+        args,
+        model_name="Chronos-2",
+        use_weather=args.use_weather,
+        country_name=args.country_name if args.use_weather else None
+    )
 
     # Validate weather arguments
     if args.use_weather and not args.country_name:
@@ -357,12 +157,12 @@ def main():
             )
         else:
             # Load full data without truncation
-            data, dates = load_data_from_file(
+            data, dates, _ = load_time_series_data(
                 data_file_path,
-                None,  # Don't truncate here - load all data
-                args.min_value,
-                args.max_value,
-                args.clip_outliers
+                context_length=None,  # Don't truncate here - load all data
+                min_value=args.min_value,
+                max_value=args.max_value,
+                clip_outliers=args.clip_outliers
             )
 
         # Handle test split if requested
@@ -448,12 +248,7 @@ def main():
                     print(f"\nWarning: Failed to fetch forecast: {e}")
                     print("Continuing without future_covariates.")
 
-    else:
-        print(f"\nGenerating random data with {args.context_length} time steps...")
-        data = generate_random_data(args.context_length)
-        if args.use_weather:
-            print("Warning: Cannot use weather covariates with random data. Ignoring --use_weather.")
-            weather_covariates = None
+    # No random data generation - data_file is now required
     
     # Add batch dimension (required by Chronos)
     data = data.unsqueeze(0)  # Shape: [1, context_length]
@@ -651,12 +446,12 @@ def main():
             # Reconstruct the split to get test data
             # Use the same file path handling as main loading
             data_file_path = args.data_file if args.data_file.startswith('data/') else f"data/{args.data_file}"
-            original_data, original_dates = load_data_from_file(
+            original_data, original_dates, _ = load_time_series_data(
                 data_file_path, 
-                None, 
-                args.min_value,
-                args.max_value,
-                args.clip_outliers
+                context_length=None, 
+                min_value=args.min_value,
+                max_value=args.max_value,
+                clip_outliers=args.clip_outliers
             )
             split_idx = int(len(original_data) * (1 - args.test_split))
             test_data = original_data[split_idx:]
@@ -668,7 +463,7 @@ def main():
         if args.data_file:
             country_name = args.data_file.replace('_ili_extracted.csv', '').replace('data/', '')
         
-        plot_results(
+        plot_forecast_results(
             context=data.squeeze(),
             forecast_mean=forecast_mean.squeeze(),
             forecast_quantiles=forecast_quantiles,  # Don't squeeze - keep 3D tensor
@@ -679,7 +474,8 @@ def main():
             data_file=args.data_file,
             dates=dates,
             country_name=country_name,
-            is_eval=args.test_split is not None
+            is_eval=args.test_split is not None,
+            model_name="Chronos-2"
         )
     
     # Save results to CSV

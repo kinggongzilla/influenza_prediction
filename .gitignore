@@ -4,3 +4,6 @@ data/weather_cache
 results/*.png
 results/historic_weather_only
 results/univariate
+data/czechia_ili_extracted.csv
+data/romania_ili_extracted.csv
+results/forecast_results.csv
