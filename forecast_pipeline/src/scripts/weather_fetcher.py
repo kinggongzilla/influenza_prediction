@@ -122,7 +122,7 @@ def load_country_bounding_boxes() -> dict:
     print(f"Downloading country bounding boxes from {url}")
 
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         bounding_boxes = response.json()
 
@@ -387,7 +387,7 @@ def _calculate_centroid(bbox: list) -> Tuple[float, float]:
     return lat, lon
 
 
-@retry_with_backoff(max_retries=5, base_delay=2.0, rate_limit_calls=0.5)
+@retry_with_backoff(max_retries=2, base_delay=1.0, rate_limit_calls=1.0)
 def fetch_weather_data(
     latitude: float,
     longitude: float,
@@ -455,7 +455,7 @@ def fetch_weather_data(
     }
 
     try:
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
 
@@ -564,7 +564,7 @@ def fetch_recent_weather_with_forecast(
     }
 
     try:
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
 
@@ -661,7 +661,7 @@ def fetch_weather_forecast(
     }
 
     try:
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=5)
         response.raise_for_status()
         data = response.json()
 
