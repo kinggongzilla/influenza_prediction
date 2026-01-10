@@ -1,0 +1,187 @@
+country,total_ili_cases,total_ari_cases,data_types
+Afghanistan,1517440,0,ILI
+Albania,10008,16503801,"ARI, ILI"
+Algeria,72349,0,ILI
+American Samoa,23645,0,ILI
+Anguilla,815,0,ILI
+Antigua and Barbuda,4093,0,ILI
+Argentina,19019429,2789474,"ARI, ILI"
+Armenia,14492,5287920,"ARI, ILI"
+Aruba,0,0,"ARI, ILI"
+Australia,81414,0,ILI
+Austria,371646,0,"ARI, ILI"
+Azerbaijan,937386,176742,"ARI, ILI"
+Bahamas,5803,1413,"ARI, ILI"
+Bahrain,516296,0,ILI
+Bangladesh,74045,0,ILI
+Barbados,8328,9207,"ARI, ILI"
+Belarus,45330,69991357,"ARI, ILI"
+Belgium,221398,2111161,"ARI, ILI"
+Belize,61475,0,ILI
+Bermuda,1786,0,ILI
+Bhutan,244930,0,ILI
+Bolivia (Plurinational State of),7358,5811234,"ARI, ILI"
+"Bonaire, Sint Eustatius and Saba",2096,0,ILI
+Bosnia and Herzegovina,44138,119458,"ARI, ILI"
+Brazil,20828951,0,ILI
+British Virgin Islands,1582,0,ILI
+Brunei Darussalam,1451170,0,ILI
+Bulgaria,0,4166871,"ARI, ILI"
+Burkina Faso,0,3464,ARI
+Cambodia,171958,0,ILI
+Cameroon,36779,36188,"ARI, ILI"
+Canada,17317,0,ILI
+Cayman Islands,4742,6364,"ARI, ILI"
+Central African Republic,14099,1512,"ARI, ILI"
+Chile,159225,0,ILI
+"China, Hong Kong SAR",18177,0,ILI
+Colombia,194969,177611322,"ARI, ILI"
+Cook Islands,3586,0,ILI
+Costa Rica,340575,0,ILI
+Croatia,1182789,0,"ARI, ILI"
+Cuba,5960,0,ILI
+Curaçao,1252,0,ILI
+Cyprus,13430,168146,"ARI, ILI"
+Czechia,2639044,60161920,"ARI, ILI"
+Côte d’Ivoire,225944,0,ILI
+Democratic People's Republic of Korea,80443,0,ILI
+Democratic Republic of the Congo,10848,0,ILI
+Denmark,233079,0,"ARI, ILI"
+Dominica,1550,129,"ARI, ILI"
+Dominican Republic,2748,12832922,"ARI, ILI"
+Ecuador,0,0,ILI
+Egypt,3908,0,ILI
+El Salvador,984,25297,"ARI, ILI"
+Estonia,235592,3138833,"ARI, ILI"
+Ethiopia,240887,0,ILI
+Fiji,150216,26450,"ARI, ILI"
+Finland,217566,27416271,"ARI, ILI"
+France,57613926,52818682,"ARI, ILI"
+French Polynesia,73156,0,ILI
+Gabon,1620,0,ILI
+Georgia,235154,377720,"ARI, ILI"
+Germany,0,19318638,"ARI, ILI"
+Ghana,104346,0,ILI
+Greece,820585,0,"ARI, ILI"
+Grenada,10704,0,ILI
+Guam,5902,0,ILI
+Guatemala,62360,34360534,"ARI, ILI"
+Guinea,65082,0,ILI
+Guyana,52849,3505,"ARI, ILI"
+Haiti,0,0,"ARI, ILI"
+Honduras,382656,0,ILI
+Hungary,3728299,9196798,"ARI, ILI"
+Iceland,67603,666686,"ARI, ILI"
+Indonesia,58165,0,ILI
+Iran (Islamic Republic of),6104,0,ILI
+Iraq,7160,0,ILI
+Ireland,82754,39592,"ARI, ILI"
+Israel,884816,0,"ARI, ILI"
+Italy,6187340,417040,"ARI, ILI"
+Jamaica,0,1373120,ARI
+Jordan,7170,0,ILI
+Kazakhstan,1017663,48554849,"ARI, ILI"
+Kenya,7244,0,ILI
+Kiribati,205651,0,ILI
+Kosovo (in accordance with UN Security Council resolution 1244 (1999)),1392536,146940,"ARI, ILI"
+Kuwait,194,0,ILI
+Kyrgyzstan,18071,5613842,"ARI, ILI"
+Lao People's Democratic Republic,280940,0,ILI
+Latvia,70208,1149835,"ARI, ILI"
+Lebanon,40382,0,ILI
+Lesotho,0,0,ILI
+Libya,3070,0,ILI
+Lithuania,1107980,24668713,"ARI, ILI"
+Luxembourg,11147,85282,"ARI, ILI"
+Madagascar,81581,0,ILI
+Maldives,373359,1084367,"ARI, ILI"
+Mali,5555,0,ILI
+Malta,46711,0,"ARI, ILI"
+Marshall Islands,16111,0,ILI
+Mauritania,400,0,ILI
+Mauritius,560,2042612,"ARI, ILI"
+Mexico,4884713,304033758,"ARI, ILI"
+Micronesia (Federated States of),43297,0,ILI
+Mongolia,5337490,0,ILI
+Montenegro,139099,2590820,"ARI, ILI"
+Montserrat,283,0,ILI
+Morocco,2254008,0,ILI
+Mozambique,128713,0,ILI
+Nauru,3546,0,ILI
+Nepal,64569,0,ILI
+Netherlands (Kingdom of the),70531,2242638,"ARI, ILI"
+New Caledonia,17873,0,ILI
+New Zealand,26436,0,ILI
+Nicaragua,3862,17923801,"ARI, ILI"
+Niger,366585,0,ILI
+Nigeria,17573,0,ILI
+Niue,4465,0,ILI
+North Macedonia,574986,0,"ARI, ILI"
+Northern Mariana Islands,18812,0,ILI
+Norway,2580758,0,"ARI, ILI"
+Oman,22673707,24136,"ARI, ILI"
+Pakistan,9814,0,ILI
+Palau,6641,0,ILI
+Panama,156708,530,"ARI, ILI"
+Papua New Guinea,1041,0,ILI
+Paraguay,616234,24841353,"ARI, ILI"
+Peru,45379,38394433,"ARI, ILI"
+Pitcairn,49,0,ILI
+Poland,4231657,0,"ARI, ILI"
+Portugal,6502,1004,"ARI, ILI"
+Qatar,16664,0,ILI
+Republic of Moldova,12607605,13915929,"ARI, ILI"
+Romania,29670,5292138,"ARI, ILI"
+Russian Federation,1645491,471858357,"ARI, ILI"
+Rwanda,5507,0,ILI
+Saint Kitts and Nevis,169,0,ILI
+Saint Lucia,2468,3566,"ARI, ILI"
+Saint Vincent and the Grenadines,3426,13941,"ARI, ILI"
+Samoa,460408,0,ILI
+Saudi Arabia,203898,0,ILI
+Senegal,69240,0,ILI
+Serbia,5998620,0,"ARI, ILI"
+Sierra Leone,9816,0,ILI
+Singapore,110823,0,ILI
+Sint Maarten (Dutch part),685,0,ILI
+Slovakia,6272156,60282674,"ARI, ILI"
+Slovenia,20952,1292439,"ARI, ILI"
+Solomon Islands,162281,0,ILI
+Somalia,17492,0,ILI
+South Africa,24450,0,ILI
+South Sudan,65986,0,ILI
+Spain,2794420,86934751,"ARI, ILI"
+Sri Lanka,1478968,0,ILI
+Sudan,114,0,ILI
+Suriname,1348,44470,"ARI, ILI"
+Sweden,9702,0,"ARI, ILI"
+Switzerland,146858,0,"ARI, ILI"
+Tajikistan,41093,1843652,"ARI, ILI"
+Thailand,37661158,0,ILI
+Timor-Leste,11485,0,ILI
+Togo,30018,0,ILI
+Tokelau,2844,0,ILI
+Tonga,67941,0,ILI
+Trinidad and Tobago,30767,9672,"ARI, ILI"
+Turkmenistan,3355,152676,"ARI, ILI"
+Turks and Caicos Islands,2450,0,ILI
+Tuvalu,9559,0,ILI
+Türkiye,3161460,882,"ARI, ILI"
+Uganda,3504,0,ILI
+Ukraine,11340142,141147177,"ARI, ILI"
+United Arab Emirates,502842,0,ILI
+United Kingdom of Great Britain and Northern Ireland,36252,937786,"ARI, ILI"
+"United Kingdom, England",232750,10467240,"ARI, ILI"
+"United Kingdom, Northern Ireland",52518,1105633,"ARI, ILI"
+"United Kingdom, Scotland",151768,5327760,"ARI, ILI"
+"United Kingdom, Wales",9333,291962,"ARI, ILI"
+United Republic of Tanzania,3921,0,ILI
+United States of America,50849436,0,ILI
+Uruguay,698,0,ILI
+Uzbekistan,109570,2002227,"ARI, ILI"
+Vanuatu,144369,0,ILI
+Viet Nam,59088,0,ILI
+Wallis and Futuna,23000,0,ILI
+Yemen,2930,0,ILI
+Zambia,695114,0,ILI
+"occupied Palestinian territory, including east Jerusalem",744,0,ILI
