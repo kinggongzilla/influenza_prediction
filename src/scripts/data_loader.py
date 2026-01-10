@@ -447,7 +447,7 @@ def load_data_for_evaluation_with_weather(
 def plot_forecast_results(context, forecast_mean, forecast_quantiles, prediction_length, 
                          model_quantiles, test_data=None, test_dates=None, 
                          data_file=None, dates=None, country_name=None, 
-                         is_eval=False, model_name="Chronos-2"):
+                         is_eval=False, model_name="Chronos-2", results_dir="results"):
     """
     Plot the context data and forecast results.
     
@@ -585,8 +585,12 @@ def plot_forecast_results(context, forecast_mean, forecast_quantiles, prediction
     if country_name is None:
         country_name = "unknown"
     
+    # Ensure results directory exists
+    import os
+    os.makedirs(results_dir, exist_ok=True)
+    
     eval_suffix = "_eval" if is_eval else ""
-    plot_filename = f'results/{country_name}_{model_name.lower()}_forecast_results{eval_suffix}.png'
+    plot_filename = f'{results_dir}/{country_name}_{model_name.lower()}_forecast_results{eval_suffix}.png'
     plt.savefig(plot_filename, dpi=150, bbox_inches='tight')
     print(f"Saved forecast plot to '{plot_filename}'")
 

@@ -7,3 +7,6 @@ results/univariate
 data/czechia_ili_extracted.csv
 data/romania_ili_extracted.csv
 results/forecast_results.csv
+results/country_predictions/*
+data/extracted_data/*
+

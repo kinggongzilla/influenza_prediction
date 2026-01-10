@@ -17,6 +17,7 @@ API: https://open-meteo.com/en/docs/historical-weather-api
 import os
 import json
 import time
+import logging
 from pathlib import Path
 from functools import wraps
 from typing import Optional, Tuple, Dict
@@ -27,6 +28,7 @@ import pandas as pd
 import numpy as np
 import pycountry
 from sklearn.preprocessing import StandardScaler
+import random
 
 
 # Rate limiting decorator
@@ -50,6 +52,47 @@ def rate_limit(calls_per_second: float = 1.0):
             ret = func(*args, **kwargs)
             last_called[0] = time.time()
             return ret
+        return wrapper
+    return decorator
+
+# Retry decorator with exponential backoff
+def retry_with_backoff(max_retries: int = 3, base_delay: float = 1.0, 
+                      rate_limit_calls: float = 1.0):
+    """
+    Decorator to retry function calls with exponential backoff and rate limiting.
+    
+    Args:
+        max_retries: Maximum number of retry attempts
+        base_delay: Base delay in seconds for exponential backoff
+        rate_limit_calls: Rate limit in calls per second
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Rate limiting
+            min_interval = 1.0 / rate_limit_calls
+            last_called = [0.0]
+            
+            for attempt in range(max_retries + 1):
+                # Apply rate limiting
+                elapsed = time.time() - last_called[0]
+                left_to_wait = min_interval - elapsed
+                if left_to_wait > 0:
+                    time.sleep(left_to_wait)
+                
+                try:
+                    result = func(*args, **kwargs)
+                    last_called[0] = time.time()
+                    return result
+                except Exception as e:
+                    if attempt < max_retries:
+                        # Exponential backoff with jitter
+                        delay = base_delay * (2 ** attempt) + random.uniform(0, 0.1)
+                        logging.warning(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay:.1f}s...")
+                        time.sleep(delay)
+                    else:
+                        logging.error(f"Max retries ({max_retries}) exceeded for {func.__name__}: {e}")
+                        raise
         return wrapper
     return decorator
 
@@ -116,8 +159,18 @@ def get_country_coordinates(country_name: str) -> Tuple[float, float]:
 
     # Look up bounding box
     if country_code not in bounding_boxes:
-        raise ValueError(f"Country code '{country_code}' not found in bounding boxes")
-
+        # Try to find similar country names or use fallback coordinates
+        similar_countries = [name for name in bounding_boxes.keys() if country_name.lower() in name.lower()]
+        if similar_countries:
+            # Use the first similar country as fallback
+            fallback_code = similar_countries[0]
+            print(f"⚠️  Country code '{country_code}' not found, using fallback: {fallback_code}")
+            bbox_data = bounding_boxes[fallback_code]
+        else:
+            # Use a default fallback location (e.g., center of the world)
+            print(f"⚠️  Country code '{country_code}' not found, using default coordinates")
+            return 0.0, 0.0  # Default to (0,0) - will likely fail weather fetch but won't crash
+        
     bbox_data = bounding_boxes[country_code]
     bbox = bbox_data[1]  # [min_lon, min_lat, max_lon, max_lat]
 
@@ -177,6 +230,117 @@ def _normalize_country_name(country_name: str) -> str:
         'mexico': 'MX',
         'chile': 'CL',
         'colombia': 'CO',
+        'marshall islands': 'MH',
+        'american samoa': 'AS',
+        'anguilla': 'AI',
+        'antigua and barbuda': 'AG',
+        'aruba': 'AW',
+        'bahamas': 'BS',
+        'bahrain': 'BH',
+        'barbados': 'BB',
+        'belarus': 'BY',
+        'belize': 'BZ',
+        'bermuda': 'BM',
+        'bhutan': 'BT',
+        'bosnia and herzegovina': 'BA',
+        'botswana': 'BW',
+        'brunei': 'BN',
+        'burundi': 'BI',
+        'cabo verde': 'CV',
+        'cameroon': 'CM',
+        'cayman islands': 'KY',
+        'central african republic': 'CF',
+        'chad': 'TD',
+        'comoros': 'KM',
+        'congo': 'CG',
+        'cook islands': 'CK',
+        'costa rica': 'CR',
+        'cote d ivoire': 'CI',
+        'curaçao': 'CW',
+        'djibouti': 'DJ',
+        'dominica': 'DM',
+        'dominican republic': 'DO',
+        'equatorial guinea': 'GQ',
+        'eritrea': 'ER',
+        'eswatini': 'SZ',
+        'fiji': 'FJ',
+        'gabon': 'GA',
+        'gambia': 'GM',
+        'georgia': 'GE',
+        'ghana': 'GH',
+        'grenada': 'GD',
+        'guatemala': 'GT',
+        'guinea': 'GN',
+        'guinea-bissau': 'GW',
+        'guyana': 'GY',
+        'haiti': 'HT',
+        'honduras': 'HN',
+        'jamaica': 'JM',
+        'kiribati': 'KI',
+        'laos': 'LA',
+        'lesotho': 'LS',
+        'liberia': 'LR',
+        'libya': 'LY',
+        'madagascar': 'MG',
+        'malawi': 'MW',
+        'maldives': 'MV',
+        'mali': 'ML',
+        'malta': 'MT',
+        'mauritania': 'MR',
+        'mauritius': 'MU',
+        'micronesia': 'FM',
+        'monaco': 'MC',
+        'montenegro': 'ME',
+        'montserrat': 'MS',
+        'myanmar': 'MM',
+        'namibia': 'NA',
+        'nauru': 'NR',
+        'nepal': 'NP',
+        'nicaragua': 'NI',
+        'niger': 'NE',
+        'north macedonia': 'MK',
+        'oman': 'OM',
+        'palau': 'PW',
+        'panama': 'PA',
+        'papua new guinea': 'PG',
+        'paraguay': 'PY',
+        'peru': 'PE',
+        'philippines': 'PH',
+        'rwanda': 'RW',
+        'samoa': 'WS',
+        'san marino': 'SM',
+        'sao tome and principe': 'ST',
+        'saudi arabia': 'SA',
+        'senegal': 'SN',
+        'seychelles': 'SC',
+        'sierra leone': 'SL',
+        'singapore': 'SG',
+        'solomon islands': 'SB',
+        'somalia': 'SO',
+        'south africa': 'ZA',
+        'south sudan': 'SS',
+        'sri lanka': 'LK',
+        'sudan': 'SD',
+        'suriname': 'SR',
+        'tanzania': 'TZ',
+        'thailand': 'TH',
+        'timor-leste': 'TL',
+        'togo': 'TG',
+        'tonga': 'TO',
+        'trinidad and tobago': 'TT',
+        'tunisia': 'TN',
+        'turkmenistan': 'TM',
+        'tuvalu': 'TV',
+        'uganda': 'UG',
+        'united arab emirates': 'AE',
+        'uruguay': 'UY',
+        'uzbekistan': 'UZ',
+        'vanuatu': 'VU',
+        'venezuela': 'VE',
+        'vietnam': 'VN',
+        'yemen': 'YE',
+        'zambia': 'ZM',
+        'zimbabwe': 'ZW',
     }
 
     country_lower = country_name.lower().strip()
@@ -223,7 +387,7 @@ def _calculate_centroid(bbox: list) -> Tuple[float, float]:
     return lat, lon
 
 
-@rate_limit(calls_per_second=1.0)
+@retry_with_backoff(max_retries=5, base_delay=2.0, rate_limit_calls=0.5)
 def fetch_weather_data(
     latitude: float,
     longitude: float,

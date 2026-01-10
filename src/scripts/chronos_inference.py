@@ -114,6 +114,12 @@ def main():
         help="Generate and save a plot of the results"
     )
     parser.add_argument(
+        "--results_dir",
+        type=str,
+        default="results",
+        help="Directory to save results (default: results)"
+    )
+    parser.add_argument(
         "--verbose",
         action='store_true',
         help="Print detailed output"
@@ -462,6 +468,9 @@ def main():
         country_name = "unknown"
         if args.data_file:
             country_name = args.data_file.replace('_ili_extracted.csv', '').replace('data/', '')
+            country_name = country_name.replace('_ari_extracted.csv', '')
+            country_name = country_name.replace('/', '_')
+            country_name = country_name.replace(' ', '_')
         
         plot_forecast_results(
             context=data.squeeze(),
@@ -475,7 +484,8 @@ def main():
             dates=dates,
             country_name=country_name,
             is_eval=args.test_split is not None,
-            model_name="Chronos-2"
+            model_name="Chronos-2",
+            results_dir=args.results_dir
         )
     
     # Save results to CSV
@@ -498,8 +508,28 @@ def main():
         results[f'quantile_{q}'] = quantile_data
     
     results_df = pd.DataFrame(results)
-    results_df.to_csv('results/forecast_results.csv', index=False)
-    print("Saved forecast results to 'results/forecast_results.csv'")
+    
+    # Generate country-specific filename
+    if args.data_file:
+        country_name = args.data_file.replace('_ili_extracted.csv', '').replace('data/', '')
+        country_name = country_name.replace('_ari_extracted.csv', '')
+        country_name = country_name.replace('/', '_')
+        country_name = country_name.replace(' ', '_')
+        
+        # Create country-specific filename
+        csv_filename = f'{country_name}_forecast_results.csv'
+        
+        # Ensure results directory exists
+        os.makedirs(args.results_dir, exist_ok=True)
+        
+        # Save to specified results directory
+        results_df.to_csv(os.path.join(args.results_dir, csv_filename), index=False)
+        print(f"Saved forecast results to '{os.path.join(args.results_dir, csv_filename)}'")
+    else:
+        # Fallback to original behavior if no data file specified
+        os.makedirs(args.results_dir, exist_ok=True)
+        results_df.to_csv(os.path.join(args.results_dir, 'forecast_results.csv'), index=False)
+        print(f"Saved forecast results to '{os.path.join(args.results_dir, 'forecast_results.csv')}'")
     
     print("\n" + "=" * 80)
     print("Inference completed successfully!")
