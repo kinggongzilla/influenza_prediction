@@ -1,0 +1,1190 @@
+[
+  {
+    "id": "GY",
+    "numeric": "328",
+    "name": "Guyana",
+    "value": 35.21009826660156,
+    "threshold": 819.8000000000001,
+    "score": 0.32608695652173914,
+    "status": "low"
+  },
+  {
+    "id": "SV",
+    "numeric": "222",
+    "name": "El Salvador",
+    "value": 4.528960227966309,
+    "threshold": 9.0,
+    "score": 0.5344827586206896,
+    "status": "low"
+  },
+  {
+    "id": "QA",
+    "numeric": "634",
+    "name": "Qatar",
+    "value": 41.784324645996094,
+    "threshold": 69.59999999999997,
+    "score": 0.6331658291457286,
+    "status": "low"
+  },
+  {
+    "id": "PK",
+    "numeric": "586",
+    "name": "Pakistan",
+    "value": 14.964738845825195,
+    "threshold": 59.39999999999998,
+    "score": 0.3258785942492013,
+    "status": "low"
+  },
+  {
+    "id": "SE",
+    "numeric": "752",
+    "name": "Sweden",
+    "value": 0.4787578582763672,
+    "threshold": 44.04999999999998,
+    "score": 0.1822429906542056,
+    "status": "low"
+  },
+  {
+    "id": "HR",
+    "numeric": "191",
+    "name": "Croatia",
+    "value": 2730.9521484375,
+    "threshold": 2211.8999999999996,
+    "score": 0.8667736757624398,
+    "status": "high"
+  },
+  {
+    "id": "LA",
+    "numeric": "418",
+    "name": "Lao People's Democratic Republic",
+    "value": 501.7706298828125,
+    "threshold": 407.15,
+    "score": 0.9538461538461539,
+    "status": "high"
+  },
+  {
+    "id": "UG",
+    "numeric": "800",
+    "name": "Uganda",
+    "value": 36.641380310058594,
+    "threshold": 275.8,
+    "score": 0.4117647058823529,
+    "status": "low"
+  },
+  {
+    "id": "KE",
+    "numeric": "404",
+    "name": "Kenya",
+    "value": 21.95867347717285,
+    "threshold": 87.60000000000001,
+    "score": 0.43010752688172044,
+    "status": "low"
+  },
+  {
+    "id": "SS",
+    "numeric": "728",
+    "name": "South Sudan",
+    "value": 785.6107177734375,
+    "threshold": 1239.6,
+    "score": 0.5416666666666666,
+    "status": "low"
+  },
+  {
+    "id": "AT",
+    "numeric": "040",
+    "name": "Austria",
+    "value": 766.9996337890625,
+    "threshold": 656.65,
+    "score": 0.9215686274509803,
+    "status": "high"
+  },
+  {
+    "id": "KH",
+    "numeric": "116",
+    "name": "Cambodia",
+    "value": 345.4252014160156,
+    "threshold": 225.29999999999995,
+    "score": 0.9442307692307692,
+    "status": "high"
+  },
+  {
+    "id": "NZ",
+    "numeric": "554",
+    "name": "New Zealand",
+    "value": 67.35397338867188,
+    "threshold": 213.19999999999993,
+    "score": 0.5492424242424242,
+    "status": "low"
+  },
+  {
+    "id": "MZ",
+    "numeric": "508",
+    "name": "Mozambique",
+    "value": 1420.264404296875,
+    "threshold": 1103.1,
+    "score": 0.9663865546218487,
+    "status": "high"
+  },
+  {
+    "id": "ID",
+    "numeric": "360",
+    "name": "Indonesia",
+    "value": 76.28984069824219,
+    "threshold": 91.5,
+    "score": 0.7715827338129496,
+    "status": "low"
+  },
+  {
+    "id": "PY",
+    "numeric": "600",
+    "name": "Paraguay",
+    "value": 879.6317138671875,
+    "threshold": 1520.3000000000002,
+    "score": 0.4319852941176471,
+    "status": "low"
+  },
+  {
+    "id": "ET",
+    "numeric": "231",
+    "name": "Ethiopia",
+    "value": 17.089553833007812,
+    "threshold": 458.0,
+    "score": 0.04639175257731959,
+    "status": "low"
+  },
+  {
+    "id": "FJ",
+    "numeric": "242",
+    "name": "Fiji",
+    "value": 591.1263427734375,
+    "threshold": 452.7999999999997,
+    "score": 0.9182795698924732,
+    "status": "high"
+  },
+  {
+    "id": "AU",
+    "numeric": "036",
+    "name": "Australia",
+    "value": 105.03736877441406,
+    "threshold": 199.89999999999986,
+    "score": 0.6632390745501285,
+    "status": "low"
+  },
+  {
+    "id": "PE",
+    "numeric": "604",
+    "name": "Peru",
+    "value": 36.08231735229492,
+    "threshold": 129.0,
+    "score": 0.4709141274238227,
+    "status": "low"
+  },
+  {
+    "id": "CH",
+    "numeric": "756",
+    "name": "Switzerland",
+    "value": 153.16165161132812,
+    "threshold": 199.94999999999993,
+    "score": 0.7974683544303798,
+    "status": "low"
+  },
+  {
+    "id": "NC",
+    "numeric": "540",
+    "name": "New Caledonia",
+    "value": 29.192285537719727,
+    "threshold": 46.89999999999998,
+    "score": 0.6991304347826087,
+    "status": "low"
+  },
+  {
+    "id": "SK",
+    "numeric": "703",
+    "name": "Slovakia",
+    "value": 4221.7216796875,
+    "threshold": 5928.099999999998,
+    "score": 0.6934731934731935,
+    "status": "low"
+  },
+  {
+    "id": "IR",
+    "numeric": "364",
+    "name": "Iran (Islamic Republic of)",
+    "value": 890.4157104492188,
+    "threshold": 1212.4,
+    "score": 0.3333333333333333,
+    "status": "low"
+  },
+  {
+    "id": "NP",
+    "numeric": "524",
+    "name": "Nepal",
+    "value": 17.704261779785156,
+    "threshold": 211.39999999999986,
+    "score": 0.20821917808219179,
+    "status": "low"
+  },
+  {
+    "id": "KP",
+    "numeric": "408",
+    "name": "Democratic People's Republic of Korea",
+    "value": 160.0328369140625,
+    "threshold": 596.0,
+    "score": 0.5617977528089888,
+    "status": "low"
+  },
+  {
+    "id": "AZ",
+    "numeric": "031",
+    "name": "Azerbaijan",
+    "value": 177.5738525390625,
+    "threshold": 1236.7,
+    "score": 0.38618925831202044,
+    "status": "low"
+  },
+  {
+    "id": "CU",
+    "numeric": "192",
+    "name": "Cuba",
+    "value": 7.649909973144531,
+    "threshold": 33.5,
+    "score": 0.2920962199312715,
+    "status": "low"
+  },
+  {
+    "id": "GT",
+    "numeric": "320",
+    "name": "Guatemala",
+    "value": 10.151626586914062,
+    "threshold": 63.799999999999045,
+    "score": 0.583732057416268,
+    "status": "low"
+  },
+  {
+    "id": "CA",
+    "numeric": "124",
+    "name": "Canada",
+    "value": 10.66802215576172,
+    "threshold": 111.89999999999998,
+    "score": 0.05223880597014925,
+    "status": "low"
+  },
+  {
+    "id": "DO",
+    "numeric": "214",
+    "name": "Dominican Republic",
+    "value": 4.362213134765625,
+    "threshold": 11.0,
+    "score": 0.4298245614035088,
+    "status": "low"
+  },
+  {
+    "id": "AR",
+    "numeric": "032",
+    "name": "Argentina",
+    "value": 8064.2021484375,
+    "threshold": 30736.95,
+    "score": 0.10576923076923077,
+    "status": "low"
+  },
+  {
+    "id": "NG",
+    "numeric": "566",
+    "name": "Nigeria",
+    "value": 10.38368320465088,
+    "threshold": 43.0,
+    "score": 0.35294117647058826,
+    "status": "low"
+  },
+  {
+    "id": "UZ",
+    "numeric": "860",
+    "name": "Uzbekistan",
+    "value": 11.491950988769531,
+    "threshold": 33.0,
+    "score": 0.5678571428571428,
+    "status": "low"
+  },
+  {
+    "id": "PA",
+    "numeric": "591",
+    "name": "Panama",
+    "value": 31.2601318359375,
+    "threshold": 698.6,
+    "score": 0.16111111111111112,
+    "status": "low"
+  },
+  {
+    "id": "GA",
+    "numeric": "266",
+    "name": "Gabon",
+    "value": 1.9040684700012207,
+    "threshold": 15.0,
+    "score": 0.47413793103448276,
+    "status": "low"
+  },
+  {
+    "id": "UY",
+    "numeric": "858",
+    "name": "Uruguay",
+    "value": 0.3772335052490234,
+    "threshold": 8.0,
+    "score": 0.4410480349344978,
+    "status": "low"
+  },
+  {
+    "id": "CL",
+    "numeric": "152",
+    "name": "Chile",
+    "value": 450.3137817382813,
+    "threshold": 518.0,
+    "score": 0.8213660245183888,
+    "status": "low"
+  },
+  {
+    "id": "LU",
+    "numeric": "442",
+    "name": "Luxembourg",
+    "value": 22.49557876586914,
+    "threshold": 21.0,
+    "score": 0.8682170542635659,
+    "status": "high"
+  },
+  {
+    "id": "IT",
+    "numeric": "380",
+    "name": "Italy",
+    "value": 30484.458984375,
+    "threshold": 14357.0,
+    "score": 0.9708520179372198,
+    "status": "high"
+  },
+  {
+    "id": "GR",
+    "numeric": "300",
+    "name": "Greece",
+    "value": 2052.86181640625,
+    "threshold": 1101.3,
+    "score": 0.9556962025316456,
+    "status": "high"
+  },
+  {
+    "id": "MN",
+    "numeric": "496",
+    "name": "Mongolia",
+    "value": 16990.224609375,
+    "threshold": 11057.999999999995,
+    "score": 0.9467787114845938,
+    "status": "high"
+  },
+  {
+    "id": "PT",
+    "numeric": "620",
+    "name": "Portugal",
+    "value": 2.794604778289795,
+    "threshold": 8.0,
+    "score": 0.6638418079096046,
+    "status": "low"
+  },
+  {
+    "id": "TR",
+    "numeric": "792",
+    "name": "T\u00fcrkiye",
+    "value": 7317.98974609375,
+    "threshold": 4290.75,
+    "score": 0.9760765550239234,
+    "status": "high"
+  },
+  {
+    "id": "FR",
+    "numeric": "250",
+    "name": "France",
+    "value": 262013.34375,
+    "threshold": 143893.8,
+    "score": 0.9665924276169265,
+    "status": "high"
+  },
+  {
+    "id": "PG",
+    "numeric": "598",
+    "name": "Papua New Guinea",
+    "value": 0.6245718002319336,
+    "threshold": 13.0,
+    "score": 0.4628099173553719,
+    "status": "low"
+  },
+  {
+    "id": "SI",
+    "numeric": "705",
+    "name": "Slovenia",
+    "value": 81.60626983642578,
+    "threshold": 19.0,
+    "score": 0.9571263035921205,
+    "status": "high"
+  },
+  {
+    "id": "IS",
+    "numeric": "352",
+    "name": "Iceland",
+    "value": 21.503116607666016,
+    "threshold": 135.59999999999997,
+    "score": 0.562862669245648,
+    "status": "low"
+  },
+  {
+    "id": "CO",
+    "numeric": "170",
+    "name": "Colombia",
+    "value": 26.5030517578125,
+    "threshold": 1478.0,
+    "score": 0.5853080568720379,
+    "status": "low"
+  },
+  {
+    "id": "KW",
+    "numeric": "414",
+    "name": "Kuwait",
+    "value": 1.1440820693969729,
+    "threshold": 17.0,
+    "score": 0.2727272727272727,
+    "status": "low"
+  },
+  {
+    "id": "FM",
+    "numeric": "583",
+    "name": "Micronesia (Federated States of)",
+    "value": 94.4406280517578,
+    "threshold": 118.69999999999993,
+    "score": 0.7672552166934189,
+    "status": "low"
+  },
+  {
+    "id": "VU",
+    "numeric": "548",
+    "name": "Vanuatu",
+    "value": 573.5321044921875,
+    "threshold": 358.19999999999993,
+    "score": 0.9636650868878357,
+    "status": "high"
+  },
+  {
+    "id": "LV",
+    "numeric": "428",
+    "name": "Latvia",
+    "value": 177.7283172607422,
+    "threshold": 151.0,
+    "score": 0.871404399323181,
+    "status": "high"
+  },
+  {
+    "id": "HU",
+    "numeric": "348",
+    "name": "Hungary",
+    "value": 4994.37890625,
+    "threshold": 6432.1,
+    "score": 0.7975133214920072,
+    "status": "low"
+  },
+  {
+    "id": "OM",
+    "numeric": "512",
+    "name": "Oman",
+    "value": 1.251953125,
+    "threshold": 44125.9,
+    "score": 0.01335559265442404,
+    "status": "low"
+  },
+  {
+    "id": "FI",
+    "numeric": "246",
+    "name": "Finland",
+    "value": 2186.768798828125,
+    "threshold": 328.15,
+    "score": 0.9955882352941177,
+    "status": "high"
+  },
+  {
+    "id": "ZA",
+    "numeric": "710",
+    "name": "South Africa",
+    "value": 20.359272003173828,
+    "threshold": 50.69999999999999,
+    "score": 0.5575620767494357,
+    "status": "low"
+  },
+  {
+    "id": "RS",
+    "numeric": "688",
+    "name": "Serbia",
+    "value": 10960.513671875,
+    "threshold": 9574.0,
+    "score": 0.8851590106007067,
+    "status": "high"
+  },
+  {
+    "id": "IQ",
+    "numeric": "368",
+    "name": "Iraq",
+    "value": 11.533864974975586,
+    "threshold": 37.0,
+    "score": 0.5243243243243243,
+    "status": "low"
+  },
+  {
+    "id": "LB",
+    "numeric": "422",
+    "name": "Lebanon",
+    "value": 22.158710479736328,
+    "threshold": 202.29999999999998,
+    "score": 0.32793522267206476,
+    "status": "low"
+  },
+  {
+    "id": "EG",
+    "numeric": "818",
+    "name": "Egypt",
+    "value": -8.990936279296875,
+    "threshold": 139.75,
+    "score": 0.0,
+    "status": "low"
+  },
+  {
+    "id": "GE",
+    "numeric": "268",
+    "name": "Georgia",
+    "value": 484.3651123046875,
+    "threshold": 265.0,
+    "score": 0.9821640903686087,
+    "status": "high"
+  },
+  {
+    "id": "DZ",
+    "numeric": "012",
+    "name": "Algeria",
+    "value": 843.83544921875,
+    "threshold": 2339.0499999999997,
+    "score": 0.375,
+    "status": "low"
+  },
+  {
+    "id": "JM",
+    "numeric": "388",
+    "name": "Jamaica",
+    "value": 593.0655517578125,
+    "threshold": 1526.7,
+    "score": 0.26549865229110514,
+    "status": "low"
+  },
+  {
+    "id": "NE",
+    "numeric": "562",
+    "name": "Niger",
+    "value": 111.43218994140624,
+    "threshold": 1387.5000000000005,
+    "score": 0.1401098901098901,
+    "status": "low"
+  },
+  {
+    "id": "LK",
+    "numeric": "144",
+    "name": "Sri Lanka",
+    "value": 4163.02197265625,
+    "threshold": 7070.099999999999,
+    "score": 0.302158273381295,
+    "status": "low"
+  },
+  {
+    "id": "RW",
+    "numeric": "646",
+    "name": "Rwanda",
+    "value": 16.952693939208984,
+    "threshold": 39.3,
+    "score": 0.23232323232323232,
+    "status": "low"
+  },
+  {
+    "id": "BZ",
+    "numeric": "084",
+    "name": "Belize",
+    "value": 1425.0556640625,
+    "threshold": 1540.6,
+    "score": 0.717948717948718,
+    "status": "low"
+  },
+  {
+    "id": "NI",
+    "numeric": "558",
+    "name": "Nicaragua",
+    "value": 6.4073805809021,
+    "threshold": 23.0,
+    "score": 0.29357798165137616,
+    "status": "low"
+  },
+  {
+    "id": "GN",
+    "numeric": "324",
+    "name": "Guinea",
+    "value": 110.5557861328125,
+    "threshold": 121.30000000000001,
+    "score": 0.7862796833773087,
+    "status": "low"
+  },
+  {
+    "id": "RU",
+    "numeric": "643",
+    "name": "Russian Federation",
+    "value": 22609.615234375,
+    "threshold": 1572.75,
+    "score": 0.9935567010309279,
+    "status": "high"
+  },
+  {
+    "id": "BD",
+    "numeric": "050",
+    "name": "Bangladesh",
+    "value": 103.65148162841795,
+    "threshold": 201.0,
+    "score": 0.5796019900497512,
+    "status": "low"
+  },
+  {
+    "id": "JO",
+    "numeric": "400",
+    "name": "Jordan",
+    "value": 11.19744873046875,
+    "threshold": 32.0,
+    "score": 0.23369565217391305,
+    "status": "low"
+  },
+  {
+    "id": "BF",
+    "numeric": "854",
+    "name": "Burkina Faso",
+    "value": 83.49618530273438,
+    "threshold": 136.84999999999997,
+    "score": 0.5909090909090909,
+    "status": "low"
+  },
+  {
+    "id": "MG",
+    "numeric": "450",
+    "name": "Madagascar",
+    "value": 276.53778076171875,
+    "threshold": 245.0,
+    "score": 0.9017341040462428,
+    "status": "high"
+  },
+  {
+    "id": "KZ",
+    "numeric": "398",
+    "name": "Kazakhstan",
+    "value": 1652.0048828125,
+    "threshold": 1283.7999999999997,
+    "score": 0.8971583220568335,
+    "status": "high"
+  },
+  {
+    "id": "YE",
+    "numeric": "887",
+    "name": "Yemen",
+    "value": 24.745718002319336,
+    "threshold": 36.39999999999999,
+    "score": 0.7123287671232876,
+    "status": "low"
+  },
+  {
+    "id": "TH",
+    "numeric": "764",
+    "name": "Thailand",
+    "value": 1193.7421875,
+    "threshold": 102221.45,
+    "score": 0.2627118644067797,
+    "status": "low"
+  },
+  {
+    "id": "SA",
+    "numeric": "682",
+    "name": "Saudi Arabia",
+    "value": 578.5299072265625,
+    "threshold": 641.9499999999999,
+    "score": 0.8116279069767441,
+    "status": "low"
+  },
+  {
+    "id": "LY",
+    "numeric": "434",
+    "name": "Libya",
+    "value": 2.7924842834472656,
+    "threshold": 23.0,
+    "score": 0.23308270676691728,
+    "status": "low"
+  },
+  {
+    "id": "ES",
+    "numeric": "724",
+    "name": "Spain",
+    "value": 32334.755859375,
+    "threshold": 3366.4500000000003,
+    "score": 0.9713740458015268,
+    "status": "high"
+  },
+  {
+    "id": "CR",
+    "numeric": "188",
+    "name": "Costa Rica",
+    "value": 148.41549682617188,
+    "threshold": 1250.85,
+    "score": 0.37719298245614036,
+    "status": "low"
+  },
+  {
+    "id": "AF",
+    "numeric": "004",
+    "name": "Afghanistan",
+    "value": 11457.7626953125,
+    "threshold": 2837.3999999999996,
+    "score": 0.9860834990059643,
+    "status": "high"
+  },
+  {
+    "id": "NO",
+    "numeric": "578",
+    "name": "Norway",
+    "value": 2032.037353515625,
+    "threshold": 3856.3499999999976,
+    "score": 0.7275449101796407,
+    "status": "low"
+  },
+  {
+    "id": "BA",
+    "numeric": "070",
+    "name": "Bosnia and Herzegovina",
+    "value": 10.81072998046875,
+    "threshold": 653.7999999999997,
+    "score": 0.4235294117647059,
+    "status": "low"
+  },
+  {
+    "id": "BR",
+    "numeric": "076",
+    "name": "Brazil",
+    "value": 12360.0,
+    "threshold": 52167.899999999994,
+    "score": 0.4144620811287478,
+    "status": "low"
+  },
+  {
+    "id": "ZM",
+    "numeric": "894",
+    "name": "Zambia",
+    "value": 59.28509521484375,
+    "threshold": 1275.3,
+    "score": 0.1903807615230461,
+    "status": "low"
+  },
+  {
+    "id": "LT",
+    "numeric": "440",
+    "name": "Lithuania",
+    "value": 7296.06689453125,
+    "threshold": 1059.3499999999992,
+    "score": 0.9720873786407767,
+    "status": "high"
+  },
+  {
+    "id": "DE",
+    "numeric": "276",
+    "name": "Germany",
+    "value": 10149.3984375,
+    "threshold": 16989.0,
+    "score": 0.49361207897793263,
+    "status": "low"
+  },
+  {
+    "id": "AE",
+    "numeric": "784",
+    "name": "United Arab Emirates",
+    "value": 110.58160400390624,
+    "threshold": 1802.0,
+    "score": 0.23426573426573427,
+    "status": "low"
+  },
+  {
+    "id": "CY",
+    "numeric": "196",
+    "name": "Cyprus",
+    "value": 11.407959938049316,
+    "threshold": 28.0,
+    "score": 0.6567796610169492,
+    "status": "low"
+  },
+  {
+    "id": "AL",
+    "numeric": "008",
+    "name": "Albania",
+    "value": 4.351751327514648,
+    "threshold": 26.80000000000001,
+    "score": 0.2297734627831715,
+    "status": "low"
+  },
+  {
+    "id": "TJ",
+    "numeric": "762",
+    "name": "Tajikistan",
+    "value": 4.119049072265625,
+    "threshold": 78.89999999999998,
+    "score": 0.3060240963855422,
+    "status": "low"
+  },
+  {
+    "id": "SR",
+    "numeric": "740",
+    "name": "Suriname",
+    "value": 0.0133918523788452,
+    "threshold": 3.8999999999999773,
+    "score": 0.4652631578947368,
+    "status": "low"
+  },
+  {
+    "id": "SN",
+    "numeric": "686",
+    "name": "Senegal",
+    "value": 3.6055984497070312,
+    "threshold": 177.0,
+    "score": 0.0875,
+    "status": "low"
+  },
+  {
+    "id": "IE",
+    "numeric": "372",
+    "name": "Ireland",
+    "value": 310.9501342773437,
+    "threshold": 90.0,
+    "score": 0.9813953488372092,
+    "status": "high"
+  },
+  {
+    "id": "GH",
+    "numeric": "288",
+    "name": "Ghana",
+    "value": 77.43171691894531,
+    "threshold": 328.09999999999997,
+    "score": 0.1752136752136752,
+    "status": "low"
+  },
+  {
+    "id": "DK",
+    "numeric": "208",
+    "name": "Denmark",
+    "value": 166.21487426757812,
+    "threshold": 341.0,
+    "score": 0.5996884735202492,
+    "status": "low"
+  },
+  {
+    "id": "SL",
+    "numeric": "694",
+    "name": "Sierra Leone",
+    "value": 0.369598388671875,
+    "threshold": 39.099999999999966,
+    "score": 0.3371212121212121,
+    "status": "low"
+  },
+  {
+    "id": "RO",
+    "numeric": "642",
+    "name": "Romania",
+    "value": 78.68681335449219,
+    "threshold": 32.899999999999864,
+    "score": 0.9375,
+    "status": "high"
+  },
+  {
+    "id": "MD",
+    "numeric": "498",
+    "name": "Republic of Moldova",
+    "value": 266.83251953125,
+    "threshold": 30.399999999999977,
+    "score": 0.9775147928994082,
+    "status": "high"
+  },
+  {
+    "id": "MX",
+    "numeric": "484",
+    "name": "Mexico",
+    "value": 1316.087890625,
+    "threshold": 19887.5,
+    "score": 0.4649122807017544,
+    "status": "low"
+  },
+  {
+    "id": "BO",
+    "numeric": "068",
+    "name": "Bolivia (Plurinational State of)",
+    "value": 0.4290761947631836,
+    "threshold": 10.0,
+    "score": 0.5721518987341773,
+    "status": "low"
+  },
+  {
+    "id": "UA",
+    "numeric": "804",
+    "name": "Ukraine",
+    "value": 227.486328125,
+    "threshold": 22053.599999999995,
+    "score": 0.678237650200267,
+    "status": "low"
+  },
+  {
+    "id": "ME",
+    "numeric": "499",
+    "name": "Montenegro",
+    "value": 1710.23779296875,
+    "threshold": 177.0,
+    "score": 0.9925705794947994,
+    "status": "high"
+  },
+  {
+    "id": "PL",
+    "numeric": "616",
+    "name": "Poland",
+    "value": 4119.75732421875,
+    "threshold": 4443.3,
+    "score": 0.8187134502923976,
+    "status": "low"
+  },
+  {
+    "id": "VN",
+    "numeric": "704",
+    "name": "Viet Nam",
+    "value": 65.0456771850586,
+    "threshold": 310.0,
+    "score": 0.21890547263681592,
+    "status": "low"
+  },
+  {
+    "id": "BE",
+    "numeric": "056",
+    "name": "Belgium",
+    "value": 88.94808959960938,
+    "threshold": 227.0,
+    "score": 0.658157602663707,
+    "status": "low"
+  },
+  {
+    "id": "MA",
+    "numeric": "504",
+    "name": "Morocco",
+    "value": 252.745361328125,
+    "threshold": 2435.0499999999997,
+    "score": 0.01875,
+    "status": "low"
+  },
+  {
+    "id": "BG",
+    "numeric": "100",
+    "name": "Bulgaria",
+    "value": 4066.85009765625,
+    "threshold": 4109.8,
+    "score": 0.8390532544378698,
+    "status": "low"
+  },
+  {
+    "id": "CD",
+    "numeric": "180",
+    "name": "Democratic Republic of the Congo",
+    "value": 21.56328582763672,
+    "threshold": 55.0,
+    "score": 0.08571428571428572,
+    "status": "low"
+  },
+  {
+    "id": "TZ",
+    "numeric": "834",
+    "name": "United Republic of Tanzania",
+    "value": 73.22037506103516,
+    "threshold": 149.85000000000005,
+    "score": 0.5384615384615384,
+    "status": "low"
+  },
+  {
+    "id": "TG",
+    "numeric": "768",
+    "name": "Togo",
+    "value": 27.90426254272461,
+    "threshold": 57.0,
+    "score": 0.3273657289002558,
+    "status": "low"
+  },
+  {
+    "id": "IL",
+    "numeric": "376",
+    "name": "Israel",
+    "value": 5029.7490234375,
+    "threshold": 1255.9,
+    "score": 0.992638036809816,
+    "status": "high"
+  },
+  {
+    "id": "MR",
+    "numeric": "478",
+    "name": "Mauritania",
+    "value": 4.39586067199707,
+    "threshold": 8.0,
+    "score": 0.40625,
+    "status": "low"
+  },
+  {
+    "id": "EE",
+    "numeric": "233",
+    "name": "Estonia",
+    "value": 446.50201416015625,
+    "threshold": 261.0,
+    "score": 0.9751479289940829,
+    "status": "high"
+  },
+  {
+    "id": "AM",
+    "numeric": "051",
+    "name": "Armenia",
+    "value": 24.801549911499023,
+    "threshold": 20.0,
+    "score": 0.8928104575163399,
+    "status": "high"
+  },
+  {
+    "id": "SD",
+    "numeric": "729",
+    "name": "Sudan",
+    "value": 1.2395434379577637,
+    "threshold": 8.7,
+    "score": 0.4166666666666667,
+    "status": "low"
+  },
+  {
+    "id": "SO",
+    "numeric": "706",
+    "name": "Somalia",
+    "value": 18.808917999267575,
+    "threshold": 75.39999999999998,
+    "score": 0.27230046948356806,
+    "status": "low"
+  },
+  {
+    "id": "CM",
+    "numeric": "120",
+    "name": "Cameroon",
+    "value": 41.57351303100586,
+    "threshold": 66.05000000000001,
+    "score": 0.6093117408906883,
+    "status": "low"
+  },
+  {
+    "id": "US",
+    "numeric": "840",
+    "name": "United States of America",
+    "value": 238372.421875,
+    "threshold": 54571.299999999996,
+    "score": 1.0,
+    "status": "high"
+  },
+  {
+    "id": "CF",
+    "numeric": "140",
+    "name": "Central African Republic",
+    "value": 6.048133850097656,
+    "threshold": 81.6,
+    "score": 0.1694915254237288,
+    "status": "low"
+  },
+  {
+    "id": "ML",
+    "numeric": "466",
+    "name": "Mali",
+    "value": 5.421405792236328,
+    "threshold": 32.0,
+    "score": 0.1292517006802721,
+    "status": "low"
+  },
+  {
+    "id": "HN",
+    "numeric": "340",
+    "name": "Honduras",
+    "value": 13.037445068359377,
+    "threshold": 624.0,
+    "score": 0.141321044546851,
+    "status": "low"
+  },
+  {
+    "id": "GB",
+    "numeric": "826",
+    "name": "United Kingdom of Great Britain and Northern Ireland",
+    "value": 1.894989013671875,
+    "threshold": 93.30000000000001,
+    "score": 0.025,
+    "status": "low"
+  },
+  {
+    "id": "BY",
+    "numeric": "112",
+    "name": "Belarus",
+    "value": 19.174543380737305,
+    "threshold": 58.0,
+    "score": 0.22203672787979967,
+    "status": "low"
+  },
+  {
+    "id": "BS",
+    "numeric": "044",
+    "name": "Bahamas",
+    "value": 1.1737937927246094,
+    "threshold": 106.0,
+    "score": 0.3218390804597701,
+    "status": "low"
+  },
+  {
+    "id": "TT",
+    "numeric": "780",
+    "name": "Trinidad and Tobago",
+    "value": 483.0197448730469,
+    "threshold": 577.8,
+    "score": 0.4375,
+    "status": "low"
+  },
+  {
+    "id": "BT",
+    "numeric": "064",
+    "name": "Bhutan",
+    "value": 91.73472595214844,
+    "threshold": 255.0,
+    "score": 0.23645970937912814,
+    "status": "low"
+  },
+  {
+    "id": "SB",
+    "numeric": "090",
+    "name": "Solomon Islands",
+    "value": 418.9974060058594,
+    "threshold": 362.54999999999995,
+    "score": 0.8859649122807017,
+    "status": "high"
+  },
+  {
+    "id": "TM",
+    "numeric": "795",
+    "name": "Turkmenistan",
+    "value": 0.6764068603515625,
+    "threshold": 4.0,
+    "score": 0.5222929936305732,
+    "status": "low"
+  },
+  {
+    "id": "KG",
+    "numeric": "417",
+    "name": "Kyrgyzstan",
+    "value": 33.58584213256836,
+    "threshold": 23.0,
+    "score": 0.9096045197740112,
+    "status": "high"
+  }
+]

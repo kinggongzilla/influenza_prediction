@@ -1,0 +1,184 @@
+import json
+import os
+import glob
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import pycountry
+
+# Paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(BASE_DIR, 'results', 'country_predictions')
+EXTRACTED_DATA_DIR = os.path.join(BASE_DIR, 'data', 'extracted_data')
+BOUNDING_BOXES_FILE = os.path.join(BASE_DIR, 'data', 'country_bounding_boxes.json')
+OUTPUT_DIR = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'details')
+
+def load_mappings():
+    with open(BOUNDING_BOXES_FILE, 'r') as f:
+        bboxes = json.load(f)
+    
+    name_to_code = {}
+    for code, data in bboxes.items():
+        name = data[0]
+        name_to_code[name.lower()] = code
+        
+    # Manual overrides (copied from generate_map_data.py)
+    overrides = {
+        'bolivia_(plurinational_state_of)': 'BO',
+        'iran_(islamic_republic_of)': 'IR',
+        'russian_federation': 'RU',
+        'united_states_of_america': 'US',
+        'venezuela_(bolivarian_republic_of)': 'VE',
+        'viet_nam': 'VN',
+        'korea_(republic_of)': 'KR',
+        'democratic_people\'s_republic_of_korea': 'KP',
+        'türkiye': 'TR',
+        'united_kingdom_of_great_britain_and_northern_ireland': 'GB',
+        'syrian_arab_republic': 'SY',
+        'republic_of_moldova': 'MD',
+        'lao_people\'s_democratic_republic': 'LA',
+        'micronesia_(federated_states_of)': 'FM',
+        'united_republic_of_tanzania': 'TZ'
+    }
+    name_to_code.update(overrides)
+    return name_to_code
+
+def find_extracted_file(country_folder_name):
+    # Try exact match first
+    patterns = [
+        f"{country_folder_name}_ili.csv",
+        f"{country_folder_name}_ari.csv",
+        f"{country_folder_name.replace('_', ' ')}_ili.csv",
+        f"{country_folder_name.replace('_', ' ')}_ari.csv"
+    ]
+    
+    for pattern in patterns:
+        path = os.path.join(EXTRACTED_DATA_DIR, pattern)
+        if os.path.exists(path):
+            return path
+            
+    # Try globbing
+    files = glob.glob(os.path.join(EXTRACTED_DATA_DIR, f"*{country_folder_name}*.csv"))
+    if files:
+        return files[0]
+        
+    return None
+
+def process_countries():
+    name_to_code = load_mappings()
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
+    country_dirs = glob.glob(os.path.join(RESULTS_DIR, '*'))
+    print(f"Processing {len(country_dirs)} directories...")
+    
+    count = 0
+    for country_dir in country_dirs:
+        if not os.path.isdir(country_dir):
+            continue
+            
+        country_folder_name = os.path.basename(country_dir)
+        normalized_name = country_folder_name.lower()
+        
+        # Get ISO Code
+        code = name_to_code.get(normalized_name)
+        if not code:
+            code = name_to_code.get(normalized_name.replace('_', ' '))
+        
+        if not code:
+             if 'congo' in normalized_name:
+                 if 'democratic' in normalized_name:
+                     code = 'CD'
+                 else:
+                     code = 'CG'
+        
+        if not code:
+            print(f"Skipping {country_folder_name}: No code found")
+            continue
+
+        # Find Results CSV
+        csv_pattern = os.path.join(country_dir, '*_forecast_results.csv')
+        files = glob.glob(csv_pattern)
+        if not files:
+            if os.path.exists(os.path.join(country_dir, 'forecast_results.csv')):
+                files = [os.path.join(country_dir, 'forecast_results.csv')]
+            else:
+                print(f"Skipping {country_folder_name}: No result CSV")
+                continue
+        results_csv_file = files[0]
+
+        # Find Extracted Data CSV (for dates)
+        extracted_file = find_extracted_file(country_folder_name)
+        start_date = None
+        if extracted_file:
+            try:
+                extracted_df = pd.read_csv(extracted_file)
+                if 'Time' in extracted_df.columns:
+                    start_date = pd.to_datetime(extracted_df['Time'].iloc[0])
+            except Exception as e:
+                print(f"Error reading extracted file for {country_folder_name}: {e}")
+        
+        if not start_date:
+            # Fallback: Assume recent data if we can't find file, but better to skip or use dummy
+            # Let's use a dummy start date or try to infer. 
+            # For now, let's skip if we can't align dates to avoid misleading charts
+            print(f"Skipping {country_folder_name}: Could not determine start date")
+            continue
+
+        try:
+            df = pd.read_csv(results_csv_file)
+            
+            # Prepare data for JSON
+            output_data = {
+                "country": country_folder_name.replace('_', ' '),
+                "id": code,
+                "points": []
+            }
+            
+            # Iterate through rows
+            # 'context' is history, 'mean_forecast' is prediction
+            # They might overlap in the CSV structure depending on how it was saved,
+            # usually context is filled then forecast starts.
+            
+            current_date = start_date
+            
+            for index, row in df.iterrows():
+                point = {
+                    "date": current_date.strftime('%Y-%m-%d'),
+                    "historical": None,
+                    "forecast": None,
+                    "lower": None, # q0.1
+                    "upper": None  # q0.9
+                }
+                
+                # Context (History)
+                if pd.notna(row.get('context')):
+                    point["historical"] = float(row['context'])
+                
+                # Forecast
+                if pd.notna(row.get('mean_forecast')):
+                    point["forecast"] = float(row['mean_forecast'])
+                    
+                    # Add quantiles if forecast exists
+                    if pd.notna(row.get('quantile_0.1')):
+                        point["lower"] = float(row['quantile_0.1'])
+                    if pd.notna(row.get('quantile_0.9')):
+                        point["upper"] = float(row['quantile_0.9'])
+
+                output_data["points"].append(point)
+                
+                # Increment date (Weekly data)
+                current_date += timedelta(weeks=1)
+                
+            # Save JSON
+            with open(os.path.join(OUTPUT_DIR, f"{code}.json"), 'w') as f:
+                json.dump(output_data, f, indent=2)
+            
+            count += 1
+            
+        except Exception as e:
+            print(f"Error processing {country_folder_name}: {e}")
+            
+    print(f"Successfully generated details for {count} countries.")
+
+if __name__ == "__main__":
+    process_countries()

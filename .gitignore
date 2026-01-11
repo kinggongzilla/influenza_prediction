@@ -20,3 +20,4 @@ forecast_pipeline/src/scripts/__pycache__
 forecast_pipeline/results/*.png
 forecast_pipeline/country_inference_batch.log
 forecast_pipeline/__pycache__
+frontend/public/data/details/*.json

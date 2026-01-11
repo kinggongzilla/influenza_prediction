@@ -159,7 +159,7 @@ class CountryInferenceProcessor:
                 "--country_name", country_name,
                 "--prediction_length", "54",
                 "--plot",
-                "--test_split", "0.1",
+                # "--test_split", "0.1",
                 "--use_weather",
                 "--use_future_weather",
                 "--results_dir", country_results_dir
@@ -195,7 +195,7 @@ class CountryInferenceProcessor:
                         "--country_name", country_name,
                         "--prediction_length", "54",
                         "--plot",
-                        "--test_split", "0.1",
+                        # "--test_split", "0.1",
                         "--results_dir", country_results_dir
                     ]
                     

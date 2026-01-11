@@ -1,3 +1,184 @@
 country,used_weather,weather_status
-Afghanistan,NO,Disabled
-TOTAL,0/1,0.0% with weather
+Afghanistan,YES,Enabled
+Albania,YES,Enabled
+Algeria,NO,Disabled
+American Samoa,YES,Enabled
+Anguilla,YES,Enabled
+Antigua and Barbuda,YES,Enabled
+Argentina,YES,Enabled
+Armenia,YES,Enabled
+Australia,YES,Enabled
+Austria,NO,Disabled
+Azerbaijan,NO,Disabled
+Bahamas,YES,Enabled
+Bahrain,YES,Enabled
+Bangladesh,YES,Enabled
+Barbados,NO,Disabled
+Belarus,NO,Disabled
+Belgium,NO,Disabled
+Belize,YES,Enabled
+Bermuda,YES,Enabled
+Bhutan,YES,Enabled
+Bolivia (Plurinational State of),NO,Disabled
+"Bonaire, Sint Eustatius and Saba",YES,Enabled
+Bosnia and Herzegovina,NO,Disabled
+Brazil,YES,Enabled
+British Virgin Islands,YES,Enabled
+Brunei Darussalam,YES,Enabled
+Bulgaria,YES,Enabled
+Burkina Faso,YES,Enabled
+Cambodia,NO,Disabled
+Cameroon,NO,Disabled
+Canada,YES,Enabled
+Cayman Islands,YES,Enabled
+Central African Republic,YES,Enabled
+Chile,YES,Enabled
+"China, Hong Kong SAR",NO,Disabled
+Colombia,NO,Disabled
+Cook Islands,YES,Enabled
+Costa Rica,YES,Enabled
+Croatia,YES,Enabled
+Cuba,YES,Enabled
+Curaçao,YES,Enabled
+Cyprus,NO,Disabled
+Czechia,YES,Enabled
+Côte d’Ivoire,NO,Disabled
+Democratic People's Republic of Korea,YES,Enabled
+Democratic Republic of the Congo,NO,Disabled
+Denmark,NO,Disabled
+Dominica,NO,Disabled
+Dominican Republic,YES,Enabled
+Egypt,YES,Enabled
+El Salvador,YES,Enabled
+Estonia,NO,Disabled
+Ethiopia,YES,Enabled
+Fiji,YES,Enabled
+Finland,NO,Disabled
+France,NO,Disabled
+French Polynesia,YES,Enabled
+Gabon,YES,Enabled
+Georgia,NO,Disabled
+Germany,NO,Disabled
+Ghana,YES,Enabled
+Greece,NO,Disabled
+Grenada,YES,Enabled
+Guam,YES,Enabled
+Guatemala,YES,Enabled
+Guinea,YES,Enabled
+Guyana,NO,Disabled
+Honduras,YES,Enabled
+Hungary,NO,Disabled
+Iceland,NO,Disabled
+Indonesia,YES,Enabled
+Iran (Islamic Republic of),NO,Disabled
+Iraq,YES,Enabled
+Ireland,NO,Disabled
+Israel,NO,Disabled
+Italy,NO,Disabled
+Jamaica,NO,Disabled
+Jordan,NO,Disabled
+Kazakhstan,NO,Disabled
+Kenya,YES,Enabled
+Kiribati,YES,Enabled
+Kosovo (in accordance with UN Security Council resolution 1244 (1999)),NO,Disabled
+Kuwait,YES,Enabled
+Kyrgyzstan,NO,Disabled
+Lao People's Democratic Republic,NO,Disabled
+Latvia,NO,Disabled
+Lebanon,YES,Enabled
+Libya,YES,Enabled
+Lithuania,NO,Disabled
+Luxembourg,NO,Disabled
+Madagascar,NO,Disabled
+Maldives,NO,Disabled
+Mali,YES,Enabled
+Malta,NO,Disabled
+Marshall Islands,NO,Disabled
+Mauritania,NO,Disabled
+Mauritius,NO,Disabled
+Mexico,YES,Enabled
+Micronesia (Federated States of),NO,Disabled
+Mongolia,YES,Enabled
+Montenegro,NO,Disabled
+Montserrat,YES,Enabled
+Morocco,NO,Disabled
+Mozambique,NO,Disabled
+Nauru,YES,Enabled
+Nepal,NO,Disabled
+Netherlands (Kingdom of the),NO,Disabled
+New Caledonia,NO,Disabled
+New Zealand,NO,Disabled
+Nicaragua,NO,Disabled
+Niger,NO,Disabled
+Nigeria,NO,Disabled
+Niue,NO,Disabled
+North Macedonia,NO,Disabled
+Northern Mariana Islands,YES,Enabled
+Norway,NO,Disabled
+Oman,NO,Disabled
+Pakistan,NO,Disabled
+Palau,YES,Enabled
+Panama,NO,Disabled
+Papua New Guinea,NO,Disabled
+Paraguay,NO,Disabled
+Peru,NO,Disabled
+Pitcairn,NO,Disabled
+Poland,NO,Disabled
+Portugal,YES,Enabled
+Qatar,NO,Disabled
+Republic of Moldova,NO,Disabled
+Romania,NO,Disabled
+Russian Federation,NO,Disabled
+Rwanda,NO,Disabled
+Saint Kitts and Nevis,YES,Enabled
+Saint Lucia,NO,Disabled
+Saint Vincent and the Grenadines,YES,Enabled
+Samoa,YES,Enabled
+Saudi Arabia,NO,Disabled
+Senegal,NO,Disabled
+Serbia,NO,Disabled
+Sierra Leone,NO,Disabled
+Singapore,NO,Disabled
+Sint Maarten (Dutch part),YES,Enabled
+Slovakia,NO,Disabled
+Slovenia,NO,Disabled
+Solomon Islands,NO,Disabled
+Somalia,NO,Disabled
+South Africa,NO,Disabled
+South Sudan,NO,Disabled
+Spain,NO,Disabled
+Sri Lanka,NO,Disabled
+Sudan,NO,Disabled
+Suriname,NO,Disabled
+Sweden,NO,Disabled
+Switzerland,NO,Disabled
+Tajikistan,NO,Disabled
+Thailand,NO,Disabled
+Timor-Leste,NO,Disabled
+Togo,NO,Disabled
+Tokelau,NO,Disabled
+Tonga,YES,Enabled
+Trinidad and Tobago,YES,Enabled
+Turkmenistan,YES,Enabled
+Turks and Caicos Islands,NO,Disabled
+Tuvalu,YES,Enabled
+Türkiye,NO,Disabled
+Uganda,YES,Enabled
+Ukraine,YES,Enabled
+United Arab Emirates,YES,Enabled
+United Kingdom of Great Britain and Northern Ireland,NO,Disabled
+"United Kingdom, England",NO,Disabled
+"United Kingdom, Northern Ireland",NO,Disabled
+"United Kingdom, Scotland",NO,Disabled
+"United Kingdom, Wales",NO,Disabled
+United Republic of Tanzania,YES,Enabled
+United States of America,YES,Enabled
+Uruguay,YES,Enabled
+Uzbekistan,NO,Disabled
+Vanuatu,YES,Enabled
+Viet Nam,YES,Enabled
+Wallis and Futuna,YES,Enabled
+Yemen,NO,Disabled
+Zambia,NO,Disabled
+"occupied Palestinian territory, including east Jerusalem",NO,Disabled
+TOTAL,76/182,41.8% with weather
