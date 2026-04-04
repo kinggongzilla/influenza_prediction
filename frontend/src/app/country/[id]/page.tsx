@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   LineChart,
@@ -16,7 +16,7 @@ import {
   ReferenceLine,
   Label
 } from "recharts";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subYears } from "date-fns";
 
 interface DataPoint {
   date: string | number; // Allow number for timestamp transformation
@@ -41,6 +41,7 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
   const [data, setData] = useState<CountryDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [timeRange, setTimeRange] = useState("5Y");
 
   useEffect(() => {
     fetch(`/data/details/${id}.json`)
@@ -62,6 +63,34 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
         setLoading(false);
       });
   }, [id]);
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    if (timeRange === "ALL") return data.points;
+
+    const points = data.points;
+    if (points.length === 0) return [];
+
+    const lastPoint = points[points.length - 1];
+    const lastDate = new Date(lastPoint.date);
+    let cutOffDate = 0;
+
+    switch (timeRange) {
+        case "1Y":
+            cutOffDate = subYears(lastDate, 1).getTime();
+            break;
+        case "3Y":
+            cutOffDate = subYears(lastDate, 3).getTime();
+            break;
+        case "5Y":
+            cutOffDate = subYears(lastDate, 5).getTime();
+            break;
+        default:
+            cutOffDate = 0;
+    }
+
+    return points.filter(p => (p.date as number) >= cutOffDate);
+  }, [data, timeRange]);
 
   if (loading) {
     return (
@@ -86,8 +115,6 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
   }
 
   const todayTimestamp = new Date().getTime();
-  const lastDate = data.points.length > 0 ? (data.points[data.points.length - 1].date as number) : 0;
-  const isDataStale = lastDate < todayTimestamp;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-8">
@@ -99,29 +126,36 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
           >
             ← Back to Global Map
           </button>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                {data.country} <span className="text-slate-600 text-2xl font-normal">({id})</span>
-            </h1>
-            {isDataStale && (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-500 text-sm w-fit">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                    </span>
-                    Dataset Outdated: Forecast ends in {format(new Date(lastDate), "MMMM yyyy")}
-                </div>
-            )}
+          <div className="flex justify-between items-end">
+            <div>
+                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                    {data.country} <span className="text-slate-600 text-2xl font-normal">({id})</span>
+                </h1>
+                <p className="text-slate-400 mt-2">
+                    Historical influenza cases and 12-month forecast
+                </p>
+            </div>
+            <div className="flex items-center gap-2">
+                <label htmlFor="timeRange" className="text-sm text-slate-400">Time Range:</label>
+                <select 
+                    id="timeRange"
+                    value={timeRange} 
+                    onChange={(e) => setTimeRange(e.target.value)}
+                    className="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                >
+                    <option value="1Y">1 Year</option>
+                    <option value="3Y">3 Years</option>
+                    <option value="5Y">5 Years</option>
+                    <option value="ALL">All Time</option>
+                </select>
+            </div>
           </div>
-          <p className="text-slate-400 mt-2">
-            Historical influenza cases and 12-month forecast
-          </p>
         </header>
 
         <div className="w-full h-[500px] bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={data.points}
+              data={filteredData}
               margin={{
                 top: 20,
                 right: 30,

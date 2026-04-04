@@ -19,7 +19,7 @@ Improvements over naive MAPE:
 
 Experiments:
   --context_length N       Experiment E: limit context to last N weeks
-  --weather_mode MODE      Experiment C: full / past_only / none
+  --weather_mode MODE      Experiment C: past_only / none
   --use_neighbors          Experiment D: neighboring countries ILI as past covariates
   --use_capital_coords     Experiment A: capital city coords for weather
 """
@@ -410,7 +410,7 @@ def evaluate_country(
     weather_covariates: dict | None = None,
     neighbor_covariates: dict | None = None,
     week_of_year_covariates: dict | None = None,
-    weather_mode: str = "full",
+    weather_mode: str = "none",
     context_length: int | None = None,
     min_context: int = 10,
     season_threshold: float | None = None,
@@ -486,8 +486,6 @@ def evaluate_country(
             if has_weather:
                 for name, tensor in weather_covariates.items():
                     all_past_covs[name] = tensor[ctx_start:cutoff].numpy()
-                    if weather_mode == "full":
-                        all_future_covs[name] = tensor[cutoff:cutoff + prediction_horizon].numpy()
 
             if has_neighbors:
                 for name, tensor in neighbor_covariates.items():
@@ -728,7 +726,7 @@ def main():
     parser.add_argument("--output", type=str, default=None)
     # Experiment flags
     parser.add_argument("--context_length", type=int, default=None)
-    parser.add_argument("--weather_mode", choices=["full", "past_only", "none"], default="none")
+    parser.add_argument("--weather_mode", choices=["past_only", "none"], default="none")
     parser.add_argument("--use_neighbors", action="store_true")
     parser.add_argument("--use_capital_coords", action="store_true")
     parser.add_argument("--use_week_of_year", action="store_true",

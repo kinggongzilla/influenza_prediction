@@ -21,3 +21,11 @@ forecast_pipeline/results/*.png
 forecast_pipeline/country_inference_batch.log
 forecast_pipeline/__pycache__
 frontend/public/data/details/*.json
+forecast_pipeline/results/evaluation/*.json
+forecast_pipeline/results/evaluation/plots/*.png
+*.pkl
+*.bak
+forecast_pipeline/data/influcast_cache
+forecast_pipeline/chronos-2-finetuned
+forecast_pipeline/models/
+wandb

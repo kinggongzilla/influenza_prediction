@@ -100,13 +100,6 @@ def main():
         default=True,
         help="Normalize weather features (default: True)"
     )
-    parser.add_argument(
-        "--use_future_weather",
-        action='store_true',
-        help="Use future weather forecasts as covariates (requires --use_weather). "
-             "With --test_split: uses first ~2 weeks of test weather. "
-             "Without --test_split: fetches real 14-day forecasts from API."
-    )
 
     parser.add_argument(
         "--plot",
@@ -138,9 +131,6 @@ def main():
     # Validate weather arguments
     if args.use_weather and not args.country_name:
         raise ValueError("--country_name is required when --use_weather is enabled")
-
-    if args.use_future_weather and not args.use_weather:
-        raise ValueError("--use_future_weather requires --use_weather to be enabled")
 
     # Load data
     weather_covariates = None
@@ -178,81 +168,17 @@ def main():
             data = data[:split_idx]
 
             # Split weather covariates if present
-            test_weather_covariates = None
-            future_weather_covariates = None
-
             if weather_covariates is not None:
-                test_weather_covariates = {
-                    name: tensor[split_idx:]
-                    for name, tensor in weather_covariates.items()
-                }
                 weather_covariates = {
                     name: tensor[:split_idx]
                     for name, tensor in weather_covariates.items()
                 }
-
-                # Extract future covariates from test weather if enabled
-                if args.use_future_weather:
-                    # Use first min(2 weeks, test_length) from test weather
-                    test_length = len(next(iter(test_weather_covariates.values())))
-                    future_weeks_available = min(2, test_length)
-
-                    if future_weeks_available > 0:
-                        # Extract available forecast weeks (up to 2)
-                        future_weather_covariates = {
-                            name: tensor[:future_weeks_available]
-                            for name, tensor in test_weather_covariates.items()
-                        }
-                        print(f"Using {future_weeks_available} weeks of test weather as future_covariates (simulates 14-day forecast)")
-                        if future_weeks_available < args.prediction_length:
-                            print(f"Will use two-pass inference: {future_weeks_available} weeks with future weather, then {args.prediction_length - future_weeks_available} weeks extended")
-                    else:
-                        print(f"Warning: Test data has no weeks available for future_covariates")
 
             # When test_split is used, use ALL training data as context (ignore context_length)
             print(f"Split data: {len(data)} for training, {len(test_data)} for testing")
             print(f"Using all {len(data)} training points as context for forecasting")
             if weather_covariates is not None:
                 print(f"Weather covariates also split: {len(weather_covariates)} features")
-        else:
-            # No test split - initialize future_weather_covariates for real forecasting
-            future_weather_covariates = None
-
-            # Fetch real weather forecasts if enabled (no test split)
-            if args.use_weather and args.use_future_weather and dates:
-                print("\n" + "=" * 60)
-                print("Fetching Real Weather Forecasts")
-                print("=" * 60)
-
-                from datetime import datetime
-                from weather_fetcher import get_weather_with_forecast
-
-                last_ili_date = dates[-1]
-
-                try:
-                    past_weather_df, future_weather_df, scaler = get_weather_with_forecast(
-                        country_name=args.country_name,
-                        start_date=dates[0],
-                        last_ili_date=last_ili_date,
-                        prediction_length_weeks=args.prediction_length,
-                        normalize=args.normalize_weather
-                    )
-
-                    if future_weather_df is not None and len(future_weather_df) > 0:
-                        feature_cols = [col for col in future_weather_df.columns if col != 'date']
-                        future_weather_covariates = {
-                            col: torch.tensor(future_weather_df[col].values, dtype=torch.float32)
-                            for col in feature_cols
-                        }
-                        forecast_weeks = len(future_weather_df)
-                        print(f"\nLoaded {forecast_weeks} weeks of future weather forecasts")
-
-                        if forecast_weeks < args.prediction_length:
-                            print(f"Future weather covers {forecast_weeks} weeks, prediction_length is {args.prediction_length} weeks")
-                            print(f"Will use two-pass inference: {forecast_weeks} weeks with future weather, then {args.prediction_length - forecast_weeks} weeks extended")
-                except Exception as e:
-                    print(f"\nWarning: Failed to fetch forecast: {e}")
-                    print("Continuing without future_covariates.")
 
     # No random data generation - data_file is now required
     
@@ -269,116 +195,7 @@ def main():
     # Generate forecast
     print(f"\nGenerating forecast for {args.prediction_length} time steps...")
 
-    # Check if we need two-pass inference
-    has_future_covariates = 'future_weather_covariates' in locals() and future_weather_covariates is not None
-
-    if weather_covariates and has_future_covariates:
-        # Check if future covariates are shorter than prediction_length
-        first_future_feature = next(iter(future_weather_covariates.values()))
-        future_length = len(first_future_feature)
-
-        # Always use two-pass inference when future weather is available
-        # Use min(2 weeks, available future weather) for Pass 1
-        pass1_length = min(2, future_length)
-        
-        if pass1_length > 0:
-            # TWO-PASS INFERENCE
-            print(f"\n{'='*60}")
-            print(f"Two-Pass Inference (using {pass1_length} weeks of future weather, prediction: {args.prediction_length} weeks)")
-            print(f"{'='*60}")
-
-            # PASS 1: Predict with available future covariates (up to 2 weeks)
-            print(f"\n[Pass 1] Forecasting {pass1_length} steps with future weather covariates")
-
-            past_covariates = {
-                name: tensor.numpy()
-                for name, tensor in weather_covariates.items()
-            }
-
-            # Use only the first pass1_length weeks of future covariates
-            future_covariates_np = {
-                name: tensor.numpy()[:pass1_length]
-                for name, tensor in future_weather_covariates.items()
-            }
-
-            input_dict_pass1 = {
-                "target": data.squeeze().numpy(),
-                "past_covariates": past_covariates,
-                "future_covariates": future_covariates_np
-            }
-
-            quantile_forecasts_pass1, mean_forecasts_pass1 = model.predict_quantiles(
-                inputs=[input_dict_pass1],
-                prediction_length=pass1_length
-            )
-
-            print(f"Pass 1 complete: Generated {pass1_length} week forecast")
-
-            # PASS 2: Predict remaining steps using extended context
-            remaining_steps = args.prediction_length - pass1_length
-            print(f"\n[Pass 2] Forecasting remaining {remaining_steps} steps")
-            print(f"Extending context with Pass 1 forecast")
-
-            # Extend target with pass 1 mean forecast
-            pass1_forecast = mean_forecasts_pass1[0].squeeze()  # Shape: [pass1_length]
-            extended_target = np.concatenate([
-                data.squeeze().numpy(),
-                pass1_forecast.numpy()
-            ])
-
-            # Extend past_covariates with future_covariates from pass 1
-            extended_past_covariates = {}
-            for name in weather_covariates.keys():
-                past_values = weather_covariates[name].numpy()
-                future_values = future_weather_covariates[name].numpy()[:pass1_length]
-                extended_past_covariates[name] = np.concatenate([past_values, future_values])
-
-            input_dict_pass2 = {
-                "target": extended_target,
-                "past_covariates": extended_past_covariates
-            }
-
-            quantile_forecasts_pass2, mean_forecasts_pass2 = model.predict_quantiles(
-                inputs=[input_dict_pass2],
-                prediction_length=remaining_steps
-            )
-
-            print(f"Pass 2 complete: Generated {remaining_steps} week forecast")
-
-            # Concatenate forecasts
-            print(f"\nCombining forecasts from both passes")
-            mean_forecasts = [torch.cat([
-                mean_forecasts_pass1[0],
-                mean_forecasts_pass2[0]
-            ], dim=1)]
-
-            quantile_forecasts = [torch.cat([
-                quantile_forecasts_pass1[0],
-                quantile_forecasts_pass2[0]
-            ], dim=1)]
-
-        else:
-            # SINGLE-PASS INFERENCE (no future weather or pass1_length = 0)
-            print(f"\nUsing {len(weather_covariates)} weather covariates (single-pass inference):")
-            for name in weather_covariates.keys():
-                print(f"  - {name}")
-
-            past_covariates = {
-                name: tensor.numpy()
-                for name, tensor in weather_covariates.items()
-            }
-
-            input_dict = {
-                "target": data.squeeze().numpy(),
-                "past_covariates": past_covariates
-            }
-
-            quantile_forecasts, mean_forecasts = model.predict_quantiles(
-                inputs=[input_dict],
-                prediction_length=args.prediction_length
-            )
-
-    elif weather_covariates:
+    if weather_covariates:
         # SINGLE-PASS with only past_covariates
         print(f"\nUsing {len(weather_covariates)} weather covariates:")
         for name in weather_covariates.keys():
