@@ -141,111 +141,45 @@ class CountryInferenceProcessor:
             return None
     
     def _run_chronos_inference(self, extracted_file: str, country_name: str, skip_weather_on_error: bool) -> bool:
-        """Run chronos inference on extracted data with smart weather handling."""
+        """Run chronos inference on extracted data (no covariates)."""
         try:
             # Clean country name for results directory
             clean_country_name = country_name.replace(' ', '_').replace('-', '_')
             country_results_dir = os.path.join(self.results_dir, clean_country_name)
             os.makedirs(country_results_dir, exist_ok=True)
-            
-            # Determine if this is ILI or ARI data
-            data_type = 'ili' if 'ili' in extracted_file.lower() else 'ari'
-            
-            # First try WITH weather
-            cmd_with_weather = [
+
+            cmd = [
                 sys.executable,
                 "src/scripts/chronos_inference.py",
                 "--data_file", extracted_file,
                 "--country_name", country_name,
                 "--prediction_length", "54",
                 "--plot",
-                # "--test_split", "0.1",
-                "--use_weather",
-                "--use_future_weather",
                 "--results_dir", country_results_dir
             ]
-            
-            # Try with weather first
-            using_weather = True
-            logger.info(f"🌦️  Attempting chronos inference with weather for {country_name}...")
-            
-            start_time = time.time()
-            result = subprocess.run(cmd_with_weather, capture_output=True, text=True, cwd=".")
-            end_time = time.time()
-            
-            processing_time = end_time - start_time
-            self.stats['processing_times'].append(processing_time)
-            
-            if result.returncode == 0:
-                logger.info(f"✅ Inference successful for {country_name} with weather")
-                self.stats['successful_inferences'] += 1
-                self.stats['countries_with_weather'].append(country_name)
-                self.stats['weather_usage_by_country'][country_name] = True
-                return True
-            else:
-                # If weather fails and we should skip on error, try without weather
-                if skip_weather_on_error:
-                    logger.warning(f"⚠️  Weather failed for {country_name}, trying without weather...")
-                    
-                    # Try without weather
-                    cmd_without_weather = [
-                        sys.executable,
-                        "src/scripts/chronos_inference.py",
-                        "--data_file", extracted_file,
-                        "--country_name", country_name,
-                        "--prediction_length", "54",
-                        "--plot",
-                        # "--test_split", "0.1",
-                        "--results_dir", country_results_dir
-                    ]
-                    
-                    result_no_weather = subprocess.run(cmd_without_weather, capture_output=True, text=True, cwd=".")
-                    
-                    if result_no_weather.returncode == 0:
-                        logger.info(f"✅ Inference successful for {country_name} without weather")
-                        self.stats['successful_inferences'] += 1
-                        using_weather = False
-                        self.stats['countries_without_weather'].append(country_name)
-                        self.stats['weather_usage_by_country'][country_name] = False
-                        return True
-                    else:
-                        logger.error(f"❌ Inference failed for {country_name} even without weather: {result_no_weather.stderr}")
-                        self.stats['failed_inferences'] += 1
-                        self.stats['countries_without_weather'].append(country_name)
-                        self.stats['weather_usage_by_country'][country_name] = False
-                        return False
-                else:
-                    # Weather failed and we're not allowed to skip
-                    logger.error(f"❌ Inference failed for {country_name} with weather: {result.stderr}")
-                    self.stats['failed_inferences'] += 1
-                    return False
-            
+
+            logger.info(f"Running chronos inference for {country_name}...")
+
             start_time = time.time()
             result = subprocess.run(cmd, capture_output=True, text=True, cwd=".")
             end_time = time.time()
-            
+
             processing_time = end_time - start_time
             self.stats['processing_times'].append(processing_time)
-            
+
             if result.returncode == 0:
-                logger.info(f"✅ Inference successful for {country_name}")
+                logger.info(f"Inference successful for {country_name}")
                 self.stats['successful_inferences'] += 1
-                
-                # Track weather usage
-                if using_weather:
-                    self.stats['countries_with_weather'].append(country_name)
-                else:
-                    self.stats['countries_without_weather'].append(country_name)
-                self.stats['weather_usage_by_country'][country_name] = using_weather
-                
+                self.stats['countries_without_weather'].append(country_name)
+                self.stats['weather_usage_by_country'][country_name] = False
                 return True
             else:
-                logger.error(f"❌ Inference failed for {country_name}: {result.stderr}")
+                logger.error(f"Inference failed for {country_name}: {result.stderr}")
                 self.stats['failed_inferences'] += 1
                 return False
-                
+
         except Exception as e:
-            logger.error(f"❌ Inference error for {country_name}: {e}")
+            logger.error(f"Inference error for {country_name}: {e}")
             self.stats['failed_inferences'] += 1
             return False
     

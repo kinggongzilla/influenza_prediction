@@ -17,7 +17,7 @@ def perform_two_pass_inference(
     weather_covariates: Optional[Dict[str, torch.Tensor]] = None,
     future_weather_covariates: Optional[Dict[str, torch.Tensor]] = None,
     prediction_length: int = 24,
-    use_future_weather: bool = True
+    use_future_weather: bool = False
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Perform two-pass inference with future weather covariates.

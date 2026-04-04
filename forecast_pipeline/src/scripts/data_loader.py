@@ -257,7 +257,8 @@ def load_time_series_with_weather(
     min_value=1e-6,
     max_value=None,
     clip_outliers=False,
-    normalize_weather=True
+    normalize_weather=True,
+    use_capital_coords=False,
 ):
     """
     Load time series data with weather covariates.
@@ -327,10 +328,14 @@ def load_time_series_with_weather(
             start_date=start_date,
             end_date=end_date,
             weekly_dates=weekly_dates,
-            normalize=normalize_weather
+            normalize=normalize_weather,
+            use_capital=use_capital_coords,
         )
     except Exception as e:
-        raise ValueError(f"Failed to fetch weather data: {e}")
+        print(f"⚠️  Warning: Failed to fetch weather data: {e}")
+        print("🔄 Falling back to prediction without weather covariates...")
+        # Return data without weather covariates
+        return weekly_tensor, weekly_dates, daily_values, None
 
     # Step 4: Validate alignment
     print("\n[4/5] Validating data alignment...")
@@ -444,10 +449,11 @@ def load_data_for_evaluation_with_weather(
         return data, None, dates, None, weather_covariates, None
 
 
-def plot_forecast_results(context, forecast_mean, forecast_quantiles, prediction_length, 
-                         model_quantiles, test_data=None, test_dates=None, 
-                         data_file=None, dates=None, country_name=None, 
-                         is_eval=False, model_name="Chronos-2", results_dir="results"):
+def plot_forecast_results(context, forecast_mean, forecast_quantiles, prediction_length,
+                         model_quantiles, test_data=None, test_dates=None,
+                         data_file=None, dates=None, country_name=None,
+                         is_eval=False, model_name="Chronos-2", results_dir="results",
+                         prediction_horizon=None):
     """
     Plot the context data and forecast results.
     
@@ -571,7 +577,13 @@ def plot_forecast_results(context, forecast_mean, forecast_quantiles, prediction
         except Exception as e:
             print(f"Warning: Could not set date labels: {e}")
     
-    plt.title(f'{model_name} Forecasting Results for {data_file}')
+    if is_eval and prediction_horizon is not None:
+        title = f'{model_name} — {prediction_horizon}-week-ahead rolling evaluation ({prediction_length}-week window) | {data_file}'
+    elif is_eval:
+        title = f'{model_name} — Evaluation ({prediction_length}-week window) | {data_file}'
+    else:
+        title = f'{model_name} Forecasting Results for {data_file}'
+    plt.title(title)
     plt.xlabel('Time')
     plt.ylabel('Value')
     plt.legend()

@@ -1,0 +1,32 @@
+season,rank,model,pairwise_rwis,cov50_pct,cov90_pct
+2023-24,1,Chronos-2 finetuned-nocov,0.499,36.2,92.5
+2023-24,2,CSL_PoliTo-metaFlu,0.551,75.0,88.2
+2023-24,3,Influcast-Ensemble,0.561,52.5,81.2
+2023-24,4,ISI-FluABCaster,0.592,48.8,71.2
+2023-24,5,Chronos-2 finetuned+covs,0.592,48.8,93.8
+2023-24,6,Chronos-2 zero-shot,0.603,50.0,77.5
+2023-24,7,ISI-GLEAM,0.616,18.4,36.8
+2023-24,8,Chronos-2 zero-shot+covs,0.658,50.0,73.8
+2023-24,9,FBK_HE-REST_HE,0.883,17.9,28.6
+2023-24,10,EpiQMUL-ARIMA_QMUL,0.905,10.5,30.3
+2023-24,11,Influcast-quantileBaseline,1.0,51.2,67.5
+2023-24,12,ISI-IPSICast,1.072,17.5,46.2
+2023-24,13,EpiQMUL-SEIR_QMUL,1.663,3.8,46.2
+2023-24,14,ev_and_modelers-DeepRE,1.76,6.2,28.1
+2024-25,1,Chronos-2 finetuned-nocov,0.472,47.8,88.9
+2024-25,2,Chronos-2 zero-shot+covs,0.483,52.2,91.1
+2024-25,3,Chronos-2 zero-shot,0.493,43.3,88.9
+2024-25,4,Chronos-2 finetuned+covs,0.552,48.9,85.6
+2024-25,5,ISI-FluABCaster,0.574,22.5,67.4
+2024-25,6,ISI-FluBcast,0.655,28.9,52.2
+2024-25,7,CSL_PoliTo-metaFlu,0.733,29.5,60.3
+2024-25,8,Influcast-Ensemble,0.789,26.7,51.1
+2024-25,9,FBK_HE-REST_HE,0.821,16.2,35.0
+2024-25,10,ISI-IPSICast,0.873,25.6,50.0
+2024-25,11,EpiQMUL-ARIMA_QMUL,0.878,36.7,49.4
+2024-25,12,comunipd-mobnetSI2R,0.883,20.0,43.3
+2024-25,13,Influcast-quantileBaseline,1.0,16.7,55.6
+2024-25,14,ISI-GLEAM,1.189,15.6,30.0
+2024-25,15,UNIPD_NEIDE-SEEIIRS_MCMC,1.21,7.0,24.4
+2024-25,16,ev_and_modelers-DeepRE,1.875,37.5,68.8
+2024-25,17,EpiQMUL-SEIR_QMUL,1.94,5.0,26.2

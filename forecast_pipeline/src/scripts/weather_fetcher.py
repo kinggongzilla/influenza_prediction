@@ -138,19 +138,31 @@ def load_country_bounding_boxes() -> dict:
         raise RuntimeError(f"Failed to download country bounding boxes: {e}")
 
 
-def get_country_coordinates(country_name: str) -> Tuple[float, float]:
+def get_country_coordinates(country_name: str, use_capital: bool = False) -> Tuple[float, float]:
     """
-    Convert country name to centroid coordinates using bounding boxes.
+    Convert country name to coordinates.
 
     Args:
         country_name: Country name (e.g., "Argentina", "Austria")
+        use_capital: If True, use capital city coordinates instead of bbox centroid.
 
     Returns:
-        tuple: (latitude, longitude) of country centroid
+        tuple: (latitude, longitude)
 
     Raises:
         ValueError: If country cannot be found or matched
     """
+    # Try capital city coordinates first if requested
+    if use_capital:
+        capital_path = Path("data/capital_coords.json")
+        if capital_path.exists():
+            with open(capital_path, "r") as f:
+                capitals = json.load(f)
+            if country_name in capitals:
+                lat, lon = capitals[country_name]
+                print(f"Country: {country_name} -> Capital coordinates: ({lat:.4f}, {lon:.4f})")
+                return lat, lon
+
     # Load bounding boxes
     bounding_boxes = load_country_bounding_boxes()
 
@@ -170,14 +182,14 @@ def get_country_coordinates(country_name: str) -> Tuple[float, float]:
             # Use a default fallback location (e.g., center of the world)
             print(f"⚠️  Country code '{country_code}' not found, using default coordinates")
             return 0.0, 0.0  # Default to (0,0) - will likely fail weather fetch but won't crash
-        
+
     bbox_data = bounding_boxes[country_code]
     bbox = bbox_data[1]  # [min_lon, min_lat, max_lon, max_lat]
 
     # Calculate centroid
     lat, lon = _calculate_centroid(bbox)
 
-    print(f"Country: {country_name} ({country_code}) -> Coordinates: ({lat:.4f}, {lon:.4f})")
+    print(f"Country: {country_name} ({country_code}) -> Centroid coordinates: ({lat:.4f}, {lon:.4f})")
 
     return lat, lon
 
@@ -387,7 +399,7 @@ def _calculate_centroid(bbox: list) -> Tuple[float, float]:
     return lat, lon
 
 
-@retry_with_backoff(max_retries=2, base_delay=1.0, rate_limit_calls=1.0)
+@retry_with_backoff(max_retries=5, base_delay=3.0, rate_limit_calls=0.5)
 def fetch_weather_data(
     latitude: float,
     longitude: float,
@@ -831,7 +843,8 @@ def get_weather_for_country(
     end_date: str,
     weekly_dates: list,
     normalize: bool = True,
-    cache_dir: str = "data/weather_cache"
+    cache_dir: str = "data/weather_cache",
+    use_capital: bool = False,
 ) -> Tuple[pd.DataFrame, Optional[StandardScaler]]:
     """
     Convenience function to fetch, aggregate, and normalize weather data for a country.
@@ -848,7 +861,7 @@ def get_weather_for_country(
         tuple: (weekly_weather_df, scaler or None)
     """
     # Get country coordinates
-    lat, lon = get_country_coordinates(country_name)
+    lat, lon = get_country_coordinates(country_name, use_capital=use_capital)
 
     # Fetch daily weather data
     daily_weather = fetch_weather_data(
