@@ -8,6 +8,7 @@ pairwise relative WIS (Cramer et al., 2022) as used in the paper.
 """
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -69,8 +70,9 @@ INFLUCAST_MODELS = [
 ]
 
 SEASONS = {
-    "2023-24": {"start_year": 2023, "start_week": 46, "end_year": 2024, "end_week": 13},
-    "2024-25": {"start_year": 2024, "start_week": 45, "end_year": 2025, "end_week": 16},
+    "2023-24": {"start_year": 2023, "start_week": 46, "end_year": 2024, "end_week": 13, "target": "ILI"},
+    "2024-25": {"start_year": 2024, "start_week": 45, "end_year": 2025, "end_week": 16, "target": "ILI"},
+    "2025-26": {"start_year": 2025, "start_week": 46, "end_year": 2026, "end_week": 13, "target": "ARI"},
 }
 
 
@@ -105,17 +107,14 @@ def load_ground_truth(season: str) -> dict[tuple[int, int], float]:
     for w in range(1, s["end_week"] + 5):  # +4 for forecast horizon
         all_weeks.append((s["end_year"], w))
 
+    target = s.get("target", "ILI")
     season_str = f"{s['start_year']}-{s['end_year']}"
     cache_dir = os.path.join(CACHE_DIR, "ground_truth")
     os.makedirs(cache_dir, exist_ok=True)
 
     # Try to download from Influcast repo
     for year, week in all_weeks:
-        if year == s["start_year"]:
-            gt_season = season_str
-        else:
-            gt_season = season_str
-        cache_file = os.path.join(cache_dir, f"{gt_season}_{year}_{week:02d}.csv")
+        cache_file = os.path.join(cache_dir, f"{season_str}_{year}_{week:02d}_{target}.csv")
         if os.path.exists(cache_file):
             try:
                 df = pd.read_csv(cache_file)
@@ -125,7 +124,7 @@ def load_ground_truth(season: str) -> dict[tuple[int, int], float]:
             except Exception:
                 pass
 
-        url = f"{BASE_URL}/sorveglianza/ILI/{gt_season}/italia-{year}_{week:02d}-ILI.csv"
+        url = f"{BASE_URL}/sorveglianza/{target}/{season_str}/italia-{year}_{week:02d}-{target}.csv"
         try:
             resp = urllib.request.urlopen(url, timeout=10)
             text = resp.read().decode("utf-8")
@@ -186,7 +185,7 @@ def extract_national_quantiles(df: pd.DataFrame, horizon: int) -> np.ndarray | N
         (df["orizzonte"] == horizon)
     )
     if "target" in df.columns:
-        mask = mask & (df["target"] == "ILI")
+        mask = mask & (df["target"].isin(["ILI", "ARI"]))
     sub = df[mask].copy()
     if len(sub) == 0:
         return None
@@ -225,11 +224,27 @@ def compute_wis(actual: float, quantiles: np.ndarray) -> float:
     return wis / (K + 0.5)
 
 
-def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_weeks: list[str] = None, use_weather: bool = False) -> dict[str, dict[int, np.ndarray]]:
-    """Generate Chronos-2 forecasts for all rounds. Returns {round_week: {horizon: quantiles}}."""
+def generate_chronos_forecasts(model_path: str, covariates: list[str], round_weeks: list[str] = None,
+                               truth: dict = None, season: str = "2023-24") -> dict[str, dict[int, np.ndarray]]:
+    """Generate Chronos-2 forecasts for all rounds. Returns {round_week: {horizon: quantiles}}.
+    If truth is provided, appends ground truth incidence values to extend the local data file."""
     # Load Italian ILI data
     df = pd.read_csv(DATA_FILE)
     df = df.sort_values("year_week").reset_index(drop=True)
+
+    # Extend with ground truth data for weeks not in the local file
+    if truth:
+        existing_weeks = set(df["year_week"].tolist())
+        new_rows = []
+        for (year, week), incidence in sorted(truth.items()):
+            yw = f"{year}-{week}"
+            if yw not in existing_weeks:
+                new_rows.append({"year_week": yw, "incidence": incidence})
+        if new_rows:
+            df = pd.concat([df, pd.DataFrame(new_rows)], ignore_index=True)
+            df = df.sort_values("year_week").reset_index(drop=True)
+            print(f"  Extended series with {len(new_rows)} ground truth weeks (total: {len(df)})")
+
     values = df["incidence"].values.astype(np.float64)
     weeks = df["year_week"].tolist()
     # Convert weeks to (year, week) for lookup
@@ -243,7 +258,7 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
 
     # Load weather covariates if requested
     weather_weekly = None
-    if use_weather:
+    if "weather" in covariates:
         try:
             from weather_fetcher import get_country_coordinates, aggregate_weather_to_weekly, normalize_weather_features
             import re as _re
@@ -280,6 +295,24 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
         except Exception as e:
             print(f"  Warning: weather loading failed: {e}")
 
+    # Build data_type indicator for each week (0=ILI, 1=ARI)
+    data_type_arr = None
+    if "data_type" in covariates:
+        s = SEASONS[season]
+        # ARI seasons: all weeks from season start onward are ARI (data_type=1)
+        # Everything before is ILI (data_type=0)
+        data_type_arr = np.zeros(len(weeks), dtype=np.float32)
+        if s["target"] == "ARI":
+            # Mark weeks from season start as ARI
+            ari_start = f"{s['start_year']}-{s['start_week']}"
+            for i, w in enumerate(weeks):
+                if w >= ari_start:
+                    data_type_arr[i] = 1.0
+            n_ari = int(data_type_arr.sum())
+            print(f"  Data type indicator: {len(weeks) - n_ari} ILI + {n_ari} ARI weeks")
+        else:
+            print(f"  Data type indicator: all ILI (season target is ILI)")
+
     if round_weeks is None:
         round_weeks = ROUND_WEEKS
     results = {}
@@ -291,12 +324,13 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
 
         context = data_tensor[:cutoff_idx]
 
-        has_covs = use_covariates or (use_weather and weather_weekly)
+        has_covs = bool(covariates) and (weather_weekly is not None or data_type_arr is not None or
+                                          {"hemisphere", "week_of_year"} & set(covariates))
         if has_covs:
             past_covs = {}
             future_covs = {}
 
-            if use_covariates:
+            if "week_of_year" in covariates:
                 week_nums = []
                 for w in weeks[:cutoff_idx]:
                     wn = int(w.split("-")[1])
@@ -304,8 +338,6 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
                 week_nums_arr = np.array(week_nums, dtype=np.float64)
                 past_covs["week_sin"] = np.sin(2 * np.pi * week_nums_arr / 52.0).astype(np.float32)
                 past_covs["week_cos"] = np.cos(2 * np.pi * week_nums_arr / 52.0).astype(np.float32)
-                past_covs["hemisphere"] = np.full(cutoff_idx, 1.0, dtype=np.float32)
-                # Future covariates
                 future_week_nums = []
                 for fh in range(1, 5):
                     fidx = cutoff_idx + fh
@@ -316,11 +348,18 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
                 future_week_nums = np.array(future_week_nums, dtype=np.float64)
                 future_covs["week_sin"] = np.sin(2 * np.pi * future_week_nums / 52.0).astype(np.float32)
                 future_covs["week_cos"] = np.cos(2 * np.pi * future_week_nums / 52.0).astype(np.float32)
+
+            if "hemisphere" in covariates:
+                past_covs["hemisphere"] = np.full(cutoff_idx, 1.0, dtype=np.float32)
                 future_covs["hemisphere"] = np.full(4, 1.0, dtype=np.float32)
 
-            if use_weather and weather_weekly:
+            if "weather" in covariates and weather_weekly:
                 for col, vals in weather_weekly.items():
                     past_covs[col] = vals[:cutoff_idx]
+
+            if "data_type" in covariates and data_type_arr is not None:
+                past_covs["data_type_indicator"] = data_type_arr[:cutoff_idx]
+                future_covs["data_type_indicator"] = np.full(4, data_type_arr[cutoff_idx - 1], dtype=np.float32)
 
             input_dict = {"target": context.numpy(), "past_covariates": past_covs}
             if future_covs:
@@ -343,23 +382,16 @@ def generate_chronos_forecasts(model_path: str, use_covariates: bool, round_week
     return results
 
 
-def parse_model_specs(specs: list[str]) -> list[dict]:
-    """Parse model specs like 'path' or 'path:covs' or 'path:weather' into dicts."""
+def parse_model_specs(specs: list[str], covariates: list[str], season: str) -> list[dict]:
+    """Parse model specs like 'path' into dicts. Covariates come from --covariates flag."""
     results = []
     for spec in specs:
-        parts = spec.split(":")
-        path = parts[0]
-        flags = parts[1] if len(parts) > 1 else ""
-        use_covariates = "covs" in flags
-        use_weather = "weather" in flags
+        path = spec.split(":")[0]
         tag = os.path.basename(path)
         name = f"Chronos-2-{tag}"
-        if use_covariates:
-            name += "+covs"
-        if use_weather:
-            name += "+weather"
-        results.append({"path": path, "use_covariates": use_covariates,
-                        "use_weather": use_weather, "name": name})
+        if covariates:
+            name += "+" + "+".join(covariates)
+        results.append({"path": path, "covariates": covariates, "name": name})
     return results
 
 
@@ -369,24 +401,30 @@ def main():
                         help="Single model path (legacy). Use --models for multiple.")
     parser.add_argument("--models", type=str, nargs="+", default=None,
                         help="Multiple model specs: 'path' or 'path:covs' or 'path:weather'")
-    parser.add_argument("--use_covariates", action="store_true")
-    parser.add_argument("--use_weather", action="store_true", help="Add cached weather as past covariates")
+    parser.add_argument("--covariates", nargs="*", default=None, metavar="COV",
+                        help="Covariates to include. Available: data_type, hemisphere, week_of_year, weather. "
+                             "Omit flag for none, pass specific names to select.")
     parser.add_argument("--season", type=str, default="2023-24", choices=list(SEASONS.keys()))
+    parser.add_argument("--output_json", type=str, default=None,
+                        help="Write structured results (simple + pairwise rWIS, coverage) to JSON file")
     args = parser.parse_args()
+
+    AVAILABLE_COVARIATES = ["data_type", "hemisphere", "week_of_year", "weather"]
+    covariates = args.covariates or []
+    for c in covariates:
+        if c not in AVAILABLE_COVARIATES:
+            parser.error(f"Unknown covariate '{c}'. Available: {AVAILABLE_COVARIATES}")
 
     # Build list of Chronos model specs
     if args.models:
-        model_specs = parse_model_specs(args.models)
+        model_specs = parse_model_specs(args.models, covariates, args.season)
     else:
         path = args.model_path or "amazon/chronos-2"
         tag = os.path.basename(path)
         name = f"Chronos-2-{tag}"
-        if args.use_covariates:
-            name += "+covs"
-        if args.use_weather:
-            name += "+weather"
-        model_specs = [{"path": path, "use_covariates": args.use_covariates,
-                        "use_weather": args.use_weather, "name": name}]
+        if covariates:
+            name += "+" + "+".join(covariates)
+        model_specs = [{"path": path, "covariates": covariates, "name": name}]
 
     round_weeks = build_round_weeks(args.season)
 
@@ -410,7 +448,8 @@ def main():
     chronos_names = []
     for spec in model_specs:
         print(f"\nGenerating {spec['name']} forecasts...")
-        forecasts = generate_chronos_forecasts(spec["path"], spec["use_covariates"], round_weeks, spec["use_weather"])
+        forecasts = generate_chronos_forecasts(spec["path"], spec["covariates"], round_weeks,
+                                               truth=truth, season=args.season)
         print(f"  → {len(forecasts)} rounds")
         all_models[spec["name"]] = forecasts
         chronos_names.append(spec["name"])
@@ -552,6 +591,43 @@ def main():
             ratio = m_mean / b_mean if b_mean > 0 else float("nan")
             marker = " ← US" if "Chronos" in model_name else ""
             print(f"    {ratio:.3f}  {model_name}{marker}")
+
+    # 8. Write JSON output if requested
+    if args.output_json:
+        os.makedirs(os.path.dirname(os.path.abspath(args.output_json)), exist_ok=True)
+        # Per-horizon simple rWIS for Chronos models
+        per_horizon = {}
+        for cn in chronos_names:
+            if cn not in all_wis:
+                continue
+            horizon_rwis = {}
+            for h in range(1, 5):
+                model_scores = {k: v for k, v in all_wis[cn].items() if k[1] == h}
+                bl_scores = {k: v for k, v in baseline_wis.items() if k[1] == h}
+                common = set(model_scores.keys()) & set(bl_scores.keys())
+                if common:
+                    m_mean = float(np.mean([model_scores[k] for k in common]))
+                    b_mean = float(np.mean([bl_scores[k] for k in common]))
+                    horizon_rwis[str(h)] = m_mean / b_mean if b_mean > 0 else None
+            per_horizon[cn] = horizon_rwis
+
+        output = {
+            "season": args.season,
+            "chronos_models": {},
+            "all_simple_rwis": {k: float(v) for k, v in simple_ratios.items()},
+            "all_pairwise_rwis": {k: float(v) for k, v in pairwise_rwis.items()},
+        }
+        for cn in chronos_names:
+            output["chronos_models"][cn] = {
+                "simple_rwis": float(simple_ratios[cn]) if cn in simple_ratios else None,
+                "pairwise_rwis": float(pairwise_rwis[cn]) if cn in pairwise_rwis else None,
+                "cov50": float(np.mean(all_cov50[cn])) * 100 if all_cov50.get(cn) else None,
+                "cov90": float(np.mean(all_cov90[cn])) * 100 if all_cov90.get(cn) else None,
+                "per_horizon_rwis": per_horizon.get(cn, {}),
+            }
+        with open(args.output_json, "w") as f:
+            json.dump(output, f, indent=2)
+        print(f"\nJSON results → {args.output_json}")
 
 
 if __name__ == "__main__":

@@ -29,6 +29,7 @@ interface DataPoint {
 interface CountryDetails {
   country: string;
   id: string;
+  data_type?: "ILI" | "ARI";
   points: DataPoint[];
 }
 
@@ -132,7 +133,7 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
                     {data.country} <span className="text-slate-600 text-2xl font-normal">({id})</span>
                 </h1>
                 <p className="text-slate-400 mt-2">
-                    Historical influenza cases and 12-month forecast
+                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases and 12-month forecast
                 </p>
             </div>
             <div className="flex items-center gap-2">
@@ -176,7 +177,7 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
               <Tooltip 
                 contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", color: "#f8fafc" }}
                 labelFormatter={(label) => format(new Date(label), "MMM d, yyyy")}
-                formatter={(value: number | undefined) => [value ? value.toFixed(0) : "0", "Cases"]}
+                formatter={(value: number | undefined) => [value ? value.toFixed(0) : "0", data.data_type === "ARI" ? "ARI Cases" : "ILI Cases"]}
               />
               <Legend />
               
@@ -204,7 +205,7 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
                 stroke="#94a3b8" 
                 strokeWidth={2} 
                 dot={false} 
-                name="Historical Cases" 
+                name={data.data_type === "ARI" ? "Historical ARI Cases" : "Historical ILI Cases"} 
               />
 
               {/* Forecast Data */}

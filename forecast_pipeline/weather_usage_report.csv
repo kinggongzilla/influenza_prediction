@@ -1,5 +1,14 @@
 country,used_weather,weather_status
-Afghanistan,YES,Enabled
-Albania,YES,Enabled
-Algeria,YES,Enabled
-TOTAL,3/3,100.0% with weather
+Afghanistan,NO,Disabled
+American Samoa,NO,Disabled
+Argentina,NO,Disabled
+Australia,NO,Disabled
+Austria,NO,Disabled
+Azerbaijan,NO,Disabled
+Bangladesh,NO,Disabled
+Belarus,NO,Disabled
+Belgium,NO,Disabled
+Bhutan,NO,Disabled
+Brazil,NO,Disabled
+Cambodia,NO,Disabled
+TOTAL,0/12,0.0% with weather

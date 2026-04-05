@@ -144,7 +144,84 @@ def extract_ari_data(country_code: str, country_name: str, df: pd.DataFrame) -> 
     return country_simple
 
 
-def extract_country_data_adaptive(country_name: str, input_file: str = "data/who_flu_data.csv", 
+def extract_combined_data(country_code: str, country_name: str, df: pd.DataFrame) -> Optional[pd.DataFrame]:
+    """
+    Extract combined ILI+ARI data for a country, preferring ILI where available.
+
+    Returns DataFrame with Time, Cases, DataType columns.
+    DataType: 0 = ILI, 1 = ARI.
+    """
+    ili_data = extract_ili_data(country_code, country_name, df)
+    ari_data = extract_ari_data(country_code, country_name, df)
+
+    if ili_data is None and ari_data is None:
+        return None
+
+    if ili_data is not None and ari_data is None:
+        result = ili_data.rename(columns={'ILI_Cases': 'Cases'})
+        result['DataType'] = 0
+        return result
+
+    if ili_data is None and ari_data is not None:
+        result = ari_data.rename(columns={'ARI_Cases': 'Cases'})
+        result['DataType'] = 1
+        return result
+
+    # Both available — merge and prefer ILI
+    merged = ili_data.merge(ari_data, on='Time', how='outer').sort_values('Time').reset_index(drop=True)
+
+    merged['Cases'] = merged['ILI_Cases']
+    merged['DataType'] = 0
+
+    # Use ARI where ILI is missing or zero
+    ari_mask = merged['ILI_Cases'].isna() | (merged['ILI_Cases'] == 0)
+    ari_has_data = merged['ARI_Cases'].notna() & (merged['ARI_Cases'] > 0)
+    use_ari = ari_mask & ari_has_data
+    merged.loc[use_ari, 'Cases'] = merged.loc[use_ari, 'ARI_Cases']
+    merged.loc[use_ari, 'DataType'] = 1
+
+    # Drop rows where neither has data
+    merged = merged[merged['Cases'].notna() & (merged['Cases'] > 0)]
+
+    return merged[['Time', 'Cases', 'DataType']].reset_index(drop=True)
+
+
+def extract_country_data_combined(country_name: str, input_file: str = "data/who_flu_data.csv",
+                                  output_dir: str = "data/extracted_data") -> Optional[str]:
+    """Extract combined ILI+ARI data for a country. Returns path to CSV or None."""
+    print(f"Processing {country_name} (combined mode)...")
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    try:
+        df = pd.read_csv(input_file, low_memory=False)
+    except Exception as e:
+        print(f"  Error reading input file: {e}")
+        return None
+
+    country_code, full_country_name = find_country_code_and_name(country_name, df)
+    if country_code is None:
+        print(f"  Could not find country: {country_name}")
+        return None
+
+    print(f"  Found: {full_country_name} ({country_code})")
+
+    combined = extract_combined_data(country_code, full_country_name, df)
+    if combined is None:
+        print(f"  No usable data found for {full_country_name}")
+        return None
+
+    output_file = os.path.join(output_dir, f"{full_country_name.replace(' ', '_')}_combined.csv")
+    combined.to_csv(output_file, index=False)
+
+    n_ili = int((combined['DataType'] == 0).sum())
+    n_ari = int((combined['DataType'] == 1).sum())
+    print(f"  Extracted combined data: {len(combined)} records ({n_ili} ILI, {n_ari} ARI)")
+    print(f"     Date range: {combined['Time'].min()} to {combined['Time'].max()}")
+    return output_file
+
+
+def extract_country_data_adaptive(country_name: str, input_file: str = "data/who_flu_data.csv",
                                  output_dir: str = "data/extracted_data") -> Optional[str]:
     """
     Extract data for a country, using ILI if available, otherwise ARI.
@@ -214,8 +291,18 @@ def main():
     )
     parser.add_argument(
         "--country",
-        required=True,
+        default=None,
         help="Country name to extract data for"
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Extract all countries from training_countries.json"
+    )
+    parser.add_argument(
+        "--countries_file",
+        default="data/training_countries.json",
+        help="JSON file with training_countries list (used with --all)"
     )
     parser.add_argument(
         "--input",
@@ -227,17 +314,69 @@ def main():
         default="data/extracted_data",
         help="Directory to save extracted files (default: data/extracted_data)"
     )
-    
+    parser.add_argument(
+        "--mode",
+        choices=["combined", "adaptive"],
+        default="combined",
+        help="Extraction mode: 'combined' merges ILI+ARI with DataType indicator (default), "
+             "'adaptive' picks ILI or ARI only"
+    )
+
     args = parser.parse_args()
-    
-    # Extract data for the specified country
-    result = extract_country_data_adaptive(args.country, args.input, args.output_dir)
-    
-    if result:
-        print(f"\n🎉 Success! Data saved to: {result}")
+
+    if not args.country and not args.all:
+        parser.error("Either --country or --all is required")
+
+    if args.all:
+        import json
+        with open(args.countries_file, 'r') as f:
+            countries = json.load(f)['training_countries']
+
+        # Load WHO data once
+        print(f"Loading WHO data from {args.input}...")
+        df = pd.read_csv(args.input, low_memory=False)
+        os.makedirs(args.output_dir, exist_ok=True)
+
+        total = len(countries)
+        ok, fail = 0, 0
+        for i, country_name in enumerate(countries, 1):
+            country_code, full_name = find_country_code_and_name(country_name, df)
+            if country_code is None:
+                print(f"  [{i}/{total}] SKIP {country_name} (not found)")
+                fail += 1
+                continue
+
+            if args.mode == "combined":
+                combined = extract_combined_data(country_code, full_name, df)
+                if combined is not None:
+                    output_file = os.path.join(args.output_dir, f"{full_name.replace(' ', '_')}_combined.csv")
+                    combined.to_csv(output_file, index=False)
+                    n_ili = int((combined['DataType'] == 0).sum())
+                    n_ari = int((combined['DataType'] == 1).sum())
+                    print(f"  [{i}/{total}] {full_name}: {len(combined)} records ({n_ili} ILI, {n_ari} ARI)")
+                    ok += 1
+                else:
+                    print(f"  [{i}/{total}] FAIL {full_name} (no data)")
+                    fail += 1
+            else:
+                result = extract_country_data_adaptive(country_name, args.input, args.output_dir)
+                if result:
+                    ok += 1
+                else:
+                    fail += 1
+
+        print(f"\nDone: {ok}/{total} extracted, {fail} failed")
     else:
-        print(f"\n💥 Failed to extract data for {args.country}")
-        exit(1)
+        if args.mode == "combined":
+            result = extract_country_data_combined(args.country, args.input, args.output_dir)
+        else:
+            result = extract_country_data_adaptive(args.country, args.input, args.output_dir)
+
+        if result:
+            print(f"\nSuccess! Data saved to: {result}")
+        else:
+            print(f"\nFailed to extract data for {args.country}")
+            exit(1)
 
 
 if __name__ == "__main__":

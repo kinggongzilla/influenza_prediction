@@ -102,10 +102,28 @@ def process_countries():
             # Remove leading zeros if any, as some topojsons behave differently
             # Usually topojson uses string "840" or "004".
             
+            # Detect data type from extracted data file
+            data_type = "ILI"
+            extracted_dir = os.path.join(BASE_DIR, 'data', 'extracted_data')
+            for ext_suffix in ['_combined.csv', '_ari.csv']:
+                ext_path = os.path.join(extracted_dir, f"{country_folder_name}{ext_suffix}")
+                if os.path.exists(ext_path):
+                    if ext_suffix == '_combined.csv':
+                        try:
+                            ext_df = pd.read_csv(ext_path)
+                            if 'DataType' in ext_df.columns and int(ext_df['DataType'].iloc[-1]) == 1:
+                                data_type = "ARI"
+                        except Exception:
+                            pass
+                    elif ext_suffix == '_ari.csv':
+                        data_type = "ARI"
+                    break
+
             map_data.append({
                 "id": code,
                 "numeric": numeric_code,
                 "name": country_folder_name.replace('_', ' '),
+                "data_type": data_type,
                 "value": float(current_pred),
                 "threshold": float(threshold),
                 "score": float(score),

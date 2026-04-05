@@ -39,6 +39,12 @@ def main():
         description="Chronos-2 Time Series Forecasting"
     )
     parser.add_argument(
+        "--model_path",
+        type=str,
+        default="amazon/chronos-2",
+        help="Path to model checkpoint or HuggingFace model ID (default: amazon/chronos-2)"
+    )
+    parser.add_argument(
         "--data_file",
         required=True,
         help="Path to CSV file containing time series data (relative to data/ directory, second column will be used)"
@@ -186,8 +192,9 @@ def main():
     data = data.unsqueeze(0)  # Shape: [1, context_length]
     
     # Load model
-    print("\nLoading Chronos-2 model...")
-    model = Chronos2Pipeline.from_pretrained("amazon/chronos-2")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"\nLoading Chronos-2 model on {device}...")
+    model = Chronos2Pipeline.from_pretrained(args.model_path, device_map=device)
     
     print(f"Model loaded successfully")
     print(f"Device: {model.model.device}")

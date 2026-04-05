@@ -31,14 +31,20 @@ import pandas as pd
 import torch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src", "scripts"))
-from data_loader import load_time_series_data
+from data_loader import load_time_series_data, load_data_type_indicator, clean_zeros_to_nan, trim_leading_artifact
 from weather_fetcher import get_weather_for_country, get_country_coordinates
 
 EXTRACTED_DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "extracted_data")
-QUALITY_REPORT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "quality_report.csv")
+TRAINING_COUNTRIES_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "training_countries.json")
 WEATHER_CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "weather_cache")
 OUTPUT_TRAIN = os.path.join(os.path.dirname(__file__), "..", "data", "finetune_train.pkl")
 OUTPUT_VAL = os.path.join(os.path.dirname(__file__), "..", "data", "finetune_val.pkl")
+
+# Quality filter thresholds
+MIN_WEEKS_NONNAN = 156       # 3 years of real data
+MIN_YEARS_COVERAGE = 4
+MAX_NAN_PCT_SPORADIC = 50.0  # for sporadic-NaN countries
+MIN_MEDIAN_NONZERO = 20.0    # exclude tiny-count series (Bermuda-type)
 
 CONTEXT_LENGTH = 260      # 5 years of weekly context per sample
 PREDICTION_LENGTH = 4     # 4-week forecast horizon
@@ -68,33 +74,6 @@ COUNTRY_NAME_MAP = {
     "Bolivia (Plurinational State of)": "Bolivia",
     "Iran (Islamic Republic of)": "Iran",
 }
-
-
-# ---------------------------------------------------------------------------
-# Data cleaning helpers (matches assess_data_quality.py)
-# ---------------------------------------------------------------------------
-
-def clean_zeros_to_nan(values: np.ndarray, max_consecutive_zeros: int = 3) -> np.ndarray:
-    series = pd.Series(values.copy(), dtype=float)
-    is_zero = series == 0
-    run_id = (is_zero != is_zero.shift()).cumsum()
-    run_lengths = is_zero.groupby(run_id).transform("sum")
-    series[is_zero & (run_lengths > max_consecutive_zeros)] = np.nan
-    return series.values
-
-
-def trim_leading_artifact(values: np.ndarray, dates, threshold_pct: float = 0.10):
-    nonzero = values[(values > 0) & ~np.isnan(values)]
-    if len(nonzero) == 0:
-        return values, dates
-    overall_median = float(np.median(nonzero))
-    threshold = overall_median * threshold_pct
-    for i in range(len(values) - 8):
-        window = values[i:i + 8]
-        valid = window[~np.isnan(window)]
-        if len(valid) > 0 and float(np.mean(valid)) > threshold:
-            return values[i:], dates[i:]
-    return values, dates
 
 
 # ---------------------------------------------------------------------------
@@ -194,19 +173,25 @@ def build_weather_covariates(country_name: str, dates, lat: float, lon: float, n
         return {}
 
 
-def find_extracted_file(country_name: str) -> str | None:
+def find_extracted_file(country_name: str, data_type: str = None) -> str | None:
+    """Find extracted data file. Prefers combined, then ILI/ARI based on data_type."""
     safe = country_name.replace(" ", "_").replace(",", "").replace("'", "").replace("(", "").replace(")", "")
-    candidates = [
-        os.path.join(EXTRACTED_DATA_DIR, f"extracted_{safe}_ili.csv"),
-        os.path.join(EXTRACTED_DATA_DIR, f"{safe}_ili.csv"),
-    ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    # Search by partial name
-    for fname in os.listdir(EXTRACTED_DATA_DIR):
-        if fname.endswith("_ili.csv") and safe.lower() in fname.lower():
-            return os.path.join(EXTRACTED_DATA_DIR, fname)
+    suffixes = ["_combined.csv", "_ili.csv", "_ari.csv"]
+    if data_type == "ari":
+        suffixes = ["_combined.csv", "_ari.csv", "_ili.csv"]
+
+    for suffix in suffixes:
+        candidates = [
+            os.path.join(EXTRACTED_DATA_DIR, f"extracted_{safe}{suffix}"),
+            os.path.join(EXTRACTED_DATA_DIR, f"{safe}{suffix}"),
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                return c
+        # Search by partial name
+        for fname in os.listdir(EXTRACTED_DATA_DIR):
+            if fname.endswith(suffix) and safe.lower() in fname.lower():
+                return os.path.join(EXTRACTED_DATA_DIR, fname)
     return None
 
 
@@ -355,7 +340,10 @@ def build_windows(
 # Per-country processing
 # ---------------------------------------------------------------------------
 
-def process_country(country_name: str, filepath: str, no_covariates: bool = False, held_out_weeks: int = HELD_OUT_WEEKS) -> tuple[list, list]:
+AVAILABLE_COVARIATES = ["data_type", "hemisphere", "week_of_year", "weather", "neighbors"]
+
+
+def process_country(country_name: str, filepath: str, covariates: list[str] | None = None, held_out_weeks: int = HELD_OUT_WEEKS) -> tuple[list, list]:
     print(f"\n  [{country_name}]")
 
     # Load full series
@@ -393,23 +381,32 @@ def process_country(country_name: str, filepath: str, no_covariates: bool = Fals
 
     # ---- Covariates ----
     all_covariates = {}
+    covs = covariates or []
 
-    if not no_covariates:
+    if covs:
+        print(f"    covariates: {covs}")
+    else:
+        print(f"    covariates: none (target only)")
+
+    # Coordinates needed for hemisphere and weather
+    need_coords = bool({"hemisphere", "weather"} & set(covs))
+    lat, lon = 0.0, 0.0
+    if need_coords:
         mapped_name = COUNTRY_NAME_MAP.get(country_name, country_name)
         try:
             lat, lon = get_country_coordinates(mapped_name)
         except Exception:
-            lat, lon = 0.0, 0.0
+            pass
 
-        # Hemisphere (constant)
+    if "hemisphere" in covs:
         all_covariates["hemisphere"] = build_hemisphere_covariate(lat, n)
 
-        # Week of year (sin/cos)
+    if "week_of_year" in covs:
         sin_woy, cos_woy = build_week_covariates(dates)
         all_covariates["week_sin"] = sin_woy
         all_covariates["week_cos"] = cos_woy
 
-        # Weather
+    if "weather" in covs:
         weather_covs = build_weather_covariates(country_name, dates, lat=lat, lon=lon, normalize=True)
         all_covariates.update(weather_covs)
         if weather_covs:
@@ -417,13 +414,27 @@ def process_country(country_name: str, filepath: str, no_covariates: bool = Fals
         else:
             print(f"    weather: none (will train without)")
 
-        # Neighbor ILI
+    if "neighbors" in covs:
         neighbor_covs = build_neighbor_covariates(country_name, dates)
         all_covariates.update(neighbor_covs)
         if neighbor_covs:
             print(f"    neighbors: {list(neighbor_covs.keys())}")
-    else:
-        print(f"    covariates: none (target only)")
+
+    if "data_type" in covs:
+        dt_indicator = load_data_type_indicator(filepath, dates)
+        if dt_indicator is not None:
+            all_covariates["data_type_indicator"] = dt_indicator
+            n_ari = int((dt_indicator > 0.5).sum())
+            if n_ari > 0:
+                print(f"    data_type: {n - n_ari} ILI + {n_ari} ARI weeks")
+        else:
+            # Legacy file — infer from filename
+            if "_ari" in filepath.lower():
+                all_covariates["data_type_indicator"] = np.ones(n, dtype=np.float32)
+                print(f"    data_type: all ARI (legacy file)")
+            else:
+                all_covariates["data_type_indicator"] = np.zeros(n, dtype=np.float32)
+                print(f"    data_type: all ILI (legacy file)")
 
     # Build windows
     train_samples, val_samples = build_windows(
@@ -443,65 +454,209 @@ def process_country(country_name: str, filepath: str, no_covariates: bool = Fals
 
 
 # ---------------------------------------------------------------------------
+# Quality assessment
+# ---------------------------------------------------------------------------
+
+def classify_nan_pattern(values: np.ndarray, dates) -> str:
+    """Returns 'seasonal' if NaN weeks cluster in the same months every year, else 'sporadic'."""
+    df = pd.DataFrame({"v": values, "date": pd.to_datetime([str(d) for d in dates])})
+    df["month"] = df["date"].dt.month
+    monthly_nan = df.groupby("month")["v"].apply(lambda x: x.isna().mean())
+    low_nan_months = int((monthly_nan < 0.2).sum())
+    high_nan_months = int((monthly_nan > 0.8).sum())
+    if low_nan_months >= 8 and high_nan_months >= 2:
+        return "seasonal"
+    return "sporadic"
+
+
+def assess_country(filepath: str, country_name: str, data_type: str = "combined") -> dict:
+    """Assess data quality for a single country. Returns dict with stats and include decision."""
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            data, dates, _ = load_time_series_data(filepath, context_length=None, min_value=None)
+    except Exception as e:
+        return {"country": country_name, "data_type": data_type, "include": False,
+                "exclude_reason": str(e)}
+
+    values = data.numpy().copy()
+    values = clean_zeros_to_nan(values)
+    values, dates = trim_leading_artifact(values, dates)
+
+    n_total = len(values)
+    n_nonnan = int(np.sum(~np.isnan(values)))
+    nan_pct = round(100.0 * (1 - n_nonnan / n_total), 1) if n_total > 0 else 100.0
+
+    if dates is not None and len(dates) > 0:
+        dates_pd = pd.to_datetime([str(d) for d in dates])
+        years_coverage = round((dates_pd[-1] - dates_pd[0]).days / 365.25, 1)
+    else:
+        years_coverage = 0.0
+
+    nonzero_vals = values[(values > 0) & ~np.isnan(values)]
+    scale = round(float(np.median(nonzero_vals)), 2) if len(nonzero_vals) > 0 else 0.0
+    nan_pattern = classify_nan_pattern(values, dates) if dates is not None else "sporadic"
+
+    reasons = []
+    if n_nonnan < MIN_WEEKS_NONNAN:
+        reasons.append(f"too_few_nonnan({n_nonnan}<{MIN_WEEKS_NONNAN})")
+    if years_coverage < MIN_YEARS_COVERAGE:
+        reasons.append(f"too_short({years_coverage:.1f}yr<{MIN_YEARS_COVERAGE})")
+    if nan_pattern == "sporadic" and nan_pct > MAX_NAN_PCT_SPORADIC:
+        reasons.append(f"high_nan_sporadic({nan_pct}%>50%)")
+    if scale < MIN_MEDIAN_NONZERO:
+        reasons.append(f"too_small_scale({scale}<{MIN_MEDIAN_NONZERO})")
+
+    return {
+        "country": country_name,
+        "data_type": data_type,
+        "include": len(reasons) == 0,
+        "exclude_reason": "; ".join(reasons) if reasons else "",
+        "n_weeks_nonnan": n_nonnan,
+        "nan_pct": nan_pct,
+        "years_coverage": years_coverage,
+        "nan_pattern": nan_pattern,
+        "scale": scale,
+    }
+
+
+def scan_extracted_data() -> list[dict]:
+    """Scan all extracted CSVs, assess quality, return list of per-country dicts."""
+    combined_files = {f.replace("_combined.csv", ""): (f, "combined")
+                      for f in os.listdir(EXTRACTED_DATA_DIR) if f.endswith("_combined.csv")}
+    ili_files = {f.replace("_ili.csv", ""): (f, "ili")
+                 for f in os.listdir(EXTRACTED_DATA_DIR) if f.endswith("_ili.csv")}
+    ari_files = {f.replace("_ari.csv", ""): (f, "ari")
+                 for f in os.listdir(EXTRACTED_DATA_DIR) if f.endswith("_ari.csv")}
+
+    # Priority: combined > ILI > ARI
+    country_files = {}
+    for files in [ari_files, ili_files, combined_files]:  # later entries overwrite
+        country_files.update(files)
+
+    results = []
+    for key in sorted(country_files):
+        fname, data_type = country_files[key]
+        country = key.replace("_", " ")
+        filepath = os.path.join(EXTRACTED_DATA_DIR, fname)
+        result = assess_country(filepath, country, data_type=data_type)
+        results.append(result)
+
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser()
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Assess data quality, update training_countries.json, and build fine-tuning samples"
+    )
     parser.add_argument("--dry_run", action="store_true",
                         help="Print stats without saving output files")
-    parser.add_argument("--no_covariates", action="store_true",
-                        help="Build samples without any covariates (target only)")
+    parser.add_argument("--covariates", nargs="*", default=None,
+                        metavar="COV",
+                        help=f"Covariates to include. Available: {AVAILABLE_COVARIATES}. "
+                             "Omit flag for all, pass with no args for none (target only).")
     parser.add_argument("--output_suffix", type=str, default="",
                         help="Suffix for output filenames (e.g. '_nocov')")
     parser.add_argument("--exclude_countries", type=str, default="",
-                        help="Comma-separated list of countries to exclude (e.g. 'Italy,Germany')")
+                        help="Comma-separated list of countries to exclude (e.g. 'Thailand')")
     parser.add_argument("--held_out_weeks", type=int, default=HELD_OUT_WEEKS,
                         help=f"Weeks to hold out for validation (default: {HELD_OUT_WEEKS})")
+    parser.add_argument("--assess_only", action="store_true",
+                        help="Only run quality assessment and update training_countries.json (skip training data)")
     args = parser.parse_args()
 
-    if args.no_covariates and not args.output_suffix:
+    # Resolve covariates: None (flag omitted) → all, [] (flag with no args) → none
+    if args.covariates is None:
+        covariates = list(AVAILABLE_COVARIATES)
+    else:
+        covariates = args.covariates
+        for c in covariates:
+            if c not in AVAILABLE_COVARIATES:
+                parser.error(f"Unknown covariate '{c}'. Available: {AVAILABLE_COVARIATES}")
+
+    if not covariates and not args.output_suffix:
         args.output_suffix = "_nocov"
 
     output_train = OUTPUT_TRAIN.replace(".pkl", f"{args.output_suffix}.pkl") if args.output_suffix else OUTPUT_TRAIN
     output_val = OUTPUT_VAL.replace(".pkl", f"{args.output_suffix}.pkl") if args.output_suffix else OUTPUT_VAL
 
-    df = pd.read_csv(QUALITY_REPORT_PATH)
-    included = df[df["include"]].reset_index(drop=True)
+    # --- Step 1: Scan and assess all extracted data ---
+    print("Scanning extracted data for quality assessment...")
+    assessments = scan_extracted_data()
 
+    exclude_set = set()
     if args.exclude_countries:
         exclude_set = {c.strip() for c in args.exclude_countries.split(",")}
-        before = len(included)
-        included = included[~included["country"].isin(exclude_set)].reset_index(drop=True)
-        print(f"Excluded {before - len(included)} countries: {exclude_set}")
 
-    print(f"Processing {len(included)} qualifying countries")
+    passed = []
+    failed = []
+    for a in assessments:
+        if a["country"] in exclude_set:
+            a["include"] = False
+            a["exclude_reason"] = "manually excluded"
+        if a["include"]:
+            passed.append(a)
+            print(f"  PASS {a['country']} ({a['data_type']}, {a['nan_pattern']}, "
+                  f"{a['n_weeks_nonnan']}wk, scale={a['scale']:.0f})")
+        else:
+            failed.append(a)
+
+    print(f"\n{'='*60}")
+    print(f"  PASS: {len(passed)} countries  |  FAIL: {len(failed)} countries")
+    print(f"{'='*60}")
+
+    if failed:
+        print(f"\nExcluded ({len(failed)}):")
+        for a in failed:
+            print(f"  {a['country']}: {a['exclude_reason']}")
+
+    # --- Step 2: Save training_countries.json ---
+    training_countries = sorted([a["country"] for a in passed])
+    country_data_types = {a["country"]: a["data_type"] for a in passed}
+
+    training_data = {
+        "excluded_from_training": sorted(list(exclude_set)),
+        "training_countries": training_countries,
+        "country_data_types": {c: country_data_types[c] for c in training_countries},
+    }
+
+    if not args.dry_run:
+        with open(TRAINING_COUNTRIES_PATH, "w") as f:
+            json.dump(training_data, f, indent=2, ensure_ascii=False)
+        print(f"\nSaved: {TRAINING_COUNTRIES_PATH} ({len(training_countries)} countries)")
+    else:
+        print(f"\nDry run — would save {len(training_countries)} countries to {TRAINING_COUNTRIES_PATH}")
+
+    if args.assess_only:
+        return
+
+    # --- Step 3: Build training samples ---
+    print(f"\nBuilding training data for {len(passed)} countries")
     print(f"Context={CONTEXT_LENGTH}wk | Prediction={PREDICTION_LENGTH}wk | Stride={STRIDE}wk | Held-out={args.held_out_weeks}wk")
+    print(f"Covariates: {covariates if covariates else 'none (target only)'}")
     print(f"Peak oversampling {PEAK_REPEAT}× above {PEAK_QUANTILE:.0%} quantile | Recency λ={RECENCY_LAMBDA}")
 
     all_train = []
     all_val = []
 
-    for i, row in included.iterrows():
-        country = row["country"]
-        # Find the ILI file
-        safe = country.replace(" ", "_").replace(",", "").replace("'", "").replace("(", "").replace(")", "")
-        # Try multiple filename patterns
-        filepath = None
-        for fname in os.listdir(EXTRACTED_DATA_DIR):
-            if fname.endswith("_ili.csv") and safe.lower().replace("ô", "o") in fname.lower():
-                filepath = os.path.join(EXTRACTED_DATA_DIR, fname)
-                break
+    for a in passed:
+        country = a["country"]
+        filepath = find_extracted_file(country, data_type=a["data_type"])
         if filepath is None:
-            print(f"\n  ✗ {country}: ILI file not found, skipping")
+            print(f"\n  {country}: data file not found, skipping")
             continue
 
         try:
-            train_s, val_s = process_country(country, filepath, no_covariates=args.no_covariates, held_out_weeks=args.held_out_weeks)
+            train_s, val_s = process_country(country, filepath, covariates=covariates, held_out_weeks=args.held_out_weeks)
             all_train.extend(train_s)
             all_val.extend(val_s)
         except Exception as e:
-            print(f"\n  ✗ {country}: error — {e}")
+            print(f"\n  {country}: error — {e}")
             continue
 
     print(f"\n{'='*60}")

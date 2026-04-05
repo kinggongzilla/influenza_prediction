@@ -19,6 +19,41 @@ except ImportError:
     print("Warning: weather_fetcher module not found. Weather covariates will not be available.")
 
 
+# ---------------------------------------------------------------------------
+# Shared data cleaning helpers
+# ---------------------------------------------------------------------------
+
+def clean_zeros_to_nan(values: np.ndarray, max_consecutive_zeros: int = 3) -> np.ndarray:
+    """
+    Convert runs of zeros longer than max_consecutive_zeros to NaN.
+    Single isolated zeros within an active season are kept (could be real).
+    """
+    series = pd.Series(values.copy(), dtype=float)
+    is_zero = series == 0
+    run_id = (is_zero != is_zero.shift()).cumsum()
+    run_lengths = is_zero.groupby(run_id).transform("sum")
+    series[is_zero & (run_lengths > max_consecutive_zeros)] = np.nan
+    return series.values
+
+
+def trim_leading_artifact(values: np.ndarray, dates, threshold_pct: float = 0.10):
+    """
+    Trim leading zeros/NaN before the series 'activates'.
+    Returns (trimmed_values, trimmed_dates).
+    """
+    nonzero = values[(values > 0) & ~np.isnan(values)]
+    if len(nonzero) == 0:
+        return values, dates
+    overall_median = float(np.median(nonzero))
+    threshold = overall_median * threshold_pct
+    for i in range(len(values) - 8):
+        window = values[i:i + 8]
+        valid = window[~np.isnan(window)]
+        if len(valid) > 0 and float(np.mean(valid)) > threshold:
+            return values[i:], dates[i:]
+    return values, dates
+
+
 def load_time_series_data(file_path, context_length=128, min_value=1e-6, max_value=None, clip_outliers=False):
     """
     Load time series data using daily grid for preservation and weekly grid for inference.
@@ -204,6 +239,48 @@ def load_time_series_data(file_path, context_length=128, min_value=1e-6, max_val
             
     except Exception as e:
         raise ValueError(f"Error loading data from {file_path}: {e}")
+
+
+def load_data_type_indicator(file_path: str, weekly_dates: list) -> np.ndarray | None:
+    """
+    Load DataType column from a combined CSV, aligned to weekly_dates.
+
+    Returns float array of 0.0 (ILI) / 1.0 (ARI) with shape (len(weekly_dates),),
+    or None if the file has no DataType column.
+    """
+    try:
+        df = pd.read_csv(file_path, low_memory=False)
+    except Exception:
+        return None
+
+    if 'DataType' not in df.columns:
+        return None
+
+    # Find date column
+    date_col = None
+    for col in ('Time', 'Date', 'time', 'date'):
+        if col in df.columns:
+            date_col = col
+            break
+    if date_col is None:
+        return None
+
+    df[date_col] = pd.to_datetime(df[date_col])
+    df = df.sort_values(date_col).set_index(date_col)
+
+    # Create daily grid and resample to weekly (max: transition → new type)
+    daily_range = pd.date_range(start=df.index.min(), end=df.index.max(), freq='D')
+    daily_df = pd.DataFrame(index=daily_range)
+    daily_df = daily_df.join(df[['DataType']])
+    daily_df['DataType'] = daily_df['DataType'].ffill().bfill()
+
+    weekly = daily_df.resample('W').max().reset_index()
+    weekly['date_str'] = weekly['index'].dt.strftime('%Y-%m-%d')
+
+    # Align to weekly_dates from load_time_series_data
+    date_to_dt = {d: v for d, v in zip(weekly['date_str'], weekly['DataType'])}
+    result = np.array([float(date_to_dt.get(d, 0.0)) for d in weekly_dates], dtype=np.float32)
+    return result
 
 
 def load_data_for_evaluation(file_path, min_value=1e-6, max_value=None, clip_outliers=False, test_split=None):

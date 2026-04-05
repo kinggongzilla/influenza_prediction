@@ -17,11 +17,9 @@ Improvements over naive MAPE:
   3. Peak timing error — per prediction window, compare argmax(forecast) vs
      argmax(actuals) to measure phase-shift errors in weeks.
 
-Experiments:
-  --context_length N       Experiment E: limit context to last N weeks
-  --weather_mode MODE      Experiment C: past_only / none
-  --use_neighbors          Experiment D: neighboring countries ILI as past covariates
-  --use_capital_coords     Experiment A: capital city coords for weather
+Options:
+  --context_length N       Limit context to last N weeks
+  --covariates COV [COV..] Select covariates: data_type, hemisphere, week_of_year, weather, neighbors
 """
 
 import argparse
@@ -41,7 +39,7 @@ from scipy.signal import find_peaks
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src", "scripts"))
 
 from chronos.chronos2 import Chronos2Pipeline
-from data_loader import load_time_series_data, load_time_series_with_weather
+from data_loader import load_time_series_data, load_time_series_with_weather, load_data_type_indicator
 from country_neighbors import get_neighbors
 
 EXTRACTED_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "extracted_data")
@@ -68,7 +66,7 @@ def log(msg: str):
 
 def find_extracted_file(country_name: str) -> str | None:
     safe_name = country_name.replace(" ", "_")
-    for suffix in ("_ili.csv", "_ari.csv"):
+    for suffix in ("_combined.csv", "_ili.csv", "_ari.csv"):
         path = os.path.join(EXTRACTED_DATA_DIR, safe_name + suffix)
         if os.path.exists(path):
             return path
@@ -410,7 +408,6 @@ def evaluate_country(
     weather_covariates: dict | None = None,
     neighbor_covariates: dict | None = None,
     week_of_year_covariates: dict | None = None,
-    weather_mode: str = "none",
     context_length: int | None = None,
     min_context: int = 10,
     season_threshold: float | None = None,
@@ -433,7 +430,7 @@ def evaluate_country(
     phase_labels = compute_phase_labels(data, season_threshold)
 
     eval_start = max(min_context + prediction_horizon, n - eval_window)
-    has_weather = weather_covariates is not None and weather_mode != "none"
+    has_weather = weather_covariates is not None
 
     # Parse date filters (applied to target date, i.e. the point being predicted)
     _eval_start_date = pd.Timestamp(eval_start_date) if eval_start_date else None
@@ -496,8 +493,13 @@ def evaluate_country(
             if has_woy:
                 for name, tensor in week_of_year_covariates.items():
                     all_past_covs[name] = tensor[ctx_start:cutoff].numpy()
-                    # week-of-year is always known, so always add as future cov
-                    all_future_covs[name] = tensor[cutoff:cutoff + prediction_horizon].numpy()
+                    # These covariates are known for future steps
+                    future_slice = tensor[cutoff:cutoff + prediction_horizon].numpy()
+                    if len(future_slice) < prediction_horizon:
+                        # Pad with last known value (for data_type_indicator at series end)
+                        last_val = tensor[cutoff - 1].item() if cutoff > 0 else 0.0
+                        future_slice = np.full(prediction_horizon, last_val, dtype=np.float32)
+                    all_future_covs[name] = future_slice
 
             if all_past_covs:
                 use_future = all_future_covs and all(
@@ -682,11 +684,13 @@ def plot_rolling_eval(
     plt.fill_between(eval_dates, q10s, q90s, color="green", alpha=0.15,
                      label="10%-90% Quantile Range")
 
-    # X-axis ticks
+    # X-axis ticks — ensure first and last dates are always shown
     try:
         n_ticks = 12
         tick_step = max(1, len(all_dates) // n_ticks)
-        tick_positions = all_dates[::tick_step]
+        tick_positions = list(all_dates[::tick_step])
+        if all_dates[-1] not in tick_positions:
+            tick_positions.append(all_dates[-1])
         plt.xticks(tick_positions, [str(d)[:10] for d in tick_positions],
                    rotation=45, ha="right", fontsize=8)
     except Exception:
@@ -724,16 +728,12 @@ def main():
     parser.add_argument("--countries", type=str, default=None)
     parser.add_argument("--plot", action="store_true")
     parser.add_argument("--output", type=str, default=None)
-    # Experiment flags
+    # Covariate flags
     parser.add_argument("--context_length", type=int, default=None)
-    parser.add_argument("--weather_mode", choices=["past_only", "none"], default="none")
-    parser.add_argument("--use_neighbors", action="store_true")
+    parser.add_argument("--covariates", nargs="*", default=None, metavar="COV",
+                        help="Covariates to include. Available: data_type, hemisphere, week_of_year, weather, neighbors. "
+                             "Omit flag for none, pass specific names to select.")
     parser.add_argument("--use_capital_coords", action="store_true")
-    parser.add_argument("--use_week_of_year", action="store_true",
-                        help="Add sin/cos week-of-year as past+future covariates (matches training)")
-    parser.add_argument("--use_hemisphere", action="store_true",
-                        help="Add constant hemisphere covariate (+1 N/-1 S/0 tropical, matches training)")
-    parser.add_argument("--no_weather", action="store_true", help="Alias for --weather_mode none")
     parser.add_argument("--weather_cache_only", action="store_true",
                         help="Load weather from cache only (no API calls)")
     # Date range filter (applied to target dates, i.e. the weeks being predicted)
@@ -748,8 +748,11 @@ def main():
                         help="HuggingFace model ID or path to fine-tuned checkpoint directory")
     args = parser.parse_args()
 
-    if args.no_weather:
-        args.weather_mode = "none"
+    AVAILABLE_COVARIATES = ["data_type", "hemisphere", "week_of_year", "weather", "neighbors"]
+    covariates = args.covariates or []
+    for c in covariates:
+        if c not in AVAILABLE_COVARIATES:
+            parser.error(f"Unknown covariate '{c}'. Available: {AVAILABLE_COVARIATES}")
 
     summary = pd.read_csv(COUNTRY_SUMMARY_FILE)
     all_countries = summary[
@@ -777,11 +780,7 @@ def main():
     log(
         f"Evaluating {len(countries)} countries | "
         f"window={args.eval_window}wk | horizon={args.prediction_horizon}wk | "
-        f"weather={args.weather_mode} | "
-        f"neighbors={'yes' if args.use_neighbors else 'no'} | "
-        f"capital_coords={'yes' if args.use_capital_coords else 'no'} | "
-        f"week_of_year={'yes' if args.use_week_of_year else 'no'} | "
-        f"hemisphere={'yes' if args.use_hemisphere else 'no'} | "
+        f"covariates={covariates if covariates else 'none'} | "
         f"context={'all' if args.context_length is None else f'{args.context_length}wk'} | "
         f"threshold=p{args.season_threshold_pct:.0f}"
         f"{date_range_str} | model={model_tag}"
@@ -803,10 +802,7 @@ def main():
         "eval_config": {
             "eval_window": args.eval_window,
             "prediction_horizon": args.prediction_horizon,
-            "weather_mode": args.weather_mode,
-            "use_neighbors": args.use_neighbors,
-            "use_capital_coords": args.use_capital_coords,
-            "use_week_of_year": args.use_week_of_year,
+            "covariates": covariates,
             "context_length": args.context_length,
             "season_threshold_pct": args.season_threshold_pct,
             "countries": countries,
@@ -828,9 +824,8 @@ def main():
         weather_covariates = None
         dates = None
 
-        if args.weather_mode != "none":
+        if "weather" in covariates:
             if args.weather_cache_only:
-                # Load ILI data first, then weather from cache separately
                 try:
                     with suppress_stdout():
                         data, dates, _ = load_time_series_data(
@@ -879,18 +874,27 @@ def main():
             continue
 
         neighbor_covariates = None
-        if args.use_neighbors and dates is not None:
+        if "neighbors" in covariates and dates is not None:
             neighbor_covariates = load_neighbor_covariates(country_name, dates)
 
         week_of_year_covariates = None
-        if args.use_week_of_year and dates is not None:
+        if "week_of_year" in covariates and dates is not None:
             week_of_year_covariates = compute_week_of_year_covariates(dates)
-        if args.use_hemisphere and dates is not None:
+        if "hemisphere" in covariates and dates is not None:
             hemi_covs = compute_hemisphere_covariate(country_name, dates)
             if week_of_year_covariates is not None:
                 week_of_year_covariates.update(hemi_covs)
             else:
                 week_of_year_covariates = hemi_covs
+
+        if "data_type" in covariates and dates is not None:
+            dt_indicator = load_data_type_indicator(extracted_file, dates)
+            if dt_indicator is not None:
+                dt_covs = {"data_type_indicator": torch.tensor(dt_indicator, dtype=torch.float32)}
+                if week_of_year_covariates is not None:
+                    week_of_year_covariates.update(dt_covs)
+                else:
+                    week_of_year_covariates = dt_covs
 
         # Per-country season threshold
         season_threshold = compute_season_threshold(data, args.season_threshold_pct)
@@ -905,7 +909,6 @@ def main():
             weather_covariates=weather_covariates,
             neighbor_covariates=neighbor_covariates,
             week_of_year_covariates=week_of_year_covariates,
-            weather_mode=args.weather_mode,
             context_length=args.context_length,
             season_threshold=season_threshold,
             eval_start_date=args.eval_start_date,
@@ -1027,7 +1030,7 @@ def main():
     if pt_maes:
         log(f"  peak_timing  : mean MAE={np.mean(pt_maes):.2f}wk across {len(pt_maes)} countries")
 
-    if args.weather_mode != "none":
+    if "weather" in covariates:
         log(f"Weather: {weather_success} with weather, {weather_fallback} fallback")
 
 

@@ -90,7 +90,8 @@ const MapChart = () => {
                             const score = Math.max(0, Math.min(1, d.score));
                             fillColor = interpolateRdYlGn(1 - score);
                             
-                            hoverContent = `${d.name}: Predicted ${d.value.toFixed(1)} (Score: ${(d.score * 100).toFixed(0)}%)`;
+                            const dtype = (d as any).data_type === "ARI" ? "ARI" : "ILI";
+                            hoverContent = `${d.name} [${dtype}]: Predicted ${d.value.toFixed(1)} (Score: ${(d.score * 100).toFixed(0)}%)`;
                         } else {
                             hoverContent = geo.properties.name || "Unknown Country";
                         }

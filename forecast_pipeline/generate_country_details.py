@@ -44,25 +44,31 @@ def load_mappings():
     return name_to_code
 
 def find_extracted_file(country_folder_name):
-    # Try exact match first
-    patterns = [
-        f"{country_folder_name}_ili.csv",
-        f"{country_folder_name}_ari.csv",
-        f"{country_folder_name.replace('_', ' ')}_ili.csv",
-        f"{country_folder_name.replace('_', ' ')}_ari.csv"
-    ]
-    
-    for pattern in patterns:
-        path = os.path.join(EXTRACTED_DATA_DIR, pattern)
-        if os.path.exists(path):
-            return path
-            
+    """Find extracted data file. Returns (path, data_type) tuple."""
+    # Try combined first, then ILI, then ARI
+    for suffix, dtype in [("_combined.csv", "combined"), ("_ili.csv", "ILI"), ("_ari.csv", "ARI")]:
+        for name_variant in [country_folder_name, country_folder_name.replace('_', ' ')]:
+            path = os.path.join(EXTRACTED_DATA_DIR, f"{name_variant}{suffix}")
+            if os.path.exists(path):
+                if dtype == "combined":
+                    # Detect actual type from last rows' DataType column
+                    try:
+                        import pandas as pd
+                        df = pd.read_csv(path)
+                        if 'DataType' in df.columns:
+                            last_type = int(df['DataType'].iloc[-1])
+                            dtype = "ARI" if last_type == 1 else "ILI"
+                    except Exception:
+                        dtype = "ILI"
+                return path, dtype
+
     # Try globbing
     files = glob.glob(os.path.join(EXTRACTED_DATA_DIR, f"*{country_folder_name}*.csv"))
     if files:
-        return files[0]
-        
-    return None
+        dtype = "ARI" if "_ari" in files[0] else "ILI"
+        return files[0], dtype
+
+    return None, None
 
 def process_countries():
     name_to_code = load_mappings()
@@ -107,7 +113,7 @@ def process_countries():
         results_csv_file = files[0]
 
         # Find Extracted Data CSV (for dates)
-        extracted_file = find_extracted_file(country_folder_name)
+        extracted_file, data_type = find_extracted_file(country_folder_name)
         start_date = None
         if extracted_file:
             try:
@@ -131,6 +137,7 @@ def process_countries():
             output_data = {
                 "country": country_folder_name.replace('_', ' '),
                 "id": code,
+                "data_type": data_type or "ILI",
                 "points": []
             }
             
