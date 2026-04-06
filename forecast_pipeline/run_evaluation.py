@@ -452,6 +452,10 @@ def evaluate_country(
     covered_95: list[bool] = []    # 95% interval (q025-q975)
     _rng = np.random.default_rng(42)  # shared RNG for baseline trajectories
 
+    # Per-horizon metrics (H1..H{prediction_horizon})
+    per_horizon_wis: dict[int, list[float]] = {h: [] for h in range(1, prediction_horizon + 1)}
+    per_horizon_baseline_wis: dict[int, list[float]] = {h: [] for h in range(1, prediction_horizon + 1)}
+
     for t in range(eval_start, n):
         cutoff = t - prediction_horizon
         if cutoff < min_context:
@@ -521,38 +525,47 @@ def evaluate_country(
                     quantile_levels=WIS_QUANTILE_LEVELS,
                 )
 
-        # Full forecast for peak timing; final step for MAPE
+        # Full forecast for peak timing
         full_forecast = mean_forecasts[0][0, :].cpu().numpy()  # shape: (prediction_horizon,)
+        all_q = quantile_forecasts[0][0].cpu().numpy()  # shape: (prediction_horizon, n_quantiles)
+
+        # ---- Score ALL horizons (H1..H{prediction_horizon}) --------------------
+        for h in range(1, prediction_horizon + 1):
+            h_actual_idx = cutoff + h
+            if h_actual_idx >= n:
+                continue
+            h_actual = data[h_actual_idx].item()
+            if np.isnan(h_actual) or h_actual < season_threshold:
+                continue
+            h_predicted = full_forecast[h - 1]
+            if np.isnan(h_predicted):
+                continue
+            h_q = all_q[h - 1]  # quantiles at horizon h
+
+            h_wis = compute_wis(h_actual, h_q, WIS_QUANTILE_LEVELS)
+            per_horizon_wis[h].append(h_wis)
+            wis_scores.append(h_wis)
+            mae_scores.append(abs(h_predicted - h_actual))
+            errors.append(abs(h_predicted - h_actual) / h_actual)
+            covered_50.append(bool(h_q[2] <= h_actual <= h_q[4]))
+            covered_95.append(bool(h_q[0] <= h_actual <= h_q[6]))
+
+            h_baseline_q = compute_naive_baseline_quantiles(data, cutoff, h, WIS_QUANTILE_LEVELS, _rng=_rng)
+            if h_baseline_q is not None:
+                h_bl_wis = compute_wis(h_actual, h_baseline_q, WIS_QUANTILE_LEVELS)
+                per_horizon_baseline_wis[h].append(h_bl_wis)
+                wis_baseline_scores.append(h_bl_wis)
+
+        # Keep H4 prediction for backward-compat tracking lists
         predicted = full_forecast[-1]
-        if np.isnan(predicted):
-            continue
-
-        # All quantiles at the final prediction step — shape: (len(WIS_QUANTILE_LEVELS),)
-        q_step = quantile_forecasts[0][0, -1, :].cpu().numpy()
-
-        errors.append(abs(predicted - actual) / actual)
-        predictions.append(float(predicted))
-        # q10 = WIS_QUANTILE_LEVELS index 1 (0.1), q90 = index 5 (0.9)
-        pred_q10.append(float(q_step[1]))
-        pred_q90.append(float(q_step[5]))
-        actuals.append(actual)
-        eval_dates.append(dates[t] if dates else t)
-        phases.append(phase)
-
-        # ---- FluSight probabilistic metrics ------------------------------------
-        wis = compute_wis(actual, q_step, WIS_QUANTILE_LEVELS)
-        wis_scores.append(wis)
-        mae_scores.append(abs(predicted - actual))
-
-        # 50% coverage: q0.25 (idx 2) to q0.75 (idx 4)
-        covered_50.append(bool(q_step[2] <= actual <= q_step[4]))
-        # 95% coverage: q0.025 (idx 0) to q0.975 (idx 6)
-        covered_95.append(bool(q_step[0] <= actual <= q_step[6]))
-
-        # Naive baseline WIS (Influcast-style random walk)
-        baseline_q = compute_naive_baseline_quantiles(data, cutoff, prediction_horizon, WIS_QUANTILE_LEVELS, _rng=_rng)
-        if baseline_q is not None:
-            wis_baseline_scores.append(compute_wis(actual, baseline_q, WIS_QUANTILE_LEVELS))
+        if not np.isnan(predicted):
+            predictions.append(float(predicted))
+            q_step = all_q[-1]
+            pred_q10.append(float(q_step[1]))
+            pred_q90.append(float(q_step[5]))
+            actuals.append(actual)
+            eval_dates.append(dates[t] if dates else t)
+            phases.append(phase)
 
         # ---- 3. Peak timing error -------------------------------------------
         # Does the actual prediction window contain a meaningful peak?
@@ -575,6 +588,7 @@ def evaluate_country(
             "coverage_50": None,
             "coverage_95": None,
             "n_eval_points": 0,
+            "per_horizon_rwis": {},
             "season_threshold": round(season_threshold, 2),
             "used_weather": has_weather,
             "used_neighbors": has_neighbors,
@@ -603,6 +617,18 @@ def evaluate_country(
     mean_baseline_wis = float(np.mean(wis_baseline_scores)) if wis_baseline_scores else None
     relative_wis = round(mean_wis / mean_baseline_wis, 3) if (mean_wis and mean_baseline_wis) else None
 
+    # Per-horizon relative WIS
+    per_horizon_rwis = {}
+    for h in range(1, prediction_horizon + 1):
+        h_wis = per_horizon_wis[h]
+        h_bl = per_horizon_baseline_wis[h]
+        if h_wis and h_bl and len(h_wis) == len(h_bl):
+            m_w = float(np.mean(h_wis))
+            m_b = float(np.mean(h_bl))
+            per_horizon_rwis[h] = round(m_w / m_b, 4) if m_b > 0 else None
+        else:
+            per_horizon_rwis[h] = None
+
     return {
         "mape_pct": round(float(np.mean(errors) * 100), 2),
         "median_error_pct": round(float(np.median(errors) * 100), 2),
@@ -612,6 +638,7 @@ def evaluate_country(
         "coverage_50": round(float(np.mean(covered_50)) * 100, 1) if covered_50 else None,
         "coverage_95": round(float(np.mean(covered_95)) * 100, 1) if covered_95 else None,
         "n_eval_points": len(errors),
+        "per_horizon_rwis": per_horizon_rwis,
         "season_threshold": round(season_threshold, 2),
         "used_weather": has_weather,
         "used_neighbors": has_neighbors,
@@ -734,6 +761,8 @@ def main():
                         help="Covariates to include. Available: data_type, hemisphere, week_of_year, weather, neighbors. "
                              "Omit flag for none, pass specific names to select.")
     parser.add_argument("--use_capital_coords", action="store_true")
+    parser.add_argument("--quiet", action="store_true",
+                        help="Suppress per-country verbose output; print a clean sorted table at the end")
     parser.add_argument("--weather_cache_only", action="store_true",
                         help="Load weather from cache only (no API calls)")
     # Date range filter (applied to target dates, i.e. the weeks being predicted)
@@ -817,7 +846,8 @@ def main():
     for i, country_name in enumerate(countries, 1):
         extracted_file = find_extracted_file(country_name)
         if not extracted_file:
-            log(f"[{i}/{len(countries)}] {country_name}: no extracted data, skipping")
+            if not args.quiet:
+                log(f"[{i}/{len(countries)}] {country_name}: no extracted data, skipping")
             continue
 
         data = None
@@ -866,11 +896,13 @@ def main():
                         extracted_file, context_length=None, min_value=1e-6
                     )
             except Exception as e:
-                log(f"[{i}/{len(countries)}] {country_name}: failed to load data ({e})")
+                if not args.quiet:
+                    log(f"[{i}/{len(countries)}] {country_name}: failed to load data ({e})")
                 continue
 
         if len(data) < args.prediction_horizon + 10:
-            log(f"[{i}/{len(countries)}] {country_name}: too few data points, skipping")
+            if not args.quiet:
+                log(f"[{i}/{len(countries)}] {country_name}: too few data points, skipping")
             continue
 
         neighbor_covariates = None
@@ -927,7 +959,7 @@ def main():
                 season_threshold=season_threshold,
                 output_dir=plots_dir,
             )
-            if plot_path:
+            if plot_path and not args.quiet:
                 log(f"  Plot: {plot_path}")
 
         # Store compact summary (not per-point data) in JSON
@@ -947,42 +979,47 @@ def main():
             "peak_timing_mae_weeks": result["peak_timing_mae_weeks"],
             "peak_timing_bias_weeks": result["peak_timing_bias_weeks"],
             "n_peak_timing_points": result["n_peak_timing_points"],
+            "per_horizon_rwis": result.get("per_horizon_rwis", {}),
         }
 
         if result["mape_pct"] is not None:
-            tags = []
-            if result["used_weather"]:   tags.append("W")
-            if result["used_neighbors"]: tags.append("N")
-            tag = "[" + ",".join(tags) + "]" if tags else "[-]"
+            if not args.quiet:
+                tags = []
+                if result["used_weather"]:   tags.append("W")
+                if result["used_neighbors"]: tags.append("N")
+                tag = "[" + ",".join(tags) + "]" if tags else "[-]"
 
-            pm = result["phase_mape"]
-            def pf(ph):
-                v = pm.get(ph, {})
-                mape = v.get("mape_pct")
-                n = v.get("n_points", 0)
-                return f"{mape:.0f}%({n})" if mape is not None else f"—({n})"
+                pm = result["phase_mape"]
+                def pf(ph):
+                    v = pm.get(ph, {})
+                    mape = v.get("mape_pct")
+                    n = v.get("n_points", 0)
+                    return f"{mape:.0f}%({n})" if mape is not None else f"—({n})"
 
-            pt = result["peak_timing_mae_weeks"]
-            pb = result["peak_timing_bias_weeks"]
-            pt_str = f"±{pt:.1f}wk bias={pb:+.1f}" if pt is not None else "—"
+                pt = result["peak_timing_mae_weeks"]
+                pb = result["peak_timing_bias_weeks"]
+                pt_str = f"±{pt:.1f}wk bias={pb:+.1f}" if pt is not None else "—"
 
-            wis_str = f"WIS={result['wis']:.1f}" if result["wis"] is not None else "WIS=—"
-            rwis = result["relative_wis"]
-            rwis_str = f"rWIS={rwis:.3f}" if rwis is not None else "rWIS=—"
-            cov_str = (
-                f"cov50={result['coverage_50']:.0f}% cov95={result['coverage_95']:.0f}%"
-                if result["coverage_50"] is not None else ""
-            )
+                wis_str = f"WIS={result['wis']:.1f}" if result["wis"] is not None else "WIS=—"
+                rwis = result["relative_wis"]
+                rwis_str = f"rWIS={rwis:.3f}" if rwis is not None else "rWIS=—"
+                cov_str = (
+                    f"cov50={result['coverage_50']:.0f}% cov95={result['coverage_95']:.0f}%"
+                    if result["coverage_50"] is not None else ""
+                )
 
-            log(
-                f"[{i}/{len(countries)}] {country_name}: "
-                f"{tag} MAPE={result['mape_pct']:.1f}% | {wis_str} {rwis_str} | {cov_str} | "
-                f"({result['n_eval_points']}pts, {elapsed:.1f}s) | "
-                f"growth={pf('growth')} peak={pf('peak_window')} decay={pf('decay')} | "
-                f"peak_timing={pt_str}"
-            )
+                log(
+                    f"[{i}/{len(countries)}] {country_name}: "
+                    f"{tag} MAPE={result['mape_pct']:.1f}% | {wis_str} {rwis_str} | {cov_str} | "
+                    f"({result['n_eval_points']}pts, {elapsed:.1f}s) | "
+                    f"growth={pf('growth')} peak={pf('peak_window')} decay={pf('decay')} | "
+                    f"peak_timing={pt_str}"
+                )
         else:
-            log(f"[{i}/{len(countries)}] {country_name}: no valid eval points (threshold={season_threshold:.1f})")
+            if not args.quiet:
+                log(f"[{i}/{len(countries)}] {country_name}: no valid eval points (threshold={season_threshold:.1f})")
+        if args.quiet and i % 10 == 0:
+            log(f"  Progress: {i}/{len(countries)} countries...")
 
     total_elapsed = time.time() - total_start
 
@@ -1012,6 +1049,20 @@ def main():
     if cov95_vals:
         log(f"  Coverage 95% : mean={np.mean(cov95_vals):.1f}% (target: 95%)")
 
+    # Per-horizon rWIS summary
+    horizon_keys = set()
+    for v in results["countries"].values():
+        horizon_keys.update(v.get("per_horizon_rwis", {}).keys())
+    if horizon_keys:
+        parts = []
+        for h in sorted(horizon_keys):
+            h_vals = [v["per_horizon_rwis"][h] for v in results["countries"].values()
+                      if v.get("per_horizon_rwis", {}).get(h) is not None]
+            if h_vals:
+                parts.append(f"H{h}={np.mean(h_vals):.3f}")
+        if parts:
+            log(f"  Per-horizon  : {' | '.join(parts)}")
+
     # Phase summary across all countries
     for ph in ("growth", "peak_window", "decay"):
         ph_mapes = [
@@ -1032,6 +1083,31 @@ def main():
 
     if "weather" in covariates:
         log(f"Weather: {weather_success} with weather, {weather_fallback} fallback")
+
+    # --quiet: print clean per-country table sorted by rWIS
+    if args.quiet and results["countries"]:
+        log(f"\n{'Country':<45s} {'rWIS':>6s}  {'H1':>6s} {'H2':>6s} {'H3':>6s} {'H4':>6s}  {'MAPE%':>6s} {'Cov50':>5s} {'Cov95':>5s} {'Pts':>4s}")
+        log("-" * 110)
+        sorted_countries = sorted(
+            results["countries"].items(),
+            key=lambda x: x[1].get("relative_wis") or 999,
+        )
+        for cname, v in sorted_countries:
+            rwis = v.get("relative_wis")
+            rwis_s = f"{rwis:.3f}" if rwis is not None else "—"
+            ph = v.get("per_horizon_rwis", {})
+            h_cols = []
+            for h in ["1", "2", "3", "4"]:
+                hv = ph.get(h)
+                h_cols.append(f"{hv:.3f}" if hv is not None else "—")
+            mape = v.get("mape_pct")
+            mape_s = f"{mape:.1f}" if mape is not None else "—"
+            c50 = v.get("coverage_50")
+            c50_s = f"{c50:.0f}%" if c50 is not None else "—"
+            c95 = v.get("coverage_95")
+            c95_s = f"{c95:.0f}%" if c95 is not None else "—"
+            pts = v.get("n_eval_points", 0)
+            log(f"{cname:<45s} {rwis_s:>6s}  {h_cols[0]:>6s} {h_cols[1]:>6s} {h_cols[2]:>6s} {h_cols[3]:>6s}  {mape_s:>6s} {c50_s:>5s} {c95_s:>5s} {pts:>4d}")
 
 
 if __name__ == "__main__":

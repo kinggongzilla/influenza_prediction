@@ -291,9 +291,14 @@ def build_windows(
         sample = {"target": context}
         if all_covariates:
             past_covs = {}
+            future_covs = {}
             for name, arr in all_covariates.items():
                 past_covs[name] = arr[ctx_start:end_ctx]
+                if name in FUTURE_KNOWN_COVARIATES:
+                    future_covs[name] = arr[end_ctx:end_tgt]
             sample["past_covariates"] = past_covs
+            if future_covs:
+                sample["future_covariates"] = future_covs
 
         # Recency weighting
         window_end_date = dates_pd[end_ctx - 1]
@@ -327,9 +332,14 @@ def build_windows(
         val_sample = {"target": context}
         if all_covariates:
             past_covs = {}
+            future_covs = {}
             for name, arr in all_covariates.items():
                 past_covs[name] = arr[ctx_start:end_ctx]
+                if name in FUTURE_KNOWN_COVARIATES:
+                    future_covs[name] = arr[end_ctx:end_tgt]
             val_sample["past_covariates"] = past_covs
+            if future_covs:
+                val_sample["future_covariates"] = future_covs
 
         val_samples.append(val_sample)
 
@@ -341,6 +351,10 @@ def build_windows(
 # ---------------------------------------------------------------------------
 
 AVAILABLE_COVARIATES = ["data_type", "hemisphere", "week_of_year", "weather", "neighbors"]
+
+# Covariates that are known into the future (deterministic or near-deterministic)
+# These get added to both past_covariates AND future_covariates in training samples
+FUTURE_KNOWN_COVARIATES = {"hemisphere", "week_sin", "week_cos", "data_type_indicator"}
 
 
 def process_country(country_name: str, filepath: str, covariates: list[str] | None = None, held_out_weeks: int = HELD_OUT_WEEKS) -> tuple[list, list]:

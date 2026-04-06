@@ -41,10 +41,26 @@ def parse_args():
                         help="Path to validation data pickle")
     parser.add_argument("--output_dir", type=str, default=DEFAULT_OUTPUT_DIR,
                         help="Directory for finetuned model checkpoint")
+    parser.add_argument("--run_name", type=str, default=None,
+                        help="W&B run name (default: auto-generated from output_dir and covariates)")
     return parser.parse_args()
 
 
-def setup_wandb(args):
+def detect_covariates(train_data_path):
+    """Detect which covariates are present in the training data pickle."""
+    if not os.path.exists(train_data_path):
+        return []
+    with open(train_data_path, "rb") as f:
+        samples = pickle.load(f)
+    if not samples:
+        return []
+    first = samples[0]
+    if not isinstance(first, dict) or "past_covariates" not in first:
+        return []
+    return sorted(first["past_covariates"].keys())
+
+
+def setup_wandb(args, covariates):
     """Initialize W&B. Pause and ask user to log in if not authenticated."""
     if args.no_wandb:
         print("W&B disabled via --no_wandb")
@@ -58,9 +74,17 @@ def setup_wandb(args):
         print("Then re-run this script.")
         sys.exit(1)
 
+    if args.run_name:
+        run_name = args.run_name
+    else:
+        model_tag = os.path.basename(args.output_dir)
+        cov_str = "+".join(covariates) if covariates else "nocov"
+        run_name = f"{model_tag}__{cov_str}"
+
     try:
         wandb.init(
             project="chronos2-ili-finetune",
+            name=run_name,
             config={
                 "num_steps": args.steps,
                 "learning_rate": args.lr,
@@ -69,6 +93,7 @@ def setup_wandb(args):
                 "context_length": args.context_length,
                 "base_model": "amazon/chronos-2",
                 "finetune_mode": "full",
+                "covariates": covariates,
             }
         )
         print(f"W&B run: {wandb.run.url}")
@@ -95,8 +120,15 @@ def main():
         print("Run: python scripts/prepare_finetune_data.py")
         sys.exit(1)
 
+    # ---- Detect covariates from training data ----
+    covariates = detect_covariates(args.train_data)
+    if covariates:
+        print(f"Covariates detected: {covariates}")
+    else:
+        print("No covariates detected (target only)")
+
     # ---- W&B setup ----
-    use_wandb = setup_wandb(args)
+    use_wandb = setup_wandb(args, covariates)
 
     # ---- Load data ----
     print(f"Loading training data from {args.train_data}...")

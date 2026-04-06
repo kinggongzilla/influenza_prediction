@@ -29,3 +29,6 @@ forecast_pipeline/data/influcast_cache
 forecast_pipeline/chronos-2-finetuned
 forecast_pipeline/models/
 wandb
+forecast_pipeline/scripts/__pycache__
+forecast_pipeline/results/ablation/*.json
+best_eval_loss_per_run_new.csv

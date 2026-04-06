@@ -388,6 +388,8 @@ def parse_model_specs(specs: list[str], covariates: list[str], season: str) -> l
     for spec in specs:
         path = spec.split(":")[0]
         tag = os.path.basename(path)
+        if tag in ("finetuned-ckpt", "checkpoint"):
+            tag = os.path.basename(os.path.dirname(path))
         name = f"Chronos-2-{tag}"
         if covariates:
             name += "+" + "+".join(covariates)
@@ -421,6 +423,9 @@ def main():
     else:
         path = args.model_path or "amazon/chronos-2"
         tag = os.path.basename(path)
+        # If basename is generic (e.g. "finetuned-ckpt"), use parent directory name
+        if tag in ("finetuned-ckpt", "checkpoint"):
+            tag = os.path.basename(os.path.dirname(path))
         name = f"Chronos-2-{tag}"
         if covariates:
             name += "+" + "+".join(covariates)
@@ -439,10 +444,9 @@ def main():
     # 2. Download all Influcast model forecasts
     all_models = {}
     for model_name in INFLUCAST_MODELS:
-        print(f"Downloading {model_name}...")
         all_models[model_name] = download_forecasts(model_name, round_weeks)
-        n_rounds = len(all_models[model_name])
-        print(f"  → {n_rounds} rounds")
+    n_with_data = sum(1 for v in all_models.values() if v)
+    print(f"  Downloaded {n_with_data}/{len(INFLUCAST_MODELS)} Influcast models")
 
     # 3. Generate Chronos forecasts for each model spec
     chronos_names = []

@@ -29,6 +29,8 @@ import sys
 import time
 from datetime import datetime
 
+import numpy as np
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PIPELINE_DIR = os.path.dirname(SCRIPT_DIR)
 MODELS_DIR = os.path.join(PIPELINE_DIR, "models", "ablation")
@@ -56,18 +58,32 @@ INFLUCAST_SEASON = "2024-25"
 
 
 def build_experiments():
-    """Generate all 2^5 covariate combinations."""
+    """Generate all 2^5 covariate combinations plus a zero-shot baseline."""
     experiments = []
-    idx = 0
+
+    # Experiment 0: zero-shot base Chronos-2 (no finetuning)
+    experiments.append({
+        "id": 0,
+        "covariates": [],
+        "suffix": "base-zeroshot",
+        "model_dir": None,  # signals: use pretrained model directly
+        "model_path": "amazon/chronos-2",
+        "skip_training": True,
+    })
+
+    idx = 1
     for r in range(len(ALL_COVARIATES) + 1):
         for combo in itertools.combinations(ALL_COVARIATES, r):
             covs = list(combo)
             suffix = "-".join(SUFFIX_MAP[c] for c in covs) if covs else "nocov"
+            model_dir = os.path.join(MODELS_DIR, suffix)
             experiments.append({
                 "id": idx,
                 "covariates": covs,
                 "suffix": suffix,
-                "model_dir": os.path.join(MODELS_DIR, suffix),
+                "model_dir": model_dir,
+                "model_path": os.path.join(model_dir, "finetuned-ckpt"),
+                "skip_training": False,
             })
             idx += 1
     return experiments
@@ -115,7 +131,7 @@ def finetune(experiment, steps, lr, batch_size):
 def evaluate_rolling(experiment):
     """Run rolling evaluation (run_evaluation.py)."""
     output_file = f"ablation_{experiment['suffix']}.json"
-    model_path = os.path.join(experiment["model_dir"], "finetuned-ckpt")
+    model_path = experiment["model_path"]
     cmd = [sys.executable, "run_evaluation.py",
            "--model_path", model_path,
            "--eval_start_date", EVAL_START_DATE,
@@ -129,7 +145,7 @@ def evaluate_rolling(experiment):
 def evaluate_influcast(experiment):
     """Run Influcast pairwise evaluation."""
     output_json = os.path.join(ABLATION_RESULTS_DIR, f"influcast_{experiment['suffix']}.json")
-    model_path = os.path.join(experiment["model_dir"], "finetuned-ckpt")
+    model_path = experiment["model_path"]
     cmd = [sys.executable, "scripts/eval_influcast_pairwise.py",
            "--model_path", model_path,
            "--season", INFLUCAST_SEASON,
@@ -176,9 +192,17 @@ def collect_results(experiments):
                         "cov50": v.get("coverage_50"),
                         "cov95": v.get("coverage_95"),
                         "mae": v.get("mae"),
+                        "per_horizon_rwis": v.get("per_horizon_rwis", {}),
                     }
                     for name, v in countries.items()
                 }
+                # Aggregate per-horizon rWIS across countries
+                per_h = {}
+                for h in ["1", "2", "3", "4"]:
+                    h_vals = [v.get("per_horizon_rwis", {}).get(h) for v in countries.values()
+                              if v.get("per_horizon_rwis", {}).get(h) is not None]
+                    per_h[h] = float(np.mean(h_vals)) if h_vals else None
+                entry["per_horizon_rwis"] = per_h
             else:
                 entry["mean_rwis"] = None
         else:
@@ -272,6 +296,21 @@ def write_summary(results):
                 v = pc.get(c, {}).get("rwis")
                 vals.append(f"{v:.3f}" if v is not None else "—")
             lines.append(f"| {r['id']} | {r['covariates_str']} | " + " | ".join(vals) + " |")
+
+    # Rolling eval per-horizon breakdown
+    lines.append("")
+    lines.append("## Rolling Eval Per-Horizon rWIS")
+    lines.append("")
+    lines.append("| # | Covariates | H1 | H2 | H3 | H4 |")
+    lines.append("|---|-----------|----|----|----|----|")
+
+    for r in sorted_results:
+        ph = r.get("per_horizon_rwis", {})
+        h_vals = []
+        for h in ["1", "2", "3", "4"]:
+            v = ph.get(h)
+            h_vals.append(f"{v:.3f}" if v is not None else "—")
+        lines.append(f"| {r['id']} | {r['covariates_str']} | " + " | ".join(h_vals) + " |")
 
     # Influcast per-horizon breakdown
     lines.append("")
@@ -371,7 +410,7 @@ def main():
     os.makedirs(EVAL_RESULTS_DIR, exist_ok=True)
 
     print(f"{'='*70}")
-    print(f"  COVARIATE ABLATION — {len(experiments)} experiments")
+    print(f"  COVARIATE ABLATION — {len(experiments)} experiments (incl. zero-shot baseline)")
     print(f"  Training: steps={args.steps}, lr={args.lr}, batch={args.batch_size}")
     print(f"  Eval: start={EVAL_START_DATE}, horizon={PREDICTION_HORIZON}wk")
     print(f"  Influcast: season={INFLUCAST_SEASON}")
@@ -397,7 +436,9 @@ def main():
 
             exp_ok = True
 
-            if not args.eval_only:
+            if exp.get("skip_training"):
+                print(f"  Zero-shot model ({exp['model_path']}) — skipping training")
+            elif not args.eval_only:
                 # Step 1: Prepare training data
                 ok, _ = prepare_data(exp)
                 if not ok:
@@ -412,12 +453,13 @@ def main():
                     failed.append((exp["id"], exp["suffix"], "finetune"))
                     continue
 
-            # Check model exists before evaluation
-            ckpt_path = os.path.join(exp["model_dir"], "finetuned-ckpt", "config.json")
-            if not os.path.exists(ckpt_path):
-                print(f"  No checkpoint at {exp['model_dir']}/finetuned-ckpt — skipping evaluation")
-                failed.append((exp["id"], exp["suffix"], "no_checkpoint"))
-                continue
+            # Check model exists before evaluation (skip for HuggingFace models)
+            if not exp.get("skip_training"):
+                ckpt_path = os.path.join(exp["model_dir"], "finetuned-ckpt", "config.json")
+                if not os.path.exists(ckpt_path):
+                    print(f"  No checkpoint at {exp['model_dir']}/finetuned-ckpt — skipping evaluation")
+                    failed.append((exp["id"], exp["suffix"], "no_checkpoint"))
+                    continue
 
             # Step 3: Rolling evaluation
             if not args.skip_eval:
