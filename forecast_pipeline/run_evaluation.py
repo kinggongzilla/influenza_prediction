@@ -1097,8 +1097,8 @@ def main():
             rwis_s = f"{rwis:.3f}" if rwis is not None else "—"
             ph = v.get("per_horizon_rwis", {})
             h_cols = []
-            for h in ["1", "2", "3", "4"]:
-                hv = ph.get(h)
+            for h in [1, 2, 3, 4]:
+                hv = ph.get(h) or ph.get(str(h))
                 h_cols.append(f"{hv:.3f}" if hv is not None else "—")
             mape = v.get("mape_pct")
             mape_s = f"{mape:.1f}" if mape is not None else "—"

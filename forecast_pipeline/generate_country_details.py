@@ -153,23 +153,31 @@ def process_countries():
                     "date": current_date.strftime('%Y-%m-%d'),
                     "historical": None,
                     "forecast": None,
-                    "lower": None, # q0.1
-                    "upper": None  # q0.9
+                    "lower": None,      # q0.1 (90% interval)
+                    "upper": None,      # q0.9 (90% interval)
+                    "lower_50": None,   # q0.25 (50% interval)
+                    "upper_50": None    # q0.75 (50% interval)
                 }
-                
+
                 # Context (History)
                 if pd.notna(row.get('context')):
                     point["historical"] = float(row['context'])
-                
+
                 # Forecast
                 if pd.notna(row.get('mean_forecast')):
                     point["forecast"] = float(row['mean_forecast'])
-                    
-                    # Add quantiles if forecast exists
+
+                    # 90% interval (q0.1 - q0.9)
                     if pd.notna(row.get('quantile_0.1')):
                         point["lower"] = float(row['quantile_0.1'])
                     if pd.notna(row.get('quantile_0.9')):
                         point["upper"] = float(row['quantile_0.9'])
+
+                    # 50% interval (interpolated q0.25 and q0.75)
+                    if pd.notna(row.get('quantile_0.2')) and pd.notna(row.get('quantile_0.3')):
+                        point["lower_50"] = (float(row['quantile_0.2']) + float(row['quantile_0.3'])) / 2
+                    if pd.notna(row.get('quantile_0.7')) and pd.notna(row.get('quantile_0.8')):
+                        point["upper_50"] = (float(row['quantile_0.7']) + float(row['quantile_0.8'])) / 2
 
                 output_data["points"].append(point)
                 

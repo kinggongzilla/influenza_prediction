@@ -230,20 +230,24 @@ def generate_chronos_forecasts(model_path: str, covariates: list[str], round_wee
     If truth is provided, appends ground truth incidence values to extend the local data file."""
     # Load Italian ILI data
     df = pd.read_csv(DATA_FILE)
-    df = df.sort_values("year_week").reset_index(drop=True)
 
     # Extend with ground truth data for weeks not in the local file
     if truth:
         existing_weeks = set(df["year_week"].tolist())
         new_rows = []
         for (year, week), incidence in sorted(truth.items()):
-            yw = f"{year}-{week}"
+            yw = f"{year}-{week:02d}"
             if yw not in existing_weeks:
                 new_rows.append({"year_week": yw, "incidence": incidence})
         if new_rows:
             df = pd.concat([df, pd.DataFrame(new_rows)], ignore_index=True)
-            df = df.sort_values("year_week").reset_index(drop=True)
             print(f"  Extended series with {len(new_rows)} ground truth weeks (total: {len(df)})")
+
+    # Sort chronologically by (year, week) integers — not lexicographic on "year-week" strings
+    df["_year"] = df["year_week"].str.split("-").str[0].astype(int)
+    df["_week"] = df["year_week"].str.split("-").str[1].astype(int)
+    df = df.sort_values(["_year", "_week"]).reset_index(drop=True)
+    df = df.drop(columns=["_year", "_week"])
 
     values = df["incidence"].values.astype(np.float64)
     weeks = df["year_week"].tolist()
@@ -464,12 +468,15 @@ def main():
     all_wis = {}
     all_cov50 = {}   # {model_name: [covered_bool, ...]}
     all_cov90 = {}
+    all_ape = {}     # {model_name: {(round_week, horizon): ape}}
 
     q_idx = {round(q, 3): i for i, q in enumerate(INFLUCAST_QUANTILE_LEVELS)}
+    median_idx = q_idx[0.5]
 
     for model_name, forecasts in all_models.items():
         is_chronos = model_name in chronos_names
         model_wis = {}
+        model_ape = {}
         cov50_list = []
         cov90_list = []
         for rw, round_data in forecasts.items():
@@ -495,9 +502,15 @@ def main():
                 model_wis[(rw, h)] = wis
                 cov50_list.append(quantiles[q_idx[0.25]] <= actual <= quantiles[q_idx[0.75]])
                 cov90_list.append(quantiles[q_idx[0.05]] <= actual <= quantiles[q_idx[0.95]])
+
+                # MAPE: use median (q0.5) as point forecast
+                median_pred = quantiles[median_idx]
+                if actual > 0:
+                    model_ape[(rw, h)] = abs(median_pred - actual) / actual
         all_wis[model_name] = model_wis
         all_cov50[model_name] = cov50_list
         all_cov90[model_name] = cov90_list
+        all_ape[model_name] = model_ape
 
     model_names = list(all_wis.keys())
     n_models = len(model_names)
@@ -564,6 +577,26 @@ def main():
         n_rounds = len(all_wis[model_name])
         print(f"  {rwis:.3f}   {c50:5.1f}%   {c90:5.1f}%  {model_name} ({n_rounds} obs){marker}")
 
+    # 6b. MAPE summary
+    print("\n" + "=" * 90)
+    print("MAPE (mean absolute percentage error of median forecast)")
+    print("=" * 90)
+    print(f"  {'MAPE%':>7}  {'H1':>7}  {'H2':>7}  {'H3':>7}  {'H4':>7}  Model")
+    print(f"  {'─'*7}  {'─'*7}  {'─'*7}  {'─'*7}  {'─'*7}  {'─'*40}")
+    mape_by_model = {}
+    for model_name in sorted(model_names, key=lambda m: np.mean(list(all_ape.get(m, {}).values())) if all_ape.get(m) else 999):
+        apes = all_ape.get(model_name, {})
+        if not apes:
+            continue
+        overall_mape = np.mean(list(apes.values())) * 100
+        per_h_mape = {}
+        for h in range(1, 5):
+            h_apes = [v for (rw, hh), v in apes.items() if hh == h]
+            per_h_mape[h] = np.mean(h_apes) * 100 if h_apes else float("nan")
+        mape_by_model[model_name] = {"overall": overall_mape, "per_horizon": per_h_mape}
+        marker = " ← US" if "Chronos" in model_name else ""
+        print(f"  {overall_mape:6.1f}%  {per_h_mape[1]:6.1f}%  {per_h_mape[2]:6.1f}%  {per_h_mape[3]:6.1f}%  {per_h_mape[4]:6.1f}%  {model_name}{marker}")
+
     # 7. Per-horizon breakdown for Chronos vs key models
     print("\n" + "=" * 90)
     print("PER-HORIZON SIMPLE rWIS (model / baseline on common obs)")
@@ -621,13 +654,27 @@ def main():
             "all_simple_rwis": {k: float(v) for k, v in simple_ratios.items()},
             "all_pairwise_rwis": {k: float(v) for k, v in pairwise_rwis.items()},
         }
+        # Per-horizon MAPE for Chronos models
+        per_horizon_mape = {}
         for cn in chronos_names:
+            apes = all_ape.get(cn, {})
+            h_mape = {}
+            for h in range(1, 5):
+                h_apes = [v for (rw, hh), v in apes.items() if hh == h]
+                h_mape[str(h)] = float(np.mean(h_apes) * 100) if h_apes else None
+            per_horizon_mape[cn] = h_mape
+
+        for cn in chronos_names:
+            cn_apes = all_ape.get(cn, {})
+            cn_mape = float(np.mean(list(cn_apes.values())) * 100) if cn_apes else None
             output["chronos_models"][cn] = {
                 "simple_rwis": float(simple_ratios[cn]) if cn in simple_ratios else None,
                 "pairwise_rwis": float(pairwise_rwis[cn]) if cn in pairwise_rwis else None,
                 "cov50": float(np.mean(all_cov50[cn])) * 100 if all_cov50.get(cn) else None,
                 "cov90": float(np.mean(all_cov90[cn])) * 100 if all_cov90.get(cn) else None,
                 "per_horizon_rwis": per_horizon.get(cn, {}),
+                "mape_pct": cn_mape,
+                "per_horizon_mape": per_horizon_mape.get(cn, {}),
             }
         with open(args.output_json, "w") as f:
             json.dump(output, f, indent=2)

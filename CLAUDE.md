@@ -4,7 +4,7 @@ All commands run from `forecast_pipeline/`.
 
 ## Architecture
 
-Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 89 countries. Produces probabilistic 4-week-ahead forecasts with prediction intervals.
+Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 78 countries. Produces probabilistic 4-week-ahead forecasts with prediction intervals.
 
 ## Key Data Concepts
 
@@ -24,13 +24,13 @@ Three scripts share the same `--covariates` interface:
 | `scripts/eval_influcast_pairwise.py` | data_type, hemisphere, week_of_year, weather |
 
 Behavior:
-- Flag omitted: `prepare_finetune_data.py` uses ALL covariates; the other two use NONE
+- Flag omitted: `prepare_finetune_data.py` uses ALL covariates; `run_evaluation.py` and `eval_influcast_pairwise.py` use NONE
 - `--covariates` (no args): no covariates (target only)
 - `--covariates data_type week_of_year`: only those two
 
-Training and evaluation covariates must match. If you trained with `--covariates data_type`, evaluate with `--covariates data_type`.
+Models trained with covariates can be evaluated without covariates. Simple/static covariates (hemisphere) may help at inference; complex covariates (weather, neighbors) tend not to help. Testing both with and without covariates at inference is recommended.
 
-## Shared Utilities (`src/scripts/`)
+## Shared Utilities (`scripts/`)
 
 - **data_loader.py**: `load_time_series_data()`, `load_data_type_indicator()`, `clean_zeros_to_nan()`, `trim_leading_artifact()`. Central place for data loading and cleaning.
 - **weather_fetcher.py**: `fetch_weather_data()` (Open-Meteo API), `get_country_coordinates()`, `aggregate_weather_to_weekly()`, `normalize_weather_features()`. Rate-limited with retry backoff.
@@ -62,7 +62,7 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 1. `update_who_data.py --backup` (download WHO data)
 2. `enhanced_extract_country_data.py --all` (extract per-country CSVs)
 3. `scripts/prefetch_weather.py --refresh_stale` (optional, for weather covariate)
-4. `scripts/prepare_finetune_data.py --covariates ... --exclude_countries "Thailand"` (quality scan + training samples)
+4. `scripts/prepare_finetune_data.py --covariates ... --exclude_countries "Thailand,Belarus,Colombia"` (quality scan + training samples)
 5. `scripts/finetune_chronos.py --output_dir models/...` (fine-tune)
 6. `run_all_country_inference.py --model_path ... --countries_file data/training_countries.json` (inference)
 7. `generate_map_data.py` + `generate_country_details.py` (frontend JSON)
@@ -70,8 +70,9 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 
 ## Evaluation
 
-- `run_evaluation.py`: Rolling WIS evaluation for any country/season. Plots to `results/evaluation/plots/`.
+- `run_evaluation.py`: Rolling WIS evaluation (H1-H4 averaged) for any country/season. Uses naive random-walk baseline (Fiandrino et al., 2025). Supports `--quiet` for clean sorted table output. Plots to `results/evaluation/plots/`.
 - `scripts/eval_influcast_pairwise.py`: Head-to-head vs Influcast participants (Italy only).
+- `scripts/run_ablation.py`: Full covariate ablation (all 2^5 combinations + zero-shot baseline). Supports `--nocov_eval` to evaluate all models without covariates, `--eval_only`, `--collect_only`, `--all_countries` to eval on all training countries instead of default 7, `--experiments 0,3,11` to run specific experiment IDs.
 
 ## Frontend
 
@@ -79,8 +80,10 @@ Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map +
 
 ## Gotchas
 
-- Thailand is excluded from training (`--exclude_countries "Thailand"`) due to data quality issues.
+- Excluded from training (data quality / outlier rWIS / MAPE): Thailand, Belarus, Colombia, Peru, Ukraine, Mexico, Oman, Viet Nam, North Macedonia, Croatia, New Caledonia, Nigeria. Listed in `training_countries.json` `excluded_from_training`.
 - `assess_data_quality.py` was deleted; its functionality is now in `prepare_finetune_data.py --assess_only`.
 - Chronos-2 uses dict-based input when covariates are present: `{"target": array, "past_covariates": {...}, "future_covariates": {...}}`.
-- `data_type` covariate is a future covariate too (repeat last known value for prediction horizon) since a country won't switch reporting mid-forecast.
-- Weather covariates are inconsistent across countries (some have cache, some don't). This means some training samples have weather channels and others don't — can confuse the model. Prefer training without weather unless all countries are pre-cached.
+- Future covariates: `data_type`, `hemisphere`, `week_sin`, `week_cos` are passed as both past and future covariates during training and evaluation (defined in `FUTURE_KNOWN_COVARIATES` in `prepare_finetune_data.py`). Weather and neighbors are past-only.
+- Weather covariates are inconsistent across countries (some have cache, some don't). Use `--weather_cache_only` in eval to avoid API rate limits.
+- `run_evaluation.py` defaults to 7 countries; pass `--countries` with a comma-separated list for all training countries, or use `--all_countries` in `run_ablation.py`. Country names with commas (e.g. "United Kingdom, England") are parsed correctly but may split incorrectly when passed via shell — the UK nations show as "not found" warnings in rolling eval.
+- Training data is written to a shared `data/finetune_train.pkl` — `run_ablation.py` runs prepare→finetune sequentially per experiment, so each model trains on the correct data. But stale pickles from previous runs can cause issues if training is interrupted.
