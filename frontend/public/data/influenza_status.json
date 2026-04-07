@@ -4,9 +4,9 @@
     "numeric": "634",
     "name": "Qatar",
     "data_type": "ILI",
-    "value": 45.82633972167969,
-    "threshold": 69.59999999999997,
-    "score": 0.6582914572864321,
+    "value": 56.6,
+    "zscore": 0.29,
+    "score": 0.14497545009470952,
     "status": "low"
   },
   {
@@ -14,9 +14,9 @@
     "numeric": "191",
     "name": "Croatia",
     "data_type": "ILI",
-    "value": 43.224365234375,
-    "threshold": 2207.3499999999995,
-    "score": 0.5252365930599369,
+    "value": 21.2,
+    "zscore": -0.45,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -24,9 +24,9 @@
     "numeric": "418",
     "name": "Lao People's Democratic Republic",
     "data_type": "ILI",
-    "value": 118.45822143554688,
-    "threshold": 405.0,
-    "score": 0.11466165413533834,
+    "value": 117.6,
+    "zscore": -1.16,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -34,9 +34,9 @@
     "numeric": "040",
     "name": "Austria",
     "data_type": "ILI",
-    "value": 325.22735595703125,
-    "threshold": 669.0,
-    "score": 0.46564885496183206,
+    "value": 211.1,
+    "zscore": -0.57,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -44,9 +44,9 @@
     "numeric": "116",
     "name": "Cambodia",
     "data_type": "ILI",
-    "value": 369.0916137695313,
-    "threshold": 240.2,
-    "score": 0.9362101313320825,
+    "value": 363.9,
+    "zscore": 1.16,
+    "score": 0.5776459380665481,
     "status": "high"
   },
   {
@@ -54,9 +54,9 @@
     "numeric": "554",
     "name": "New Zealand",
     "data_type": "ILI",
-    "value": 73.67999267578125,
-    "threshold": 213.19999999999993,
-    "score": 0.5643939393939394,
+    "value": 75.0,
+    "zscore": -0.26,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -64,19 +64,19 @@
     "numeric": "360",
     "name": "Indonesia",
     "data_type": "ILI",
-    "value": 94.75213623046876,
-    "threshold": 92.0,
-    "score": 0.8658318425760286,
-    "status": "high"
+    "value": 68.3,
+    "zscore": 0.39,
+    "score": 0.19687157918025644,
+    "status": "low"
   },
   {
     "id": "PY",
     "numeric": "600",
     "name": "Paraguay",
     "data_type": "ILI",
-    "value": 1634.3778076171875,
-    "threshold": 1521.5,
-    "score": 0.8920863309352518,
+    "value": 1550.7,
+    "zscore": 1.03,
+    "score": 0.5125533467228276,
     "status": "high"
   },
   {
@@ -84,9 +84,9 @@
     "numeric": "231",
     "name": "Ethiopia",
     "data_type": "ILI",
-    "value": 17.671249389648438,
-    "threshold": 458.0,
-    "score": 0.04639175257731959,
+    "value": 6.9,
+    "zscore": -1.12,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -94,9 +94,9 @@
     "numeric": "242",
     "name": "Fiji",
     "data_type": "ILI",
-    "value": 893.522216796875,
-    "threshold": 493.89999999999986,
-    "score": 0.9729166666666667,
+    "value": 845.0,
+    "zscore": 2.15,
+    "score": 1.0,
     "status": "high"
   },
   {
@@ -104,9 +104,9 @@
     "numeric": "036",
     "name": "Australia",
     "data_type": "ILI",
-    "value": 82.07840728759766,
-    "threshold": 198.0,
-    "score": 0.575566750629723,
+    "value": 93.3,
+    "zscore": -0.11,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -114,9 +114,9 @@
     "numeric": "604",
     "name": "Peru",
     "data_type": "ILI",
-    "value": 27.773685455322266,
-    "threshold": 137.0,
-    "score": 0.40105540897097625,
+    "value": 4.0,
+    "zscore": -0.75,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -124,9 +124,9 @@
     "numeric": "756",
     "name": "Switzerland",
     "data_type": "ILI",
-    "value": 23.688377380371094,
-    "threshold": 203.0,
-    "score": 0.3895131086142322,
+    "value": 18.7,
+    "zscore": -0.56,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -134,9 +134,9 @@
     "numeric": "540",
     "name": "New Caledonia",
     "data_type": "ILI",
-    "value": 11.94691276550293,
-    "threshold": 48.0,
-    "score": 0.34183673469387754,
+    "value": 26.1,
+    "zscore": -0.09,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -144,9 +144,9 @@
     "numeric": "703",
     "name": "Slovakia",
     "data_type": "ILI",
-    "value": 4161.3642578125,
-    "threshold": 6044.199999999999,
-    "score": 0.6777905638665133,
+    "value": 3186.2,
+    "zscore": -0.14,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -154,9 +154,9 @@
     "numeric": "524",
     "name": "Nepal",
     "data_type": "ILI",
-    "value": 343.9822692871094,
-    "threshold": 248.0,
-    "score": 0.9442970822281167,
+    "value": 327.2,
+    "zscore": 1.85,
+    "score": 0.9268701115338572,
     "status": "high"
   },
   {
@@ -164,9 +164,9 @@
     "numeric": "031",
     "name": "Azerbaijan",
     "data_type": "ILI",
-    "value": 110.59652709960938,
-    "threshold": 1234.1999999999998,
-    "score": 0.28247162673392184,
+    "value": 96.0,
+    "zscore": -0.9,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -174,9 +174,9 @@
     "numeric": "124",
     "name": "Canada",
     "data_type": "ILI",
-    "value": 11.822593688964844,
-    "threshold": 111.89999999999998,
-    "score": 0.06343283582089553,
+    "value": 4.0,
+    "zscore": -0.93,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -184,9 +184,9 @@
     "numeric": "032",
     "name": "Argentina",
     "data_type": "ILI",
-    "value": 10435.2548828125,
-    "threshold": 30712.2,
-    "score": 0.22972972972972974,
+    "value": 11310.4,
+    "zscore": -0.74,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -194,9 +194,9 @@
     "numeric": "566",
     "name": "Nigeria",
     "data_type": "ILI",
-    "value": 20.813684463500977,
-    "threshold": 43.0,
-    "score": 0.55,
+    "value": 22.2,
+    "zscore": 0.0,
+    "score": 0.001496608929753436,
     "status": "low"
   },
   {
@@ -204,29 +204,29 @@
     "numeric": "152",
     "name": "Chile",
     "data_type": "ILI",
-    "value": 878.3313598632812,
-    "threshold": 514.55,
-    "score": 0.9261168384879725,
+    "value": 1131.5,
+    "zscore": 2.62,
+    "score": 1.0,
     "status": "high"
   },
   {
     "id": "IT",
     "numeric": "380",
     "name": "Italy",
-    "data_type": "ILI",
-    "value": 16298.779296875,
-    "threshold": 14357.0,
-    "score": 0.8811659192825112,
-    "status": "high"
+    "data_type": "ARI",
+    "value": 7556.0,
+    "zscore": 0.08,
+    "score": 0.03798077233804848,
+    "status": "low"
   },
   {
     "id": "GR",
     "numeric": "300",
     "name": "Greece",
     "data_type": "ILI",
-    "value": 898.114501953125,
-    "threshold": 1143.0,
-    "score": 0.7915106117353309,
+    "value": 791.8,
+    "zscore": 0.38,
+    "score": 0.19100317855117005,
     "status": "low"
   },
   {
@@ -234,9 +234,9 @@
     "numeric": "496",
     "name": "Mongolia",
     "data_type": "ILI",
-    "value": 16824.212890625,
-    "threshold": 11057.999999999995,
-    "score": 0.9355742296918768,
+    "value": 18952.0,
+    "zscore": 2.39,
+    "score": 1.0,
     "status": "high"
   },
   {
@@ -244,9 +244,9 @@
     "numeric": "792",
     "name": "T\u00fcrkiye",
     "data_type": "ILI",
-    "value": 4391.3232421875,
-    "threshold": 4571.200000000001,
-    "score": 0.8453364817001181,
+    "value": 4048.4,
+    "zscore": 0.99,
+    "score": 0.4966242866121275,
     "status": "low"
   },
   {
@@ -254,19 +254,19 @@
     "numeric": "250",
     "name": "France",
     "data_type": "ILI",
-    "value": 250556.8125,
-    "threshold": 143893.8,
-    "score": 0.9532293986636972,
-    "status": "high"
+    "value": 33904.5,
+    "zscore": -0.37,
+    "score": 0.0,
+    "status": "low"
   },
   {
     "id": "CO",
     "numeric": "170",
     "name": "Colombia",
     "data_type": "ILI",
-    "value": 27.870025634765625,
-    "threshold": 1469.45,
-    "score": 0.6059907834101382,
+    "value": 28.7,
+    "zscore": -0.52,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -274,9 +274,9 @@
     "numeric": "583",
     "name": "Micronesia (Federated States of)",
     "data_type": "ILI",
-    "value": 80.8217544555664,
-    "threshold": 120.29999999999995,
-    "score": 0.6968253968253968,
+    "value": 63.8,
+    "zscore": -0.07,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -284,9 +284,9 @@
     "numeric": "548",
     "name": "Vanuatu",
     "data_type": "ILI",
-    "value": 574.6053466796875,
-    "threshold": 366.94999999999993,
-    "score": 0.9552469135802469,
+    "value": 481.9,
+    "zscore": 1.24,
+    "score": 0.6191391225838789,
     "status": "high"
   },
   {
@@ -294,9 +294,9 @@
     "numeric": "348",
     "name": "Hungary",
     "data_type": "ILI",
-    "value": 4764.544921875,
-    "threshold": 7131.250000000001,
-    "score": 0.7682926829268293,
+    "value": 2917.8,
+    "zscore": -0.14,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -304,9 +304,9 @@
     "numeric": "512",
     "name": "Oman",
     "data_type": "ILI",
-    "value": 338.623046875,
-    "threshold": 43751.7,
-    "score": 0.4885245901639344,
+    "value": 150.8,
+    "zscore": -0.46,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -314,9 +314,9 @@
     "numeric": "246",
     "name": "Finland",
     "data_type": "ILI",
-    "value": 896.279052734375,
-    "threshold": 351.94999999999993,
-    "score": 0.927536231884058,
+    "value": 711.1,
+    "zscore": 1.13,
+    "score": 0.5658144649657381,
     "status": "high"
   },
   {
@@ -324,9 +324,9 @@
     "numeric": "688",
     "name": "Serbia",
     "data_type": "ILI",
-    "value": 5889.998046875,
-    "threshold": 9600.4,
-    "score": 0.6117850953206239,
+    "value": 4906.0,
+    "zscore": -0.15,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -334,9 +334,9 @@
     "numeric": "422",
     "name": "Lebanon",
     "data_type": "ILI",
-    "value": 17.087486267089844,
-    "threshold": 202.29999999999998,
-    "score": 0.23076923076923078,
+    "value": 24.4,
+    "zscore": -0.56,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -344,9 +344,9 @@
     "numeric": "268",
     "name": "Georgia",
     "data_type": "ILI",
-    "value": 331.1459655761719,
-    "threshold": 268.0,
-    "score": 0.9225352112676056,
+    "value": 288.6,
+    "zscore": 1.15,
+    "score": 0.5753178334303566,
     "status": "high"
   },
   {
@@ -354,9 +354,9 @@
     "numeric": "388",
     "name": "Jamaica",
     "data_type": "ILI",
-    "value": 581.0597534179688,
-    "threshold": 1526.7,
-    "score": 0.2574123989218329,
+    "value": 576.7,
+    "zscore": -0.76,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -364,9 +364,9 @@
     "numeric": "562",
     "name": "Niger",
     "data_type": "ILI",
-    "value": 38.410888671875,
-    "threshold": 1354.8,
-    "score": 0.007957559681697613,
+    "value": 35.8,
+    "zscore": -0.36,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -374,9 +374,9 @@
     "numeric": "324",
     "name": "Guinea",
     "data_type": "ILI",
-    "value": 61.108184814453125,
-    "threshold": 121.0,
-    "score": 0.2563451776649746,
+    "value": 61.8,
+    "zscore": -0.7,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -384,9 +384,9 @@
     "numeric": "643",
     "name": "Russian Federation",
     "data_type": "ILI",
-    "value": 1062.028076171875,
-    "threshold": 1645.7499999999995,
-    "score": 0.800761421319797,
+    "value": 734.9,
+    "zscore": -0.13,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -394,9 +394,9 @@
     "numeric": "050",
     "name": "Bangladesh",
     "data_type": "ILI",
-    "value": 217.83792114257807,
-    "threshold": 203.2,
-    "score": 0.9249394673123487,
+    "value": 207.7,
+    "zscore": 1.35,
+    "score": 0.6751606510830728,
     "status": "high"
   },
   {
@@ -404,9 +404,9 @@
     "numeric": "450",
     "name": "Madagascar",
     "data_type": "ILI",
-    "value": 277.5245056152344,
-    "threshold": 253.2,
-    "score": 0.8836772983114447,
+    "value": 279.2,
+    "zscore": 1.03,
+    "score": 0.5134532537410326,
     "status": "high"
   },
   {
@@ -414,9 +414,9 @@
     "numeric": "398",
     "name": "Kazakhstan",
     "data_type": "ILI",
-    "value": 1775.412353515625,
-    "threshold": 1319.8999999999999,
-    "score": 0.9026666666666666,
+    "value": 2023.0,
+    "zscore": 1.43,
+    "score": 0.7147500655651023,
     "status": "high"
   },
   {
@@ -424,9 +424,9 @@
     "numeric": "682",
     "name": "Saudi Arabia",
     "data_type": "ILI",
-    "value": 225.8419189453125,
-    "threshold": 627.5,
-    "score": 0.6188340807174888,
+    "value": 227.7,
+    "zscore": -0.05,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -434,19 +434,19 @@
     "numeric": "724",
     "name": "Spain",
     "data_type": "ILI",
-    "value": 4488.8427734375,
-    "threshold": 3605.999999999998,
-    "score": 0.874766355140187,
-    "status": "high"
+    "value": 4055.3,
+    "zscore": 0.1,
+    "score": 0.05228723190715726,
+    "status": "low"
   },
   {
     "id": "CR",
     "numeric": "188",
     "name": "Costa Rica",
     "data_type": "ILI",
-    "value": 96.80599975585938,
-    "threshold": 1211.0,
-    "score": 0.23529411764705882,
+    "value": 122.1,
+    "zscore": -0.67,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -454,9 +454,9 @@
     "numeric": "004",
     "name": "Afghanistan",
     "data_type": "ILI",
-    "value": 6973.22265625,
-    "threshold": 3027.7,
-    "score": 0.9398058252427185,
+    "value": 6282.7,
+    "zscore": 1.7,
+    "score": 0.8495557192493942,
     "status": "high"
   },
   {
@@ -464,9 +464,9 @@
     "numeric": "578",
     "name": "Norway",
     "data_type": "ILI",
-    "value": 863.3663330078125,
-    "threshold": 4099.399999999999,
-    "score": 0.4477172312223859,
+    "value": 719.7,
+    "zscore": -0.49,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -474,9 +474,9 @@
     "numeric": "076",
     "name": "Brazil",
     "data_type": "ILI",
-    "value": 49364.87890625,
-    "threshold": 51723.35,
-    "score": 0.8200692041522492,
+    "value": 58215.9,
+    "zscore": 0.37,
+    "score": 0.18425755498325605,
     "status": "low"
   },
   {
@@ -484,9 +484,9 @@
     "numeric": "894",
     "name": "Zambia",
     "data_type": "ILI",
-    "value": 87.84381103515625,
-    "threshold": 1275.3,
-    "score": 0.1903807615230461,
+    "value": 309.7,
+    "zscore": -0.78,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -494,19 +494,19 @@
     "numeric": "440",
     "name": "Lithuania",
     "data_type": "ILI",
-    "value": 640.0925903320312,
-    "threshold": 1187.6999999999998,
-    "score": 0.8059880239520958,
+    "value": 334.1,
+    "zscore": -0.22,
+    "score": 0.0,
     "status": "low"
   },
   {
     "id": "DE",
     "numeric": "276",
     "name": "Germany",
-    "data_type": "ILI",
-    "value": 9055.169921875,
-    "threshold": 16989.0,
-    "score": 0.4436701509872242,
+    "data_type": "ARI",
+    "value": 9282.5,
+    "zscore": -0.32,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -514,9 +514,9 @@
     "numeric": "686",
     "name": "Senegal",
     "data_type": "ILI",
-    "value": 32.53740692138672,
-    "threshold": 174.5,
-    "score": 0.08761329305135952,
+    "value": 37.3,
+    "zscore": -0.76,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -524,9 +524,9 @@
     "numeric": "372",
     "name": "Ireland",
     "data_type": "ILI",
-    "value": 23.30523681640625,
-    "threshold": 90.5,
-    "score": 0.5430539609644087,
+    "value": 20.7,
+    "zscore": -0.38,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -534,9 +534,9 @@
     "numeric": "288",
     "name": "Ghana",
     "data_type": "ILI",
-    "value": 70.52847290039062,
-    "threshold": 328.09999999999997,
-    "score": 0.13247863247863248,
+    "value": 73.0,
+    "zscore": -0.52,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -544,9 +544,9 @@
     "numeric": "208",
     "name": "Denmark",
     "data_type": "ILI",
-    "value": 171.13973999023438,
-    "threshold": 341.19999999999993,
-    "score": 0.6003062787136294,
+    "value": 148.1,
+    "zscore": -0.2,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -554,9 +554,9 @@
     "numeric": "484",
     "name": "Mexico",
     "data_type": "ILI",
-    "value": 1308.4384765625,
-    "threshold": 19573.299999999996,
-    "score": 0.4528301886792453,
+    "value": 1237.6,
+    "zscore": -0.47,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -564,9 +564,9 @@
     "numeric": "804",
     "name": "Ukraine",
     "data_type": "ILI",
-    "value": 227.591796875,
-    "threshold": 21892.149999999998,
-    "score": 0.6763157894736842,
+    "value": 175.4,
+    "zscore": -0.44,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -574,9 +574,9 @@
     "numeric": "616",
     "name": "Poland",
     "data_type": "ILI",
-    "value": 3887.09326171875,
-    "threshold": 4501.25,
-    "score": 0.7863741339491916,
+    "value": 2987.8,
+    "zscore": 0.23,
+    "score": 0.11387403665362296,
     "status": "low"
   },
   {
@@ -584,9 +584,9 @@
     "numeric": "704",
     "name": "Viet Nam",
     "data_type": "ILI",
-    "value": 66.7081298828125,
-    "threshold": 310.0,
-    "score": 0.22885572139303484,
+    "value": 231.9,
+    "zscore": 0.44,
+    "score": 0.21900354895604762,
     "status": "low"
   },
   {
@@ -594,9 +594,9 @@
     "numeric": "056",
     "name": "Belgium",
     "data_type": "ILI",
-    "value": 36.507598876953125,
-    "threshold": 221.35000000000002,
-    "score": 0.43640350877192985,
+    "value": 29.3,
+    "zscore": -0.46,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -604,19 +604,19 @@
     "numeric": "504",
     "name": "Morocco",
     "data_type": "ILI",
-    "value": 314.809814453125,
-    "threshold": 2435.0499999999997,
-    "score": 0.029166666666666667,
+    "value": 0.0,
+    "zscore": -1.07,
+    "score": 0.0,
     "status": "low"
   },
   {
     "id": "BG",
     "numeric": "100",
     "name": "Bulgaria",
-    "data_type": "ILI",
-    "value": 2669.089599609375,
-    "threshold": 4124.5,
-    "score": 0.625,
+    "data_type": "ARI",
+    "value": 1950.7,
+    "zscore": -0.33,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -624,9 +624,9 @@
     "numeric": "768",
     "name": "Togo",
     "data_type": "ILI",
-    "value": 27.820337295532227,
-    "threshold": 57.0,
-    "score": 0.3341772151898734,
+    "value": 25.3,
+    "zscore": -0.61,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -634,9 +634,9 @@
     "numeric": "376",
     "name": "Israel",
     "data_type": "ILI",
-    "value": 169.2515869140625,
-    "threshold": 1264.0,
-    "score": 0.5665859564164649,
+    "value": 112.9,
+    "zscore": -0.47,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -644,9 +644,9 @@
     "numeric": "233",
     "name": "Estonia",
     "data_type": "ILI",
-    "value": 312.96826171875,
-    "threshold": 268.0,
-    "score": 0.8913551401869159,
+    "value": 280.4,
+    "zscore": 1.08,
+    "score": 0.5395138346707132,
     "status": "high"
   },
   {
@@ -654,9 +654,9 @@
     "numeric": "706",
     "name": "Somalia",
     "data_type": "ILI",
-    "value": 7.2750244140625,
-    "threshold": 75.0,
-    "score": 0.15789473684210525,
+    "value": 10.1,
+    "zscore": -0.94,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -664,9 +664,9 @@
     "numeric": "120",
     "name": "Cameroon",
     "data_type": "ILI",
-    "value": 26.974523544311523,
-    "threshold": 66.0,
-    "score": 0.42115768463073855,
+    "value": 33.0,
+    "zscore": -0.18,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -674,19 +674,19 @@
     "numeric": "840",
     "name": "United States of America",
     "data_type": "ILI",
-    "value": 63537.359375,
-    "threshold": 56214.00000000001,
-    "score": 0.8752969121140143,
-    "status": "high"
+    "value": 54980.2,
+    "zscore": 0.67,
+    "score": 0.33265825424106876,
+    "status": "low"
   },
   {
     "id": "HN",
     "numeric": "340",
     "name": "Honduras",
     "data_type": "ILI",
-    "value": 10.651123046875,
-    "threshold": 621.25,
-    "score": 0.09009009009009009,
+    "value": 11.6,
+    "zscore": -0.96,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -694,9 +694,9 @@
     "numeric": "112",
     "name": "Belarus",
     "data_type": "ILI",
-    "value": 15.221668243408203,
-    "threshold": 58.0,
-    "score": 0.1400329489291598,
+    "value": 14.7,
+    "zscore": -0.94,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -704,9 +704,9 @@
     "numeric": "064",
     "name": "Bhutan",
     "data_type": "ILI",
-    "value": 59.168678283691406,
-    "threshold": 253.5999999999999,
-    "score": 0.13133940182054615,
+    "value": 63.7,
+    "zscore": -0.91,
+    "score": 0.0,
     "status": "low"
   },
   {
@@ -714,9 +714,9 @@
     "numeric": "090",
     "name": "Solomon Islands",
     "data_type": "ILI",
-    "value": 525.5426025390625,
-    "threshold": 374.0,
-    "score": 0.9412607449856734,
-    "status": "high"
+    "value": 446.9,
+    "zscore": 0.93,
+    "score": 0.46419143664091184,
+    "status": "low"
   }
 ]

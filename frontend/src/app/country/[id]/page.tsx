@@ -19,7 +19,7 @@ import {
 import { format, parseISO, subYears } from "date-fns";
 
 interface DataPoint {
-  date: string | number; // Allow number for timestamp transformation
+  date: string | number;
   historical: number | null;
   forecast: number | null;
   lower: number | null;
@@ -34,10 +34,9 @@ interface CountryDetails {
 }
 
 export default function CountryPage({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap params using `use()` hook as per Next.js 15/16 client component patterns
   const resolvedParams = use(params);
   const { id } = resolvedParams;
-  
+
   const router = useRouter();
   const [data, setData] = useState<CountryDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,7 +50,6 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
         return res.json();
       })
       .then((data: CountryDetails) => {
-        // Transform dates to timestamps for X-Axis scaling
         const transformedPoints = data.points.map(p => ({
             ...p,
             date: parseISO(p.date as string).getTime()
@@ -95,21 +93,21 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <div className="w-8 h-8 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white gap-4">
-        <h1 className="text-2xl font-bold text-red-400">Country Data Not Found</h1>
-        <button 
+      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4">
+        <h1 className="text-xl font-semibold text-red-600">Country Data Not Found</h1>
+        <button
           onClick={() => router.push("/")}
-          className="px-4 py-2 bg-slate-800 rounded hover:bg-slate-700 transition-colors"
+          className="text-sm text-blue-600 hover:underline"
         >
-          Back to Map
+          &larr; Back to Dashboard
         </button>
       </div>
     );
@@ -118,42 +116,42 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
   const todayTimestamp = new Date().getTime();
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <button 
+    <main className="min-h-screen bg-[#fafafa]">
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <header className="mb-6">
+          <button
             onClick={() => router.push("/")}
-            className="text-slate-400 hover:text-white mb-4 transition-colors flex items-center gap-2"
+            className="text-sm text-blue-600 hover:underline mb-3 block"
           >
-            ← Back to Global Map
+            &larr; Back to Dashboard
           </button>
           <div className="flex justify-between items-end">
             <div>
-                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
-                    {data.country} <span className="text-slate-600 text-2xl font-normal">({id})</span>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                    {data.country} <span className="text-gray-400 text-lg font-normal">({id})</span>
                 </h1>
-                <p className="text-slate-400 mt-2">
+                <p className="text-gray-500 text-sm mt-1">
                     Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases and 12-month forecast
                 </p>
             </div>
             <div className="flex items-center gap-2">
-                <label htmlFor="timeRange" className="text-sm text-slate-400">Time Range:</label>
-                <select 
+                <label htmlFor="timeRange" className="text-xs text-gray-500">Range:</label>
+                <select
                     id="timeRange"
-                    value={timeRange} 
+                    value={timeRange}
                     onChange={(e) => setTimeRange(e.target.value)}
-                    className="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                    className="bg-white border border-gray-300 text-gray-700 text-sm rounded-md px-2 py-1"
                 >
                     <option value="1Y">1 Year</option>
                     <option value="3Y">3 Years</option>
                     <option value="5Y">5 Years</option>
-                    <option value="ALL">All Time</option>
+                    <option value="ALL">All</option>
                 </select>
             </div>
           </div>
         </header>
 
-        <div className="w-full h-[500px] bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl">
+        <div className="w-full h-[500px] bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={filteredData}
@@ -164,58 +162,59 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
                 bottom: 20,
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis 
-                dataKey="date" 
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis
+                dataKey="date"
                 type="number"
                 domain={['dataMin', 'dataMax']}
-                stroke="#94a3b8" 
+                stroke="#94a3b8"
                 tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
                 minTickGap={50}
+                fontSize={12}
               />
-              <YAxis stroke="#94a3b8" />
-              <Tooltip 
-                contentStyle={{ backgroundColor: "#1e293b", borderColor: "#334155", color: "#f8fafc" }}
+              <YAxis stroke="#94a3b8" fontSize={12} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", color: "#1a1a2e", borderRadius: "6px", fontSize: "13px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                 labelFormatter={(label) => format(new Date(label), "MMM d, yyyy")}
                 formatter={(value: number | undefined) => [value ? value.toFixed(0) : "0", data.data_type === "ARI" ? "ARI Cases" : "ILI Cases"]}
               />
               <Legend />
-              
+
               {/* Uncertainty Interval (10th-90th Percentile) */}
-              <Area 
-                type="monotone" 
-                dataKey="upper" 
-                stroke="none" 
-                fill="#3b82f6" 
-                fillOpacity={0.1} 
+              <Area
+                type="monotone"
+                dataKey="upper"
+                stroke="none"
+                fill="#3b82f6"
+                fillOpacity={0.1}
                 name="Confidence Interval"
               />
-              <Area 
-                type="monotone" 
-                dataKey="lower" 
-                stroke="none" 
-                fill="#0f172a" 
-                fillOpacity={1} 
+              <Area
+                type="monotone"
+                dataKey="lower"
+                stroke="none"
+                fill="#ffffff"
+                fillOpacity={1}
               />
 
               {/* Historical Data */}
-              <Line 
-                type="monotone" 
-                dataKey="historical" 
-                stroke="#94a3b8" 
-                strokeWidth={2} 
-                dot={false} 
-                name={data.data_type === "ARI" ? "Historical ARI Cases" : "Historical ILI Cases"} 
+              <Line
+                type="monotone"
+                dataKey="historical"
+                stroke="#64748b"
+                strokeWidth={2}
+                dot={false}
+                name={data.data_type === "ARI" ? "Historical ARI Cases" : "Historical ILI Cases"}
               />
 
               {/* Forecast Data */}
-              <Line 
-                type="monotone" 
-                dataKey="forecast" 
-                stroke="#3b82f6" 
-                strokeWidth={3} 
-                dot={false} 
-                name="Forecast (Mean)" 
+              <Line
+                type="monotone"
+                dataKey="forecast"
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={false}
+                name="Forecast (Mean)"
               />
 
               {/* Today Reference Line */}
