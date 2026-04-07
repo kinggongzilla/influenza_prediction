@@ -1,6 +1,6 @@
 # Influenza Prediction Pipeline
 
-Global influenza forecasting using [Chronos-2](https://github.com/amazon-science/chronos-forecasting) fine-tuned on WHO surveillance data (89 countries). Produces 54-week forecasts displayed on an interactive world map.
+Global influenza forecasting using [Chronos-2](https://github.com/amazon-science/chronos-forecasting) fine-tuned on WHO surveillance data (78 countries). Produces probabilistic 4-week-ahead forecasts displayed on an interactive world map.
 
 ## Quick Start
 
@@ -36,7 +36,7 @@ Loads the fine-tuned model once on GPU and runs inference for all training count
 
 ```bash
 python run_all_country_inference.py \
-  --model_path models/chronos2-ili-finetuned-nocov/finetuned-ckpt \
+  --model_path models/ablation/hemi/finetuned-ckpt \
   --countries_file data/training_countries.json
 ```
 
@@ -65,33 +65,36 @@ Open http://localhost:3000.
 
 ## Evaluation
 
-Rolling evaluation with WIS, coverage, and phase-aware MAPE metrics. Use `--covariates` to match training covariates.
+Rolling evaluation with WIS (H1-H4), coverage, and phase-aware MAPE metrics. Models trained with covariates can be evaluated without them — simple covariates like hemisphere may help at inference, complex ones (weather, neighbors) generally don't.
 
 ```bash
-# Single country with data_type covariate
+# Single country, no covariates at inference
 python run_evaluation.py \
-  --model_path models/chronos2-ili-finetuned-nocov/finetuned-ckpt \
+  --model_path models/ablation/hemi/finetuned-ckpt \
   --country Italy \
-  --covariates data_type \
   --eval_start_date 2025-10-01 \
   --prediction_horizon 4 \
-  --plot
+  --quiet --plot
 
-# Multiple countries, all covariates
+# Multiple countries with hemisphere covariate at inference
 python run_evaluation.py \
-  --model_path models/chronos2-ili-finetuned-nocov/finetuned-ckpt \
+  --model_path models/ablation/hemi/finetuned-ckpt \
   --countries "Italy,Germany,France,Spain" \
-  --covariates data_type hemisphere week_of_year \
-  --eval_start_date 2025-04-01 \
+  --covariates hemisphere \
+  --eval_start_date 2025-10-01 \
   --prediction_horizon 4 \
-  --plot \
+  --quiet --plot \
   --output eval_2025_2026.json
 
 # Benchmark against Influcast models (Italy, 2025-26 season)
 python scripts/eval_influcast_pairwise.py \
-  --model_path models/chronos2-ili-finetuned-nocov/finetuned-ckpt \
-  --covariates data_type \
+  --model_path models/ablation/hemi/finetuned-ckpt \
   --season 2025-26
+
+# Covariate ablation (train + eval top contenders on all countries)
+python scripts/run_ablation.py \
+  --experiments 0,1,3,7,11,17,27 \
+  --all_countries --nocov_eval --weather_cache_only
 ```
 
 Plots saved to `results/evaluation/plots/`, metrics to `results/evaluation/`.
@@ -102,20 +105,20 @@ Plots saved to `results/evaluation/plots/`, metrics to `results/evaluation/`.
 
 ### Assess data quality and prepare training data
 
-Scans all extracted CSVs, applies quality filters (min 3yr data, min scale, max NaN%), updates `data/training_countries.json`, and builds sliding-window training samples.
+Scans all extracted CSVs, applies quality filters (min 4yr data, min scale, max NaN%), updates `data/training_countries.json`, and builds sliding-window training samples. 12 countries are excluded due to data quality or outlier metrics.
 
 ```bash
 # Assess only (update training_countries.json without building samples)
-python scripts/prepare_finetune_data.py --assess_only --exclude_countries "Thailand"
+python scripts/prepare_finetune_data.py --assess_only
 
 # Build training data with all covariates (default)
-python scripts/prepare_finetune_data.py --exclude_countries "Thailand"
+python scripts/prepare_finetune_data.py
 
 # Select specific covariates (available: data_type, hemisphere, week_of_year, weather, neighbors)
-python scripts/prepare_finetune_data.py --covariates data_type week_of_year --exclude_countries "Thailand"
+python scripts/prepare_finetune_data.py --covariates hemisphere week_of_year
 
 # Without covariates (target only)
-python scripts/prepare_finetune_data.py --covariates --exclude_countries "Thailand"
+python scripts/prepare_finetune_data.py --covariates
 
 # Preview without saving
 python scripts/prepare_finetune_data.py --dry_run
@@ -126,7 +129,7 @@ Outputs: `data/training_countries.json`, `data/finetune_train.pkl`, `data/finetu
 ### Fine-tune Chronos-2
 
 ```bash
-# Default (2000 steps, lr=1e-6, batch=32)
+# Default (4000 steps, lr=5e-6, batch=32)
 python scripts/finetune_chronos.py
 
 # Custom settings
@@ -140,7 +143,7 @@ python scripts/finetune_chronos.py \
 python scripts/finetune_chronos.py --no_wandb
 ```
 
-Checkpoint saved to `models/chronos2-ili-finetuned/finetuned-ckpt`.
+Checkpoint saved to `<output_dir>/finetuned-ckpt`.
 
 ### Prefetch weather data (optional)
 
@@ -160,8 +163,8 @@ python scripts/prefetch_weather.py --refresh_stale
 python update_who_data.py --backup
 python enhanced_extract_country_data.py --all
 python scripts/prefetch_weather.py --refresh_stale          # optional, only if using weather covariate
-python scripts/prepare_finetune_data.py --covariates data_type --exclude_countries "Thailand"
-python scripts/finetune_chronos.py --output_dir models/chronos2-ili-finetuned-nocov
+python scripts/prepare_finetune_data.py --covariates hemisphere
+python scripts/finetune_chronos.py --output_dir models/hemi
 ```
 
 ---
@@ -180,13 +183,20 @@ forecast_pipeline/
 │   ├── prepare_finetune_data.py       # Quality assessment + training sample builder
 │   ├── finetune_chronos.py            # Fine-tune Chronos-2
 │   ├── prefetch_weather.py            # Pre-cache weather data from Open-Meteo
-│   └── eval_influcast_pairwise.py     # Benchmark against Influcast models (Italy)
+│   ├── eval_influcast_pairwise.py     # Benchmark against Influcast models (Italy)
+│   ├── run_ablation.py                # Covariate ablation experiments
+│   ├── data_loader.py                 # Shared data loading and cleaning
+│   ├── weather_fetcher.py             # Open-Meteo weather API client
+│   └── country_neighbors.py           # Geographic neighbor lookup
 ├── data/
 │   ├── who_flu_data.csv               # Raw WHO surveillance data
 │   ├── extracted_data/                # Per-country CSVs
 │   └── training_countries.json        # Country list + data types (auto-generated)
 ├── models/                            # Fine-tuned model checkpoints
-└── results/                           # Inference results and eval plots
+│   └── ablation/                      # Ablation experiment checkpoints
+└── results/
+    ├── evaluation/                    # Rolling eval JSONs and plots
+    └── ablation/                      # Ablation summaries and Influcast JSONs
 
 frontend/                              # Next.js world map dashboard
 ```
