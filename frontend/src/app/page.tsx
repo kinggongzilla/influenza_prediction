@@ -13,11 +13,10 @@ export default function Home() {
           <p className="text-gray-500 text-sm max-w-2xl">
             Current and near-term influenza activity for 78 countries, with quantified
             uncertainty. Compare countries week by week and look up to four weeks ahead;
-            open any country for its detailed forecast and prediction intervals — with a
-            full account of{" "}
+            open any country for its detailed forecast and prediction intervals.{" "}
             <Link href="/methodology" className="text-blue-600 hover:underline">
-              methodology and limitations
-            </Link>.
+              View methodology
+            </Link>
           </p>
           <div className="mt-2">
             <DataStamp />
