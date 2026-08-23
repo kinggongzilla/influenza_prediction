@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ComposableMap, Geographies, Geography, Graticule } from "react-simple-maps";
+import { feature } from "topojson-client";
 import { interpolateRdYlGn } from "d3-scale-chromatic";
 import { Tooltip } from "react-tooltip";
 
@@ -62,16 +63,19 @@ const MapChart = () => {
       .catch((err) => console.error("Failed to load data", err));
   }, []);
 
-  // Base 110m world + UK sub-region polygons (England/Scotland/N. Ireland are
-  // drawn on top of the single GB base polygon; Wales stays on the base).
+  // Base 110m world (TopoJSON) + UK sub-region polygons (GeoJSON; drawn on
+  // top of the single GB base polygon; Wales stays on the base).
   useEffect(() => {
     Promise.all([
       fetch(geoUrl).then((r) => r.json()),
       fetch(ukSubregionsUrl).then((r) => r.json()).catch(() => null),
     ])
       .then(([base, uk]) => {
-        const features = uk ? [...base.features, ...uk.features] : base.features;
-        setGeoData({ ...base, features });
+        const b = base as any;
+        const baseFeatures: any[] =
+          b.type === "Topology" ? (feature(b, b.objects.countries) as any).features : b.features;
+        const features = uk ? [...baseFeatures, ...uk.features] : baseFeatures;
+        setGeoData({ type: "FeatureCollection", features });
       })
       .catch((err) => console.error("Failed to load map geography", err));
   }, []);
