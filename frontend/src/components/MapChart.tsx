@@ -183,7 +183,12 @@ const MapChart = () => {
 
         <ComposableMap
           projection="geoNaturalEarth1"
-          projectionConfig={{ scale: 160 }}
+          // scale 140.6 = geoNaturalEarth1().fitExtent([[10,10],[790,410]], {type:"Sphere"})
+          // for the 800x420 viewBox (RSM's default translate centers it):
+          // whole globe incl. polar caps fits with a 10-unit margin.
+          // The old hardcoded scale 160 overflowed the viewBox by ~18px
+          // top/bottom and ~38px left/right, clipping the Arctic etc.
+          projectionConfig={{ scale: 140.6 }}
           height={420}
         >
           <Graticule stroke="#e2e8f0" strokeWidth={0.4} />
