@@ -10,7 +10,11 @@ export default function Header() {
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between gap-1.5 md:gap-0 py-3 md:py-0 md:h-14">
-        <Link href="/" className="text-base sm:text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
+        >
+          <img src="/images/logo.svg" alt="" className="h-8 w-8 md:h-9 md:w-9" />
           Global Influenza Forecast
         </Link>
         <nav className="flex items-center justify-center md:justify-end gap-4 md:gap-6 text-sm">

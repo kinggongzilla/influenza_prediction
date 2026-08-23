@@ -56,7 +56,7 @@ export default function MethodologyPage() {
           </p>
           <p>
             Not every country&apos;s series is usable. Candidates were screened with fixed,
-            predefined quality criteria, and <strong>89 countries passed</strong>:
+            predefined quality criteria, and <strong>78 countries passed</strong>:
           </p>
           <ul className="list-disc pl-6 space-y-1.5">
             <li>at least 156 non-missing weeks (≈ 3 years of actual data)</li>
@@ -67,10 +67,9 @@ export default function MethodologyPage() {
           <p>
             Selection criteria are applied identically to all countries and are deliberately
             data-driven rather than judgment-based, to avoid cherry-picking easy-to-predict
-            series. 72 of the 89 can be color-coded on the world map; the remaining 17
-            (small-island territories and the UK sub-regions that WHO reports separately)
-            have no matching region in the 110m map geography, so their forecasts are linked
-            from the list below instead.
+            series. A few of them — small-island territories and the UK sub-regions that WHO
+            reports separately — have no matching region in the 110m map geography, so their
+            forecasts are linked from the list below instead of being shown on the map.
           </p>
           <CountryList />
         </Section>
@@ -88,7 +87,7 @@ export default function MethodologyPage() {
             </a>
             , a pretrained time-series foundation model (patch-based transformer trained with a
             quantile-regression loss, so its outputs are probabilistic by construction). It is
-            fine-tuned on the 89-country series set; the production configuration conditions on
+            fine-tuned on the 78-country series set; the production configuration conditions on
             two covariates, the indicator type (ILI vs ARI) and hemisphere, selected by
             ablation. Additional covariates (week-of-year, historical weather from Open-Meteo,
             neighbouring-country activity) were evaluated and did not improve

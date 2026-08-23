@@ -76,7 +76,7 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 
 ## Frontend
 
-Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages.
+Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages. Branding: header logo `public/images/logo.svg` (globe + epidemic curve); favicon is `src/app/icon.svg` (same design; the default `favicon.ico` was removed).
 
 The map JSON (`influenza_status.json`) is an object: `{generated_at, default_week, weeks, countries}`. Each fresh country has `forecast_weeks: [{date, value, zscore, score, status}]` restricted to the **display window: `default_week` (the week closest to today) + the next 3 weeks** — the map only offers those 4 weeks in its selector (all countries share one weekly grid). Picking a week re-colors the map from that week's per-country z-score; countries without a forecast for that week go gray. Detail JSONs (`details/<CODE>.json`, one per trained country — 89 total, 72 also on the map) carry `points[]` with `historical`/`forecast`/quantiles per week. The detail page's Range selector (1Y / 3Y / 5Y / All, **1Y is the default**) shows the last N weeks of *history* plus the near-term 8-week forecast, anchored to the last historical week; `All` shows the full series including the whole forecast horizon. The methodology page renders `data/country_list.json` (written by `generate_map_data.py`) as a linked table of every trained country, including the 17 that can't be colored on the map.
 
@@ -98,6 +98,7 @@ The site is 100% static at runtime (all data is client-side `fetch` from `/data/
 
 ## Gotchas
 
+- **Public copy says "78 countries" on purpose** — it must stay consistent with the ESCAIDE abstract/citation, which say 78. The actual training set is 89 (see `training_countries.json`). Do not "fix" the dashboard copy to 89 unless the abstract and citation are updated too.
 - Excluded from training after out-of-sample evaluation (outlier rWIS/MAPE): currently just **Thailand** (the old 12-country list is stale). The live list is in `training_countries.json` → `excluded_from_training` and is data-driven, so it can change as quality thresholds or eval results change. 89 countries are trained; 72 map to the 110m world map, 17 (small-island territories + UK sub-regions) are country-page-only.
 - `assess_data_quality.py` was deleted; its functionality is now in `prepare_finetune_data.py --assess_only`.
 - Chronos-2 uses dict-based input when covariates are present: `{"target": array, "past_covariates": {...}, "future_covariates": {...}}`.
