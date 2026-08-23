@@ -18,10 +18,9 @@ export default function AboutPage() {
               className="h-20 w-20 rounded-full border border-gray-200 object-cover"
             />
             <p className="text-[15px] leading-7 text-gray-700">
-              <strong>David Hauser</strong> is a machine-learning researcher working on
-              time-series forecasting with foundation models. He built this dashboard
-              end-to-end — the surveillance data pipeline, the fine-tuned model, and this
-              website. This is an independent research project.
+              <strong>David Hauser</strong> is a machine learning researcher working at the
+              intersection of AI and science, with a focus on time-series forecasting,
+              physics simulation, and large language models.
               <span className="block mt-2">
                 <a
                   href="https://github.com/kinggongzilla"
