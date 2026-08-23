@@ -89,14 +89,51 @@ def download_fluid_data(output_path: Path, backup: bool) -> None:
     logger.info(f"Saved to {output_path} ({output_path.stat().st_size / 1_000_000:.1f} MB)")
 
 
-def validate_data(path: Path) -> pd.DataFrame:
-    """Load and validate the downloaded CSV; return the DataFrame."""
-    logger.info("Validating downloaded data ...")
+def load_who_csv(path: Path):
+    """Load the WHO CSV, tolerating a small number of malformed lines.
+
+    WHO's feed occasionally contains structurally broken rows (unquoted commas,
+    duplicated tails), which make a strict parse fail on the whole file.
+    Strategy: try strict first; on ParserError, skip bad lines and report how
+    many were dropped. Abort if more than 1% of lines are malformed.
+    Returns (df, n_skipped).
+    """
     try:
         df = pd.read_csv(path, low_memory=False)
+        return df, 0
+    except pd.errors.ParserError as e:
+        logger.warning(f"Strict parse failed ({e.__class__.__name__}); retrying with on_bad_lines='skip' ...")
+
+    with open(path, "r", errors="replace") as f:
+        total_lines = sum(1 for _ in f)
+    df = pd.read_csv(path, low_memory=False, on_bad_lines="skip")
+    skipped = max(0, total_lines - 1 - len(df))
+    if total_lines > 0 and skipped / (total_lines - 1) > 0.01:
+        logger.error(f"Aborting: {skipped:,} of {total_lines - 1:,} lines are malformed (>1%) — WHO file too corrupted")
+        sys.exit(1)
+    if skipped:
+        logger.warning(f"Skipped {skipped:,} malformed line(s) ({skipped / (total_lines - 1):.2%} of file)")
+    return df, skipped
+
+
+def validate_data(path: Path) -> pd.DataFrame:
+    """Load and validate the downloaded CSV; return the DataFrame.
+
+    If the file needed lenient parsing, the canonical file is rewritten from
+    the cleaned DataFrame so downstream scripts (which parse strictly) see a
+    clean file.
+    """
+    logger.info("Validating downloaded data ...")
+    try:
+        df, skipped = load_who_csv(path)
     except Exception as e:
         logger.error(f"Could not read CSV: {e}")
         sys.exit(1)
+
+    if skipped:
+        logger.info(f"Rewriting {path.name} without the {skipped} malformed line(s) ...")
+        df.to_csv(path, index=False)
+
 
     missing = EXPECTED_COLUMNS - set(df.columns)
     if missing:

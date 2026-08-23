@@ -6,6 +6,11 @@ import numpy as np
 from datetime import datetime, timedelta
 import pycountry
 
+# Surveillance data at least this old is considered stale: the model forecasts
+# 4 weeks ahead, so a prediction anchored to data that is 4+ weeks old no longer
+# covers "today" and must not be shown.
+STALE_AFTER_DAYS = 4 * 7
+
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(BASE_DIR, 'results', 'country_predictions')
@@ -115,20 +120,28 @@ def process_countries():
         # Find Extracted Data CSV (for dates)
         extracted_file, data_type = find_extracted_file(country_folder_name)
         start_date = None
+        last_date = None
         if extracted_file:
             try:
                 extracted_df = pd.read_csv(extracted_file)
                 if 'Time' in extracted_df.columns:
-                    start_date = pd.to_datetime(extracted_df['Time'].iloc[0])
+                    parsed_times = pd.to_datetime(extracted_df['Time'], errors='coerce')
+                    start_date = parsed_times.dropna().min()
+                    last_date = parsed_times.dropna().max()
             except Exception as e:
                 print(f"Error reading extracted file for {country_folder_name}: {e}")
-        
+
         if not start_date:
             # Fallback: Assume recent data if we can't find file, but better to skip or use dummy
             # Let's use a dummy start date or try to infer. 
             # For now, let's skip if we can't align dates to avoid misleading charts
             print(f"Skipping {country_folder_name}: Could not determine start date")
             continue
+
+        # Stale data (e.g. stopped reporting, or seasonal gap > 4 weeks) -> no forecast is shown
+        today = datetime.now()
+        stale = last_date is None or (today - last_date).days >= STALE_AFTER_DAYS
+        last_update = last_date.strftime('%Y-%m-%d') if last_date is not None else None
 
         try:
             df = pd.read_csv(results_csv_file)
@@ -138,6 +151,8 @@ def process_countries():
                 "country": country_folder_name.replace('_', ' '),
                 "id": code,
                 "data_type": data_type or "ILI",
+                "stale": bool(stale),
+                "last_update": last_update,
                 "points": []
             }
             
@@ -180,10 +195,20 @@ def process_countries():
                         point["upper_50"] = (float(row['quantile_0.7']) + float(row['quantile_0.8'])) / 2
 
                 output_data["points"].append(point)
-                
+
                 # Increment date (Weekly data)
                 current_date += timedelta(weeks=1)
-                
+
+            # Drop forecasts for stale data: a prediction anchored to old
+            # observations is not a current prediction and must not be shown.
+            if stale:
+                for point in output_data["points"]:
+                    point["forecast"] = None
+                    point["lower"] = None
+                    point["upper"] = None
+                    point["lower_50"] = None
+                    point["upper_50"] = None
+
             # Save JSON
             with open(os.path.join(OUTPUT_DIR, f"{code}.json"), 'w') as f:
                 json.dump(output_data, f, indent=2)

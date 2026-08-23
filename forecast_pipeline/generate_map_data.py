@@ -10,8 +10,14 @@ from datetime import datetime, timedelta
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_DIR = os.path.join(BASE_DIR, 'results', 'country_predictions')
 DETAILS_DIR = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'details')
+EXTRACTED_DATA_DIR = os.path.join(BASE_DIR, 'data', 'extracted_data')
 BOUNDING_BOXES_FILE = os.path.join(BASE_DIR, 'data', 'country_bounding_boxes.json')
 OUTPUT_FILE = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'influenza_status.json')
+
+# Surveillance data at least this old is not shown as a current prediction:
+# the model forecasts 4 weeks ahead, so a forecast anchored to data that is
+# 4+ weeks old no longer covers "today".
+STALE_AFTER_DAYS = 4 * 7
 
 def load_mappings():
     with open(BOUNDING_BOXES_FILE, 'r') as f:
@@ -44,12 +50,34 @@ def load_mappings():
     return name_to_code
 
 
-def get_value_for_today(detail_json_path, today):
-    """From a country detail JSON, return the best current value:
+def find_extracted_file(country_folder_name):
+    """Locate the extracted CSV for a results folder name (combined > ILI > ARI)."""
+    for suffix in ('_combined.csv', '_ili.csv', '_ari.csv'):
+        for variant in (country_folder_name, country_folder_name.replace('_', ' ')):
+            path = os.path.join(EXTRACTED_DATA_DIR, f"{variant}{suffix}")
+            if os.path.exists(path):
+                return path
+    return None
+
+
+def get_last_observation_date(extracted_path):
+    """Last date in the extracted CSV, or None if unavailable."""
+    try:
+        df = pd.read_csv(extracted_path)
+        for col in ('Time', 'Date'):
+            if col in df.columns:
+                parsed = pd.to_datetime(df[col], errors='coerce')
+                if parsed.notna().any():
+                    return parsed.max()
+    except Exception:
+        pass
+    return None
+
+
+def get_value_for_today(detail, today):
+    """From a country detail dict, return the best current value:
     the most recent historical observation, or if the forecast covers today,
     the forecast value closest to today."""
-    with open(detail_json_path, 'r') as f:
-        detail = json.load(f)
 
     points = detail['points']
     today_str = today.strftime('%Y-%m-%d')
@@ -135,7 +163,54 @@ def process_countries():
             detail_path = os.path.join(DETAILS_DIR, f"{code}.json")
             if not os.path.exists(detail_path):
                 continue
-            current_value = get_value_for_today(detail_path, today)
+
+            # Staleness check: predictions anchored to old data (e.g. a country that
+            # stopped reporting years ago) must not be displayed as current activity.
+            extracted_path = find_extracted_file(country_folder_name)
+            last_obs = get_last_observation_date(extracted_path) if extracted_path else None
+            last_obs_str = last_obs.strftime('%Y-%m-%d') if last_obs is not None else None
+            stale = last_obs is None or (today - last_obs).days >= STALE_AFTER_DAYS
+
+            # Get Numeric Code for Map Matching
+            country_obj = pycountry.countries.get(alpha_2=code)
+            numeric_code = country_obj.numeric if country_obj else None
+
+            # Detect data type from extracted data file
+            data_type = "ILI"
+            if extracted_path:
+                for ext_suffix in ['_combined.csv', '_ari.csv']:
+                    if extracted_path.endswith(ext_suffix):
+                        if ext_suffix == '_combined.csv':
+                            try:
+                                ext_df = pd.read_csv(extracted_path)
+                                if 'DataType' in ext_df.columns and int(ext_df['DataType'].iloc[-1]) == 1:
+                                    data_type = "ARI"
+                            except Exception:
+                                pass
+                        else:
+                            data_type = "ARI"
+                        break
+
+            if stale:
+                map_data.append({
+                    "id": code,
+                    "numeric": numeric_code,
+                    "name": country_folder_name.replace('_', ' '),
+                    "data_type": data_type,
+                    "value": None,
+                    "zscore": None,
+                    "score": None,
+                    "status": "stale",
+                    "stale": True,
+                    "last_update": last_obs_str,
+                    "forecast_weeks": [],
+                })
+                continue
+
+            with open(detail_path, 'r') as f:
+                detail = json.load(f)
+
+            current_value = get_value_for_today(detail, today)
             if current_value is None:
                 continue
 
@@ -156,26 +231,23 @@ def process_countries():
 
             status = "high" if zscore >= 1.0 else "low"
 
-            # Get Numeric Code for Map Matching
-            country_obj = pycountry.countries.get(alpha_2=code)
-            numeric_code = country_obj.numeric if country_obj else None
-
-            # Detect data type from extracted data file
-            data_type = "ILI"
-            extracted_dir = os.path.join(BASE_DIR, 'data', 'extracted_data')
-            for ext_suffix in ['_combined.csv', '_ari.csv']:
-                ext_path = os.path.join(extracted_dir, f"{country_folder_name}{ext_suffix}")
-                if os.path.exists(ext_path):
-                    if ext_suffix == '_combined.csv':
-                        try:
-                            ext_df = pd.read_csv(ext_path)
-                            if 'DataType' in ext_df.columns and int(ext_df['DataType'].iloc[-1]) == 1:
-                                data_type = "ARI"
-                        except Exception:
-                            pass
-                    elif ext_suffix == '_ari.csv':
-                        data_type = "ARI"
-                    break
+            # Per-week forecast values so the map can be switched between
+            # prediction weeks (same z-score scale as the current value).
+            # Only the display window (default week + next 3) is kept in the
+            # final JSON; trimming happens in __main__.
+            forecast_weeks = []
+            for p in detail['points']:
+                if p['forecast'] is None:
+                    continue
+                v = float(p['forecast'])
+                wz = (v - hist_mean) / hist_std if hist_std > 0 else 0.0
+                forecast_weeks.append({
+                    "date": p['date'],
+                    "value": round(v, 1),
+                    "zscore": round(float(wz), 2),
+                    "score": float(max(0.0, min(1.0, wz / 2.0))),
+                    "status": "high" if wz >= 1.0 else "low",
+                })
 
             map_data.append({
                 "id": code,
@@ -185,7 +257,10 @@ def process_countries():
                 "value": round(float(current_value), 1),
                 "zscore": round(float(zscore), 2),
                 "score": float(score),
-                "status": status
+                "status": status,
+                "stale": False,
+                "last_update": last_obs_str,
+                "forecast_weeks": forecast_weeks,
             })
 
         except Exception as e:
@@ -196,6 +271,32 @@ def process_countries():
 if __name__ == "__main__":
     data = process_countries()
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+
+    # The map only offers the current prediction week (closest to today) and
+    # the next 3 weeks — the 4-week forecast horizon. Everything else is
+    # trimmed from the JSON; the full horizon stays on the detail pages.
+    all_weeks = sorted({w['date'] for c in data for w in c.get('forecast_weeks', [])})
+    today = datetime.now()
+    if all_weeks:
+        idx = min(
+            range(len(all_weeks)),
+            key=lambda i: abs((datetime.strptime(all_weeks[i], '%Y-%m-%d') - today).days),
+        )
+        default_week = all_weeks[idx]
+        display_weeks = all_weeks[idx:idx + 4]
+        display_set = set(display_weeks)
+        for c in data:
+            c['forecast_weeks'] = [w for w in c.get('forecast_weeks', []) if w['date'] in display_set]
+    else:
+        default_week = None
+        display_weeks = []
+
+    out = {
+        "generated_at": today.strftime('%Y-%m-%d %H:%M'),
+        "default_week": default_week,
+        "weeks": display_weeks,
+        "countries": data,
+    }
     with open(OUTPUT_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-    print(f"Wrote data for {len(data)} countries to {OUTPUT_FILE}")
+        json.dump(out, f, indent=2)
+    print(f"Wrote data for {len(data)} countries (display weeks: {display_weeks}) to {OUTPUT_FILE}")

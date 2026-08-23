@@ -32,3 +32,8 @@ wandb
 forecast_pipeline/scripts/__pycache__
 forecast_pipeline/results/ablation/*.json
 best_eval_loss_per_run_new.csv
+forecast_pipeline/auto_update.log
+forecast_pipeline/full_inference_run.log
+frontend/*.log
+poster/
+escaide_submission_info/

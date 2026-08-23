@@ -32,16 +32,122 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from chronos.chronos2 import Chronos2Pipeline
 from data_loader import load_time_series_data, load_data_type_indicator, plot_forecast_results
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('country_inference_batch.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+try:
+    from weather_fetcher import get_country_coordinates
+    WEATHER_FETCHER_AVAILABLE = True
+except ImportError:
+    WEATHER_FETCHER_AVAILABLE = False
+
+# Same country-name mapping as prepare_finetune_data.py / run_evaluation.py
+HEMI_NAME_MAP = {
+    "Côte d'Ivoire": "Ivory Coast",
+    "Kosovo (in accordance with UN Security Council resolution 1244 (1999))": "Kosovo",
+    "Micronesia (Federated States of)": "Micronesia",
+    "Netherlands (Kingdom of the)": "Netherlands",
+    "Lao People's Democratic Republic": "Laos",
+    "United States of America": "United States",
+    "Russian Federation": "Russia",
+    "Türkiye": "Turkey",
+    "Viet Nam": "Vietnam",
+}
+
+
+def get_hemisphere_value(country_name: str) -> float:
+    """Constant hemisphere channel value: +1 N, -1 S, 0 tropical.
+    Matches compute_hemisphere_covariate in run_evaluation.py."""
+    lat = 0.0
+    if WEATHER_FETCHER_AVAILABLE:
+        try:
+            mapped = HEMI_NAME_MAP.get(country_name, country_name)
+            lat, _ = get_country_coordinates(mapped)
+        except Exception:
+            lat = 0.0
+    if lat > 23.5:
+        return 1.0
+    if lat < -23.5:
+        return -1.0
+    return 0.0
+
+
+def compute_week_of_year_covariates(dates: list) -> dict:
+    """Sin/cos encoding of ISO week-of-year. Matches run_evaluation.py."""
+    weeks = []
+    for d in dates:
+        try:
+            if hasattr(d, "isocalendar"):
+                w = d.isocalendar()[1]
+            else:
+                w = pd.Timestamp(str(d)).isocalendar()[1]
+        except Exception:
+            w = 1
+        weeks.append(w)
+    weeks_arr = np.array(weeks, dtype=np.float32)
+    return {
+        "week_sin": np.sin(2 * np.pi * weeks_arr / 52.0),
+        "week_cos": np.cos(2 * np.pi * weeks_arr / 52.0),
+    }
+
+
+def build_covariates(
+    covariates: list | None,
+    country_name: str,
+    data_file_path: str,
+    dates: list,
+    prediction_length: int,
+) -> tuple:
+    """Build (past_covariates, future_covariates) dicts for model input.
+
+    covariates=None  -> legacy behavior: data_type_indicator if present, else univariate
+    covariates=[...] -> only the requested covariates. All supported covariates are
+                        known in the future, so they are passed as past AND future.
+    """
+    n = len(dates)
+    past_covs: dict = {}
+    future_covs: dict = {}
+
+    if covariates is None:
+        dt_indicator = load_data_type_indicator(data_file_path, dates)
+        if dt_indicator is not None:
+            past_covs["data_type_indicator"] = dt_indicator
+            future_covs["data_type_indicator"] = np.full(prediction_length, dt_indicator[-1], dtype=np.float32)
+        return past_covs, future_covs
+
+    if "hemisphere" in covariates:
+        hemi = get_hemisphere_value(country_name)
+        past_covs["hemisphere"] = np.full(n, hemi, dtype=np.float32)
+        future_covs["hemisphere"] = np.full(prediction_length, hemi, dtype=np.float32)
+
+    if "data_type" in covariates:
+        dt_indicator = load_data_type_indicator(data_file_path, dates)
+        if dt_indicator is not None:
+            past_covs["data_type_indicator"] = dt_indicator
+            future_covs["data_type_indicator"] = np.full(prediction_length, dt_indicator[-1], dtype=np.float32)
+
+    if "week_of_year" in covariates and n > 0:
+        past_covs.update(compute_week_of_year_covariates(dates))
+        try:
+            last_week = pd.Timestamp(str(dates[-1])).isocalendar()[1]
+        except Exception:
+            last_week = 1
+        future_weeks = np.array([((last_week + k - 1) % 52) + 1 for k in range(1, prediction_length + 1)], dtype=np.float32)
+        future_covs["week_sin"] = np.sin(2 * np.pi * future_weeks / 52.0)
+        future_covs["week_cos"] = np.cos(2 * np.pi * future_weeks / 52.0)
+
+    return past_covs, future_covs
+
+# Configure logging (explicit logger: basicConfig is a no-op once chronos
+# import has attached a root handler)
+logger = logging.getLogger("country_inference_batch")
+logger.setLevel(logging.INFO)
+logger.propagate = False
+if not logger.handlers:
+    _fmt = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    _fh = logging.FileHandler('country_inference_batch.log')
+    _fh.setFormatter(_fmt)
+    _sh = logging.StreamHandler()
+    _sh.setFormatter(_fmt)
+    logger.addHandler(_fh)
+    logger.addHandler(_sh)
 
 PREDICTION_LENGTH = 54
 MODEL_QUANTILES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
@@ -118,6 +224,7 @@ def run_inference_for_country(
     results_dir: str,
     prediction_length: int = PREDICTION_LENGTH,
     plot: bool = True,
+    covariates: list | None = None,
 ) -> bool:
     """Run inference for a single country using the already-loaded model."""
     clean_name = country_name.replace(' ', '_').replace('-', '_')
@@ -132,16 +239,16 @@ def run_inference_for_country(
         min_value=1e-6,
     )
 
-    # Load data type indicator (ILI=0, ARI=1) if available
-    dt_indicator = load_data_type_indicator(data_file_path, dates)
+    # Build covariates (None -> legacy auto data_type behavior)
+    past_covs, future_covs = build_covariates(
+        covariates, country_name, data_file_path, dates, prediction_length
+    )
 
-    if dt_indicator is not None:
-        # Dict-based input with data_type covariate
-        input_dict = {
-            "target": data.numpy(),
-            "past_covariates": {"data_type_indicator": dt_indicator},
-            "future_covariates": {"data_type_indicator": np.full(prediction_length, dt_indicator[-1])},
-        }
+    if past_covs:
+        # Dict-based input with covariates
+        input_dict = {"target": data.numpy(), "past_covariates": past_covs}
+        if future_covs:
+            input_dict["future_covariates"] = future_covs
         quantile_forecasts, mean_forecasts = model.predict_quantiles(
             inputs=[input_dict],
             prediction_length=prediction_length,
@@ -217,9 +324,16 @@ def main():
     parser.add_argument("--results_dir", type=str, default="results/country_predictions")
     parser.add_argument("--prediction_length", type=int, default=PREDICTION_LENGTH)
     parser.add_argument("--no_plot", action="store_true", help="Skip plot generation")
+    parser.add_argument("--covariates", nargs="*", default=None,
+                        choices=["data_type", "hemisphere", "week_of_year"],
+                        help="Covariates to pass at inference. Omit flag for legacy behavior "
+                             "(auto data_type_indicator if present). E.g. --covariates hemisphere")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of countries")
     parser.add_argument("--start_from", type=int, default=0, help="Start from country index N")
     parser.add_argument("--test", action="store_true", help="Quick test with 3 countries")
+    parser.add_argument("--device", type=str, default="auto",
+                        choices=["auto", "cuda", "cpu"],
+                        help="Device for inference (default auto = cuda if available)")
     args = parser.parse_args()
 
     if args.test:
@@ -232,7 +346,10 @@ def main():
     countries = load_country_list(args.country_summary_file, args.countries_file)
 
     # Load model ONCE
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    else:
+        device = args.device
     logger.info(f"Loading model from {args.model_path} on {device}...")
     model = Chronos2Pipeline.from_pretrained(args.model_path, device_map=device)
     logger.info(f"Model loaded. Device: {model.model.device}")
@@ -273,6 +390,7 @@ def main():
                 results_dir=args.results_dir,
                 prediction_length=args.prediction_length,
                 plot=not args.no_plot,
+                covariates=args.covariates,
             )
             elapsed = time.time() - t0
             logger.info(f"[{i}/{total}] OK {country_name} ({elapsed:.1f}s)")
