@@ -223,6 +223,24 @@ export default function MethodologyPage() {
             for operational decision-making.
           </p>
         </Section>
+
+        <footer className="mt-12 pt-6 border-t border-gray-200">
+          <p className="text-sm leading-6 text-gray-400">
+            <strong className="text-gray-500">AI use.</strong> An AI coding assistant
+            (Claude, Anthropic) was used throughout this project as a development tool: it
+            wrote most of the data-pipeline code and built this website. The research
+            questions, data and model selection, evaluation design, and verification of the
+            results were done by the author.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-gray-400">
+            Full code: <a
+              href="https://github.com/kinggongzilla/influenza_prediction"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >github.com/kinggongzilla/influenza_prediction</a>
+          </p>
+        </footer>
       </div>
     </main>
   );

@@ -10,6 +10,41 @@ export default function AboutPage() {
         </p>
 
         <section className="mb-10">
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">About the author</h2>
+          <div className="flex items-start gap-4">
+            <img
+              src="/images/david_avatar.png"
+              alt="David Hauser"
+              className="h-20 w-20 rounded-full border border-gray-200 object-cover"
+            />
+            <p className="text-[15px] leading-7 text-gray-700">
+              <strong>David Hauser</strong> is a machine-learning researcher working on
+              time-series forecasting with foundation models. He built this dashboard
+              end-to-end — the surveillance data pipeline, the fine-tuned model, and this
+              website. This is an independent research project.
+              <span className="block mt-2">
+                <a
+                  href="https://github.com/kinggongzilla"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline mr-4"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://scholar.google.at/citations?user=pfICGIEAAAAJ&hl=en"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  Google Scholar
+                </a>
+              </span>
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-10">
           <h2 className="text-xl font-semibold text-gray-900 mb-3">Conference abstract</h2>
           <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
             <p className="text-sm text-gray-500">
