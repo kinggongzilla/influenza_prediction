@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ComposableMap, Geographies, Geography, Graticule } from "react-simple-maps";
-import { feature } from "topojson-client";
 import { interpolateRdYlGn } from "d3-scale-chromatic";
 import { Tooltip } from "react-tooltip";
 
@@ -52,7 +51,6 @@ const fmtWeek = (iso: string) => {
 const MapChart = () => {
   const router = useRouter();
   const [mapData, setMapData] = useState<MapData | null>(null);
-  const [geoData, setGeoData] = useState<object | undefined>(undefined);
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState("");
 
@@ -61,23 +59,6 @@ const MapChart = () => {
       .then((res) => res.json())
       .then((data: MapData) => setMapData(data))
       .catch((err) => console.error("Failed to load data", err));
-  }, []);
-
-  // Base 110m world (TopoJSON) + UK sub-region polygons (GeoJSON; drawn on
-  // top of the single GB base polygon; Wales stays on the base).
-  useEffect(() => {
-    Promise.all([
-      fetch(geoUrl).then((r) => r.json()),
-      fetch(ukSubregionsUrl).then((r) => r.json()).catch(() => null),
-    ])
-      .then(([base, uk]) => {
-        const b = base as any;
-        const baseFeatures: any[] =
-          b.type === "Topology" ? (feature(b, b.objects.countries) as any).features : b.features;
-        const features = uk ? [...baseFeatures, ...uk.features] : baseFeatures;
-        setGeoData({ type: "FeatureCollection", features });
-      })
-      .catch((err) => console.error("Failed to load map geography", err));
   }, []);
 
   const data = mapData?.countries ?? [];
@@ -112,6 +93,63 @@ const MapChart = () => {
     const w = d.forecast_weeks?.find((w) => w.date === selectedWeek) ?? null;
     if (!w) return null;
     return { value: w.value, zscore: w.zscore, score: w.score, status: w.status, date: w.date };
+  };
+
+  // Shared by both geography layers (base world + UK sub-region overlay).
+  const renderGeography = (geo: any) => {
+    const geoId = geo.id ? parseInt(geo.id, 10) : -1;
+    const d = dataMap.get(geoId);
+    const entry = d && !d.stale ? weekEntry(d) : null;
+
+    let fillColor = "#e2e8f0";
+    let hoverContent = "";
+
+    if (d && !d.stale && entry) {
+      const score = Math.max(0, Math.min(1, entry.score));
+      fillColor = interpolateRdYlGn(1 - score);
+      const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
+      const sign = entry.zscore != null && entry.zscore >= 0 ? "+" : "";
+      if (selectedWeek) {
+        hoverContent = `${d.name} [${dtype}]: ${entry.value.toFixed(1)} predicted for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
+      } else {
+        hoverContent = `${d.name} [${dtype}]: Predicted ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD)`;
+      }
+    } else if (d && d.stale) {
+      const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
+      hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 4+ weeks old)`;
+    } else if (d && !d.stale && selectedWeek) {
+      const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
+      hoverContent = `${d.name} [${dtype}]: no forecast for the week of ${fmtWeek(selectedWeek)}`;
+    } else {
+      hoverContent = geo.properties.name || "Unknown";
+    }
+
+    return (
+      <Geography
+        key={geo.rsmKey}
+        geography={geo}
+        fill={fillColor}
+        stroke="#cbd5e1"
+        strokeWidth={0.4}
+        style={{
+          default: { outline: "none", transition: "fill 200ms" },
+          hover: {
+            fill: d ? fillColor : "#cbd5e1",
+            outline: "none",
+            filter: d ? "brightness(0.9)" : "none",
+            cursor: d ? "pointer" : "default",
+          },
+          pressed: { outline: "none" },
+        }}
+        onClick={() => {
+          if (d) router.push(`/country/${d.id}`);
+        }}
+        onMouseEnter={() => setTooltipContent(hoverContent)}
+        onMouseLeave={() => setTooltipContent("")}
+        data-tooltip-id="map-tooltip"
+        data-tooltip-content={tooltipContent}
+      />
+    );
   };
 
   return (
@@ -149,64 +187,14 @@ const MapChart = () => {
           height={420}
         >
           <Graticule stroke="#e2e8f0" strokeWidth={0.4} />
-          <Geographies geography={geoData}>
-            {({ geographies }) =>
-              geographies.map((geo) => {
-                const geoId = geo.id ? parseInt(geo.id, 10) : -1;
-                const d = dataMap.get(geoId);
-                const entry = d && !d.stale ? weekEntry(d) : null;
-
-                let fillColor = "#e2e8f0";
-                let hoverContent = "";
-
-                if (d && !d.stale && entry) {
-                  const score = Math.max(0, Math.min(1, entry.score));
-                  fillColor = interpolateRdYlGn(1 - score);
-                  const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-                  const sign = entry.zscore != null && entry.zscore >= 0 ? "+" : "";
-                  if (selectedWeek) {
-                    hoverContent = `${d.name} [${dtype}]: ${entry.value.toFixed(1)} predicted for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
-                  } else {
-                    hoverContent = `${d.name} [${dtype}]: Predicted ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD)`;
-                  }
-                } else if (d && d.stale) {
-                  const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-                  hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 4+ weeks old)`;
-                } else if (d && !d.stale && selectedWeek) {
-                  const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-                  hoverContent = `${d.name} [${dtype}]: no forecast for the week of ${fmtWeek(selectedWeek)}`;
-                } else {
-                  hoverContent = geo.properties.name || "Unknown";
-                }
-
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill={fillColor}
-                    stroke="#cbd5e1"
-                    strokeWidth={0.4}
-                    style={{
-                      default: { outline: "none", transition: "fill 200ms" },
-                      hover: {
-                        fill: d ? fillColor : "#cbd5e1",
-                        outline: "none",
-                        filter: d ? "brightness(0.9)" : "none",
-                        cursor: d ? "pointer" : "default",
-                      },
-                      pressed: { outline: "none" },
-                    }}
-                    onClick={() => {
-                      if (d) router.push(`/country/${d.id}`);
-                    }}
-                    onMouseEnter={() => setTooltipContent(hoverContent)}
-                    onMouseLeave={() => setTooltipContent("")}
-                    data-tooltip-id="map-tooltip"
-                    data-tooltip-content={tooltipContent}
-                  />
-                );
-              })
-            }
+          <Geographies geography={geoUrl}>
+            {({ geographies }) => geographies.map(renderGeography)}
+          </Geographies>
+          {/* UK sub-regions: a separate GeoJSON layer drawn on top of the
+              single GB base polygon (Wales has no data, so it stays on the
+              base). */}
+          <Geographies geography={ukSubregionsUrl}>
+            {({ geographies }) => geographies.map(renderGeography)}
           </Geographies>
         </ComposableMap>
       </div>

@@ -22,8 +22,10 @@ interface DataPoint {
   date: string | number;
   historical: number | null;
   forecast: number | null;
-  lower: number | null;
-  upper: number | null;
+  lower: number | null;     // 90% prediction interval (10th percentile)
+  upper: number | null;     // 90% prediction interval (90th percentile)
+  lower_50: number | null;  // 50% prediction interval (25th percentile)
+  upper_50: number | null;  // 50% prediction interval (75th percentile)
 }
 
 interface CountryData {
@@ -42,6 +44,8 @@ export default function CountryDetails({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [timeRange, setTimeRange] = useState("1Y");
+  const [showPI90, setShowPI90] = useState(true);
+  const [showPI50, setShowPI50] = useState(true);
 
   useEffect(() => {
     fetch(`/data/details/${id}.json`)
@@ -131,7 +135,8 @@ export default function CountryDetails({ id }: { id: string }) {
                     Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast — data is stale)" : " and 8-week forecast"}
                 </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div className="flex items-center gap-2">
                 <label htmlFor="timeRange" className="text-xs text-gray-500">Range:</label>
                 <select
                     id="timeRange"
@@ -144,6 +149,28 @@ export default function CountryDetails({ id }: { id: string }) {
                     <option value="5Y">5 Years</option>
                     <option value="ALL">All</option>
                 </select>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500">Prediction intervals:</span>
+                    <label className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={showPI90}
+                            onChange={(e) => setShowPI90(e.target.checked)}
+                            className="accent-blue-600"
+                        />
+                        90%
+                    </label>
+                    <label className="flex items-center gap-1.5 text-sm text-gray-700 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={showPI50}
+                            onChange={(e) => setShowPI50(e.target.checked)}
+                            className="accent-blue-600"
+                        />
+                        50%
+                    </label>
+                </div>
             </div>
           </div>
         </header>
@@ -180,26 +207,78 @@ export default function CountryDetails({ id }: { id: string }) {
               <Tooltip
                 contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", color: "#1a1a2e", borderRadius: "6px", fontSize: "13px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                 labelFormatter={(label) => format(new Date(label), "MMM d, yyyy")}
-                formatter={(value: number | undefined) => [value ? value.toFixed(0) : "0", data.data_type === "ARI" ? "ARI Cases" : "ILI Cases"]}
+                formatter={(value, name) => {
+                  const n = name ?? "";
+                  if (Array.isArray(value)) {
+                    const a = Math.round(Number(value[0] ?? 0));
+                    const b = Math.round(Number(value[1] ?? 0));
+                    return [`${a}–${b}`, n];
+                  }
+                  const v = Number(value);
+                  return [Number.isFinite(v) ? v.toFixed(0) : "0", n];
+                }}
               />
-              <Legend />
+              <Legend
+                content={({ payload }) => {
+                  const items = (payload ?? []).filter((item) =>
+                    ["90% prediction interval", "50% prediction interval", "Forecast (Mean)", "Historical ILI Cases", "Historical ARI Cases"].includes(String(item.value))
+                  );
+                  return (
+                    <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                      {items.map((item) => {
+                        const v = String(item.value);
+                        const isPI = v === "90% prediction interval" || v === "50% prediction interval";
+                        return (
+                          <li key={v} className="flex items-center gap-1.5">
+                            <span
+                              className="inline-block rounded-sm"
+                              style={{
+                                width: isPI ? 12 : 14,
+                                height: isPI ? 12 : 3,
+                                backgroundColor: v === "90% prediction interval"
+                                  ? "rgba(59, 130, 246, 0.35)"
+                                  : v === "50% prediction interval"
+                                    ? "rgba(59, 130, 246, 0.6)"
+                                    : v === "Forecast (Mean)"
+                                      ? "#2563eb"
+                                      : "#64748b",
+                              }}
+                            />
+                            {v}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                }}
+              />
 
-              {/* Uncertainty Interval (10th-90th Percentile) */}
-              <Area
-                type="monotone"
-                dataKey="upper"
-                stroke="none"
-                fill="#3b82f6"
-                fillOpacity={0.1}
-                name="Confidence Interval"
-              />
-              <Area
-                type="monotone"
-                dataKey="lower"
-                stroke="none"
-                fill="#ffffff"
-                fillOpacity={1}
-              />
+              {/* Prediction intervals (toggle via checkboxes). Recharts Areas
+                  fill down to the baseline, so each band is built from a
+                  colored area plus an eraser area beneath it. Stacking
+                  order: 90% light fill, 50% dark fill, then erasers that
+                  expose the 90% band's lower shoulder and the plain area
+                  below it. */}
+              {showPI90 && showPI50 && (
+                <>
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.12} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.3} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#3b82f6" fillOpacity={0.12} />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} />
+                </>
+              )}
+              {showPI90 && !showPI50 && (
+                <>
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.2} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} />
+                </>
+              )}
+              {showPI50 && !showPI90 && (
+                <>
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.28} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#ffffff" fillOpacity={1} />
+                </>
+              )}
 
               {/* Historical Data */}
               <Line
