@@ -1,12 +1,12 @@
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-[#fafafa]">
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <h1 className="text-3xl font-semibold text-gray-900 mb-2">About</h1>
         <p className="text-gray-500 mb-10 max-w-2xl">
-          An independent research project asking a simple question: can one fine-tuned
-          foundation model produce useful influenza forecasts for most of the world&apos;s
-          countries, without disease-specific design or local modelling expertise?
+          An independent research project: one fine-tuned time-series foundation model
+          producing probabilistic influenza forecasts for most of the world&apos;s countries —
+          without disease-specific design or local modelling expertise.
         </p>
 
         <section className="mb-10">

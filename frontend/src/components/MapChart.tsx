@@ -98,7 +98,7 @@ const MapChart = () => {
     <div className="flex flex-col items-center">
       <div className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         {/* Prediction-week selector */}
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-2.5 sm:px-4 sm:py-3 border-b border-gray-200 bg-gray-50">
           <div className="text-sm">
             <span className="font-medium text-gray-900">
               {selectedWeek
@@ -204,11 +204,11 @@ const MapChart = () => {
       />
 
       {/* Legend */}
-      <div className="mt-4 flex items-center gap-3 text-gray-600 text-sm">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-gray-600 text-sm">
         <span>Low</span>
-        <div className="w-48 h-3 rounded-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 opacity-80"></div>
+        <div className="w-36 sm:w-48 h-3 rounded-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 opacity-80"></div>
         <span>High</span>
-        <span className="ml-6">{selectedWeek ? "No forecast for this week" : "No current data"}</span>
+        <span className="ml-4 sm:ml-6">{selectedWeek ? "No forecast for this week" : "No current data"}</span>
         <div className="w-6 h-3 rounded bg-slate-200 border border-slate-300"></div>
       </div>
     </div>

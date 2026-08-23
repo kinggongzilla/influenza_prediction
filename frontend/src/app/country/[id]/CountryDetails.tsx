@@ -1,0 +1,236 @@
+"use client";
+
+import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Area,
+  ComposedChart,
+  ReferenceLine,
+  Label
+} from "recharts";
+import { format, parseISO } from "date-fns";
+
+interface DataPoint {
+  date: string | number;
+  historical: number | null;
+  forecast: number | null;
+  lower: number | null;
+  upper: number | null;
+}
+
+interface CountryData {
+  country: string;
+  id: string;
+  data_type?: "ILI" | "ARI";
+  stale?: boolean;
+  last_update?: string | null;
+  points: DataPoint[];
+}
+
+export default function CountryDetails({ id }: { id: string }) {
+
+  const router = useRouter();
+  const [data, setData] = useState<CountryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [timeRange, setTimeRange] = useState("1Y");
+
+  useEffect(() => {
+    fetch(`/data/details/${id}.json`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Data not found");
+        return res.json();
+      })
+      .then((data: CountryData) => {
+        const transformedPoints = data.points.map(p => ({
+            ...p,
+            date: parseISO(p.date as string).getTime()
+        }));
+        setData({ ...data, points: transformedPoints });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [id]);
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+
+    const points = data.points;
+    if (points.length === 0) return [];
+
+    // Each range = N weeks of the most recent HISTORY plus the near-term forecast
+    // (8 weeks). Windows are anchored to the last historical week, not the end of
+    // the series (which is the last forecast week). "All" shows everything,
+    // including the full forecast horizon.
+    const RANGES: Record<string, { hist: number; fc: number }> = {
+      "1Y": { hist: 52, fc: 8 },
+      "3Y": { hist: 156, fc: 8 },
+      "5Y": { hist: 260, fc: 8 },
+      "ALL": { hist: Infinity, fc: Infinity },
+    };
+    const t = RANGES[timeRange] ?? RANGES["1Y"];
+    const hist = points.filter((p) => p.historical != null).slice(-t.hist);
+    const fc = points.filter((p) => p.forecast != null).slice(0, t.fc);
+    return [...hist, ...fc].sort((a, b) => (a.date as number) - (b.date as number));
+  }, [data, timeRange]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4">
+        <h1 className="text-xl font-semibold text-red-600">Country Data Not Found</h1>
+        <button
+          onClick={() => router.push("/")}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          &larr; Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  const todayTimestamp = new Date().getTime();
+  const windowStart = filteredData.length ? Math.min(...filteredData.map((p) => p.date as number)) : 0;
+  const windowEnd = filteredData.length ? Math.max(...filteredData.map((p) => p.date as number)) : 0;
+  const todayInView = todayTimestamp >= windowStart && todayTimestamp <= windowEnd;
+
+  return (
+    <main className="min-h-screen bg-[#fafafa]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <header className="mb-6">
+          <button
+            onClick={() => router.push("/")}
+            className="text-sm text-blue-600 hover:underline mb-3 block"
+          >
+            &larr; Back to Dashboard
+          </button>
+          <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-end">
+            <div>
+                <h1 className="text-2xl font-semibold text-gray-900">
+                    {data.country} <span className="text-gray-400 text-lg font-normal">({id})</span>
+                </h1>
+                <p className="text-gray-500 text-sm mt-1">
+                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast — data is stale)" : " and 8-week forecast"}
+                </p>
+            </div>
+            <div className="flex items-center gap-2">
+                <label htmlFor="timeRange" className="text-xs text-gray-500">Range:</label>
+                <select
+                    id="timeRange"
+                    value={timeRange}
+                    onChange={(e) => setTimeRange(e.target.value)}
+                    className="bg-white border border-gray-300 text-gray-700 text-sm rounded-md px-2 py-1"
+                >
+                    <option value="1Y">1 Year</option>
+                    <option value="3Y">3 Years</option>
+                    <option value="5Y">5 Years</option>
+                    <option value="ALL">All</option>
+                </select>
+            </div>
+          </div>
+        </header>
+
+        {data.stale && (
+          <div className="mb-4 bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-lg px-4 py-3">
+            Surveillance data last updated <strong>{data.last_update ?? "unknown"}</strong> — 4 weeks or more ago.
+            No forecast is shown because predictions are anchored to the latest data and only cover the next 4 weeks.
+          </div>
+        )}
+
+        <div className="w-full h-[340px] sm:h-[500px] bg-white border border-gray-200 rounded-lg p-3 sm:p-4 shadow-sm">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={filteredData}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 20,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis
+                dataKey="date"
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                stroke="#94a3b8"
+                tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
+                minTickGap={50}
+                fontSize={12}
+              />
+              <YAxis stroke="#94a3b8" fontSize={12} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", color: "#1a1a2e", borderRadius: "6px", fontSize: "13px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                labelFormatter={(label) => format(new Date(label), "MMM d, yyyy")}
+                formatter={(value: number | undefined) => [value ? value.toFixed(0) : "0", data.data_type === "ARI" ? "ARI Cases" : "ILI Cases"]}
+              />
+              <Legend />
+
+              {/* Uncertainty Interval (10th-90th Percentile) */}
+              <Area
+                type="monotone"
+                dataKey="upper"
+                stroke="none"
+                fill="#3b82f6"
+                fillOpacity={0.1}
+                name="Confidence Interval"
+              />
+              <Area
+                type="monotone"
+                dataKey="lower"
+                stroke="none"
+                fill="#ffffff"
+                fillOpacity={1}
+              />
+
+              {/* Historical Data */}
+              <Line
+                type="monotone"
+                dataKey="historical"
+                stroke="#64748b"
+                strokeWidth={2}
+                dot={false}
+                name={data.data_type === "ARI" ? "Historical ARI Cases" : "Historical ILI Cases"}
+              />
+
+              {/* Forecast Data */}
+              <Line
+                type="monotone"
+                dataKey="forecast"
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={false}
+                name="Forecast (Mean)"
+              />
+
+              {/* Today Reference Line (only when inside the visible window) */}
+              {todayInView && (
+                <ReferenceLine x={todayTimestamp} stroke="#ef4444" strokeDasharray="3 3">
+                  <Label value="Today" position="insideTopLeft" fill="#ef4444" fontSize={12} />
+                </ReferenceLine>
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </main>
+  );
+}

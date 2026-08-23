@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import CountryList from "@/components/CountryList";
 
 const models = [
   { name: "ISI-FluBcast", rwis: 0.7, note: "", rank: 1 },
@@ -28,7 +29,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export default function MethodologyPage() {
   return (
     <main className="min-h-screen bg-[#fafafa]">
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         <h1 className="text-3xl font-semibold text-gray-900 mb-2">Methodology</h1>
         <p className="text-gray-500 mb-10 max-w-2xl">
           How the forecasts on this dashboard are built, what the numbers mean, and where the
@@ -55,7 +56,7 @@ export default function MethodologyPage() {
           </p>
           <p>
             Not every country&apos;s series is usable. Candidates were screened with fixed,
-            predefined quality criteria, and <strong>78 countries passed</strong>:
+            predefined quality criteria, and <strong>89 countries passed</strong>:
           </p>
           <ul className="list-disc pl-6 space-y-1.5">
             <li>at least 156 non-missing weeks (≈ 3 years of actual data)</li>
@@ -66,8 +67,12 @@ export default function MethodologyPage() {
           <p>
             Selection criteria are applied identically to all countries and are deliberately
             data-driven rather than judgment-based, to avoid cherry-picking easy-to-predict
-            series.
+            series. 72 of the 89 can be color-coded on the world map; the remaining 17
+            (small-island territories and the UK sub-regions that WHO reports separately)
+            have no matching region in the 110m map geography, so their forecasts are linked
+            from the list below instead.
           </p>
+          <CountryList />
         </Section>
 
         <Section title="2. Model">
@@ -83,7 +88,7 @@ export default function MethodologyPage() {
             </a>
             , a pretrained time-series foundation model (patch-based transformer trained with a
             quantile-regression loss, so its outputs are probabilistic by construction). It is
-            fine-tuned on the 78-country series set; the production configuration conditions on
+            fine-tuned on the 89-country series set; the production configuration conditions on
             two covariates, the indicator type (ILI vs ARI) and hemisphere, selected by
             ablation. Additional covariates (week-of-year, historical weather from Open-Meteo,
             neighbouring-country activity) were evaluated and did not improve

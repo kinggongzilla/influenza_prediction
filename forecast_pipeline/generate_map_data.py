@@ -300,3 +300,54 @@ if __name__ == "__main__":
     with open(OUTPUT_FILE, 'w') as f:
         json.dump(out, f, indent=2)
     print(f"Wrote data for {len(data)} countries (display weeks: {display_weeks}) to {OUTPUT_FILE}")
+
+    # --- Country list for the methodology page ------------------------------
+    # One row per country that has a detail JSON (all trained countries),
+    # so the website can link to every forecast — including the ones that
+    # can't be colored on the map.
+    details_dir = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'details')
+    display_names = {
+        'Kosovo (in accordance with UN Security Council resolution 1244 (1999))': 'Kosovo',
+        'Netherlands (Kingdom of the)': 'Netherlands',
+        'United Kingdom, England': 'England (UK)',
+        'United Kingdom, Scotland': 'Scotland (UK)',
+        'United Kingdom, Northern Ireland': 'Northern Ireland (UK)',
+    }
+    map_ids = {c['id'] for c in data}
+    rows = []
+    for fn in sorted(os.listdir(details_dir)):
+        if not fn.endswith('.json'):
+            continue
+        try:
+            d = json.load(open(os.path.join(details_dir, fn)))
+        except Exception as e:
+            print(f"country_list: skipping {fn}: {e}")
+            continue
+        since = next((p['date'] for p in d['points'] if p['historical'] is not None), None)
+        raw_name = d.get('country') or fn[:-5]
+        rows.append({
+            'name': display_names.get(raw_name, raw_name),
+            'code': d['id'],
+            'data_type': d.get('data_type', 'ILI'),
+            'since': since,
+            'last_update': d.get('last_update'),
+            'stale': bool(d.get('stale', False)),
+            'on_map': d['id'] in map_ids,
+        })
+    rows.sort(key=lambda r: r['name'].lower())
+    try:
+        tc = json.load(open(os.path.join(BASE_DIR, 'data', 'training_countries.json')))
+        excluded = tc.get('excluded_from_training', [])
+    except Exception:
+        excluded = []
+    list_out = {
+        'generated_at': today.strftime('%Y-%m-%d %H:%M'),
+        'total': len(rows),
+        'on_map': sum(1 for r in rows if r['on_map']),
+        'countries': rows,
+        'excluded_from_training': excluded,
+    }
+    list_file = os.path.join(os.path.dirname(OUTPUT_FILE), 'country_list.json')
+    with open(list_file, 'w') as f:
+        json.dump(list_out, f, indent=2)
+    print(f"Wrote country list ({list_out['total']} countries, {list_out['on_map']} on map) to {list_file}")

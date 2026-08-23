@@ -37,3 +37,5 @@ forecast_pipeline/full_inference_run.log
 frontend/*.log
 poster/
 escaide_submission_info/
+forecast_pipeline/.next/
+forecast_pipeline/.wrangler/

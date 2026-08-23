@@ -1,0 +1,811 @@
+{
+  "generated_at": "2026-08-23 13:33",
+  "total": 89,
+  "on_map": 72,
+  "countries": [
+    {
+      "name": "Afghanistan",
+      "code": "AF",
+      "data_type": "ILI",
+      "since": "2016-03-14",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "American Samoa",
+      "code": "AS",
+      "data_type": "ILI",
+      "since": "2010-11-15",
+      "last_update": "2019-08-05",
+      "stale": true,
+      "on_map": false
+    },
+    {
+      "name": "Argentina",
+      "code": "AR",
+      "data_type": "ILI",
+      "since": "2012-01-02",
+      "last_update": "2026-04-27",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Australia",
+      "code": "AU",
+      "data_type": "ILI",
+      "since": "2011-01-03",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Austria",
+      "code": "AT",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-07-27",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Azerbaijan",
+      "code": "AZ",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Bangladesh",
+      "code": "BD",
+      "data_type": "ILI",
+      "since": "2016-01-04",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Belarus",
+      "code": "BY",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-04-06",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Belgium",
+      "code": "BE",
+      "data_type": "ILI",
+      "since": "2008-09-29",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Bhutan",
+      "code": "BT",
+      "data_type": "ILI",
+      "since": "2011-02-14",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Brazil",
+      "code": "BR",
+      "data_type": "ILI",
+      "since": "2015-01-05",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Bulgaria",
+      "code": "BG",
+      "data_type": "ARI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Cambodia",
+      "code": "KH",
+      "data_type": "ILI",
+      "since": "2015-10-19",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Cameroon",
+      "code": "CM",
+      "data_type": "ILI",
+      "since": "2011-09-26",
+      "last_update": "2026-07-20",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Canada",
+      "code": "CA",
+      "data_type": "ILI",
+      "since": "2017-08-28",
+      "last_update": "2023-07-17",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Chile",
+      "code": "CL",
+      "data_type": "ILI",
+      "since": "2015-01-05",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Colombia",
+      "code": "CO",
+      "data_type": "ILI",
+      "since": "2012-01-02",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Costa Rica",
+      "code": "CR",
+      "data_type": "ILI",
+      "since": "2018-12-31",
+      "last_update": "2026-07-20",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Croatia",
+      "code": "HR",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-07-20",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Czechia",
+      "code": "CZ",
+      "data_type": "ILI",
+      "since": "2009-08-03",
+      "last_update": "2026-05-11",
+      "stale": true,
+      "on_map": false
+    },
+    {
+      "name": "C\u00f4te d\u2019Ivoire",
+      "code": "CI",
+      "data_type": "ILI",
+      "since": "2012-12-31",
+      "last_update": "2026-05-18",
+      "stale": true,
+      "on_map": false
+    },
+    {
+      "name": "Denmark",
+      "code": "DK",
+      "data_type": "ILI",
+      "since": "2009-09-07",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "England (UK)",
+      "code": "ENG",
+      "data_type": "ILI",
+      "since": "2019-12-30",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Estonia",
+      "code": "EE",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Ethiopia",
+      "code": "ET",
+      "data_type": "ILI",
+      "since": "2012-01-09",
+      "last_update": "2025-07-14",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Fiji",
+      "code": "FJ",
+      "data_type": "ILI",
+      "since": "2015-09-21",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Finland",
+      "code": "FI",
+      "data_type": "ILI",
+      "since": "2009-11-09",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "France",
+      "code": "FR",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-06-08",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "French Polynesia",
+      "code": "PF",
+      "data_type": "ILI",
+      "since": "2010-11-29",
+      "last_update": "2025-11-17",
+      "stale": true,
+      "on_map": false
+    },
+    {
+      "name": "Georgia",
+      "code": "GE",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Germany",
+      "code": "DE",
+      "data_type": "ARI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Ghana",
+      "code": "GH",
+      "data_type": "ILI",
+      "since": "2017-01-02",
+      "last_update": "2022-08-22",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Greece",
+      "code": "GR",
+      "data_type": "ILI",
+      "since": "2009-09-07",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Guinea",
+      "code": "GN",
+      "data_type": "ILI",
+      "since": "2018-08-13",
+      "last_update": "2026-07-20",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Honduras",
+      "code": "HN",
+      "data_type": "ILI",
+      "since": "2011-01-03",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Hungary",
+      "code": "HU",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Indonesia",
+      "code": "ID",
+      "data_type": "ILI",
+      "since": "2012-06-11",
+      "last_update": "2026-07-06",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Ireland",
+      "code": "IE",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Israel",
+      "code": "IL",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-05-04",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Italy",
+      "code": "IT",
+      "data_type": "ARI",
+      "since": "2009-10-19",
+      "last_update": "2026-02-23",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Jamaica",
+      "code": "JM",
+      "data_type": "ILI",
+      "since": "2011-01-03",
+      "last_update": "2026-03-09",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Kazakhstan",
+      "code": "KZ",
+      "data_type": "ILI",
+      "since": "2009-09-28",
+      "last_update": "2026-06-29",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Kiribati",
+      "code": "KI",
+      "data_type": "ILI",
+      "since": "2010-11-29",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Kosovo",
+      "code": "XK",
+      "data_type": "ILI",
+      "since": "2015-11-02",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Lao People's Democratic Republic",
+      "code": "LA",
+      "data_type": "ILI",
+      "since": "2016-01-04",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Lebanon",
+      "code": "LB",
+      "data_type": "ILI",
+      "since": "2020-11-23",
+      "last_update": "2026-07-06",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Lithuania",
+      "code": "LT",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Madagascar",
+      "code": "MG",
+      "data_type": "ILI",
+      "since": "2016-01-04",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Malta",
+      "code": "MT",
+      "data_type": "ILI",
+      "since": "2009-07-13",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Mexico",
+      "code": "MX",
+      "data_type": "ILI",
+      "since": "2008-01-07",
+      "last_update": "2026-04-27",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Micronesia (Federated States of)",
+      "code": "FM",
+      "data_type": "ILI",
+      "since": "2010-11-15",
+      "last_update": "2026-06-01",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Mongolia",
+      "code": "MN",
+      "data_type": "ILI",
+      "since": "2014-12-01",
+      "last_update": "2022-02-28",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Morocco",
+      "code": "MA",
+      "data_type": "ILI",
+      "since": "2006-09-04",
+      "last_update": "2025-02-17",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Nepal",
+      "code": "NP",
+      "data_type": "ILI",
+      "since": "2018-12-31",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Netherlands",
+      "code": "NL",
+      "data_type": "ARI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "New Caledonia",
+      "code": "NC",
+      "data_type": "ILI",
+      "since": "2011-04-11",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "New Zealand",
+      "code": "NZ",
+      "data_type": "ILI",
+      "since": "2010-11-15",
+      "last_update": "2017-09-25",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Niger",
+      "code": "NE",
+      "data_type": "ILI",
+      "since": "2018-12-31",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Nigeria",
+      "code": "NG",
+      "data_type": "ILI",
+      "since": "2010-04-26",
+      "last_update": "2026-06-29",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "North Macedonia",
+      "code": "MK",
+      "data_type": "ILI",
+      "since": "2012-10-01",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Northern Ireland (UK)",
+      "code": "NIR",
+      "data_type": "ILI",
+      "since": "2019-12-30",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Northern Mariana Islands",
+      "code": "MP",
+      "data_type": "ILI",
+      "since": "2011-04-11",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Norway",
+      "code": "NO",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Oman",
+      "code": "OM",
+      "data_type": "ILI",
+      "since": "2011-10-31",
+      "last_update": "2026-04-27",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Paraguay",
+      "code": "PY",
+      "data_type": "ILI",
+      "since": "2015-01-05",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Peru",
+      "code": "PE",
+      "data_type": "ILI",
+      "since": "2016-01-04",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Poland",
+      "code": "PL",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-05-11",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Qatar",
+      "code": "QA",
+      "data_type": "ILI",
+      "since": "2021-12-27",
+      "last_update": "2026-07-06",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Russian Federation",
+      "code": "RU",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-07-06",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Samoa",
+      "code": "WS",
+      "data_type": "ILI",
+      "since": "2011-03-21",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Saudi Arabia",
+      "code": "SA",
+      "data_type": "ILI",
+      "since": "2016-12-26",
+      "last_update": "2026-07-13",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Scotland (UK)",
+      "code": "SCT",
+      "data_type": "ILI",
+      "since": "2019-12-30",
+      "last_update": "2026-05-11",
+      "stale": true,
+      "on_map": false
+    },
+    {
+      "name": "Senegal",
+      "code": "SN",
+      "data_type": "ILI",
+      "since": "2018-12-31",
+      "last_update": "2025-12-22",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Serbia",
+      "code": "RS",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Singapore",
+      "code": "SG",
+      "data_type": "ILI",
+      "since": "2010-03-08",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Slovakia",
+      "code": "SK",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-05-11",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Solomon Islands",
+      "code": "SB",
+      "data_type": "ILI",
+      "since": "2011-04-11",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Somalia",
+      "code": "SO",
+      "data_type": "ILI",
+      "since": "2021-08-23",
+      "last_update": "2026-07-13",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Spain",
+      "code": "ES",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Switzerland",
+      "code": "CH",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Togo",
+      "code": "TG",
+      "data_type": "ILI",
+      "since": "2017-01-02",
+      "last_update": "2025-12-22",
+      "stale": true,
+      "on_map": true
+    },
+    {
+      "name": "Tonga",
+      "code": "TO",
+      "data_type": "ILI",
+      "since": "2011-04-18",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "T\u00fcrkiye",
+      "code": "TR",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Ukraine",
+      "code": "UA",
+      "data_type": "ILI",
+      "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "United States of America",
+      "code": "US",
+      "data_type": "ILI",
+      "since": "2009-09-28",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Vanuatu",
+      "code": "VU",
+      "data_type": "ILI",
+      "since": "2012-06-04",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Viet Nam",
+      "code": "VN",
+      "data_type": "ILI",
+      "since": "2019-03-11",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "Wallis and Futuna",
+      "code": "WF",
+      "data_type": "ILI",
+      "since": "2011-04-11",
+      "last_update": "2026-08-03",
+      "stale": false,
+      "on_map": false
+    },
+    {
+      "name": "Zambia",
+      "code": "ZM",
+      "data_type": "ILI",
+      "since": "2016-01-04",
+      "last_update": "2026-05-25",
+      "stale": true,
+      "on_map": true
+    }
+  ],
+  "excluded_from_training": [
+    "Thailand"
+  ]
+}

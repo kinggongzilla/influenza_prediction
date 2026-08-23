@@ -4,7 +4,7 @@ All commands run from `forecast_pipeline/`.
 
 ## Architecture
 
-Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 78 countries. Produces probabilistic 4-week-ahead forecasts with prediction intervals.
+Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 89 countries (72 map onto the 110m world map; the other 17 — small-island territories and UK sub-regions — are only reachable via their country pages). Produces probabilistic 4-week-ahead forecasts with prediction intervals.
 
 ## Key Data Concepts
 
@@ -78,13 +78,27 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 
 Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages.
 
-The map JSON (`influenza_status.json`) is an object: `{generated_at, default_week, weeks, countries}`. Each fresh country has `forecast_weeks: [{date, value, zscore, score, status}]` restricted to the **display window: `default_week` (the week closest to today) + the next 3 weeks** — the map only offers those 4 weeks in its selector (all countries share one weekly grid). Picking a week re-colors the map from that week's per-country z-score; countries without a forecast for that week go gray. Detail JSONs (`details/<CODE>.json`) carry `points[]` with `historical`/`forecast`/quantiles per week; the detail page has a Range selector (1Y / 3Y / 5Y / All).
+The map JSON (`influenza_status.json`) is an object: `{generated_at, default_week, weeks, countries}`. Each fresh country has `forecast_weeks: [{date, value, zscore, score, status}]` restricted to the **display window: `default_week` (the week closest to today) + the next 3 weeks** — the map only offers those 4 weeks in its selector (all countries share one weekly grid). Picking a week re-colors the map from that week's per-country z-score; countries without a forecast for that week go gray. Detail JSONs (`details/<CODE>.json`, one per trained country — 89 total, 72 also on the map) carry `points[]` with `historical`/`forecast`/quantiles per week. The detail page's Range selector (1Y / 3Y / 5Y / All, **1Y is the default**) shows the last N weeks of *history* plus the near-term 8-week forecast, anchored to the last historical week; `All` shows the full series including the whole forecast horizon. The methodology page renders `data/country_list.json` (written by `generate_map_data.py`) as a linked table of every trained country, including the 17 that can't be colored on the map.
 
 **Current-activity rule**: the model forecasts 4 weeks ahead, so a prediction is only displayed for "today" if the country's last data point is less than 4 weeks old (`STALE_AFTER_DAYS = 28` in `generate_map_data.py` / `generate_country_details.py`). Countries at or beyond that gap are marked `stale`: gray on the map (tooltip shows last-update date), and their detail JSON has all forecast fields nulled (history only, with a banner). This prevents e.g. a country that stopped reporting in 2022 from showing a 2023 forecast as current activity. Seasonally-reporting countries (e.g. Italy: winter season only, ILI→ARI switch in Oct 2025) go gray during their summer break — that is intended.
 
+## Deployment (Cloudflare Pages)
+
+The site is 100% static at runtime (all data is client-side `fetch` from `/data/`), so it deploys as a static export to **https://influenza-dashboard.pages.dev**:
+
+- `next.config.ts` adds `output: 'export'` **only when `STATIC_EXPORT=1`** is set. Normal builds (used by local `next start -p 3000`) are unaffected.
+- `/country/[id]` is a server-page wrapper that calls `generateStaticParams()` (enumerates ISO2 codes from `public/data/details/`) and renders the client component `CountryDetails.tsx`. Required for static export of the dynamic route.
+- **`auto_update.sh` step 6** does the whole deploy after JSON generation, so the Wednesday cron keeps the live site in sync hands-off. Build/deploy failure → ERR trap aborts before any swap, so the last good version stays live.
+- Auth: API token in `~/.cloudflare_api_token` (chmod 600; created from the "Edit Cloudflare Workers" template) or the `CLOUDFLARE_API_TOKEN` env var. OAuth `wrangler login` was avoided: the user's browser is on a remote machine, and the localhost:8976 callback is fragile over SSH tunnels.
+- **Wrangler gotchas** (4.125, "Pages now part of Workers") — all baked into `auto_update.sh`:
+  - The Pages project was created once via the REST API (`POST /accounts/<id>/pages/projects` with `production_branch`); `wrangler pages project create` is unreliable (it delegates to Workers and hard-fails when the auto-registered `workers.dev` subdomain is taken). No `--force` on `deploy` — the existing project deploys straight to classic Pages.
+  - Run wrangler from a directory that is **not** the Next.js project (its framework detection would `npm install` @cloudflare/next-on-pages and die on the react-simple-maps/React-19 peer conflict). The local `node_modules/.bin/wrangler` is called directly (plain `npx` re-resolves against the registry and hits the same conflict).
+  - `TMPDIR` is set to `~/.wrangler-tmp` (this machine's `/tmp` contains an unreadable `snap-private-tmp` dir that breaks wrangler's temp-dir discovery).
+- Custom domain: Cloudflare dashboard → Workers & Pages → influenza-dashboard → Settings → Domains & Routes (CNAME `yourdomain → influenza-dashboard.pages.dev`); SSL is automatic.
+
 ## Gotchas
 
-- Excluded from training (data quality / outlier rWIS / MAPE): Thailand, Belarus, Colombia, Peru, Ukraine, Mexico, Oman, Viet Nam, North Macedonia, Croatia, New Caledonia, Nigeria. Listed in `training_countries.json` `excluded_from_training`.
+- Excluded from training after out-of-sample evaluation (outlier rWIS/MAPE): currently just **Thailand** (the old 12-country list is stale). The live list is in `training_countries.json` → `excluded_from_training` and is data-driven, so it can change as quality thresholds or eval results change. 89 countries are trained; 72 map to the 110m world map, 17 (small-island territories + UK sub-regions) are country-page-only.
 - `assess_data_quality.py` was deleted; its functionality is now in `prepare_finetune_data.py --assess_only`.
 - Chronos-2 uses dict-based input when covariates are present: `{"target": array, "past_covariates": {...}, "future_covariates": {...}}`.
 - Future covariates: `data_type`, `hemisphere`, `week_sin`, `week_cos` are passed as both past and future covariates during training and evaluation (defined in `FUTURE_KNOWN_COVARIATES` in `prepare_finetune_data.py`). Weather and neighbors are past-only.

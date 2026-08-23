@@ -22,6 +22,9 @@ LOG="auto_update.log"
 log() { echo "[$(date '+%Y-%m-%d %H:%M')] $*" | tee -a "$LOG"; }
 trap 'log "!!! AUTO UPDATE FAILED — see log above. Live site keeps last good data."' ERR
 
+PIPELINE_DIR="$(pwd)"          # this script's directory (no package.json here — matters for step 6)
+FRONTEND_DIR="$(cd ../frontend && pwd)"
+
 log "=== auto update start ==="
 
 # 1. WHO download (backs up the previous CSV; exits non-zero on failure)
@@ -78,7 +81,33 @@ python3 run_all_country_inference.py "${INFER_ARGS[@]}" 2>&1 | tee -a "$LOG"
 python3 generate_country_details.py 2>&1 | tee -a "$LOG"
 python3 generate_map_data.py 2>&1 | tee -a "$LOG"
 
-# 6. Deploy — enabled once a host is chosen, e.g.:
-#    (cd ../frontend && npm run build && npx wrangler pages deploy out --project-name=...)
-#    or: commit the generated JSON + git push (git-integrated host rebuilds).
+# 6. Deploy to Cloudflare Pages (static export) -> https://influenza-dashboard.pages.dev
+#    Auth: CLOUDFLARE_API_TOKEN in the environment, else the token file
+#    ~/.cloudflare_api_token (chmod 600). If neither exists the deploy is
+#    skipped (with a warning) and the run still counts as successful.
+#    Gotchas baked in:
+#      - run wrangler from a NON-Next.js directory: from frontend/ its
+#        framework detection would try to `npm install` @cloudflare/next-on-pages
+#        and crash on the project's react-simple-maps/React-19 peer conflict.
+#      - TMPDIR must be a writable scratch dir (on this machine /tmp contains
+#        an unreadable snap directory that breaks wrangler's temp-dir discovery).
+#      - NO --force: the Pages project was created once via the REST API
+#        (2026-08-23) and subsequent deploys go straight to classic Pages.
+#        If the project is ever deleted, recreate it first:
+#          curl -X POST https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/pages/projects \
+#            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
+#            -d '{"name":"influenza-dashboard","production_branch":"main"}'
+cd "$FRONTEND_DIR"
+[ -z "${CLOUDFLARE_API_TOKEN:-}" ] && [ -f "$HOME/.cloudflare_api_token" ] && export CLOUDFLARE_API_TOKEN="$(cat "$HOME/.cloudflare_api_token")"
+if [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || [ -f "$HOME/.wrangler/config/default.toml" ]; then
+  export TMPDIR="${TMPDIR:-$HOME/.wrangler-tmp}"
+  mkdir -p "$TMPDIR"
+  log "building static export and deploying to Cloudflare Pages"
+  STATIC_EXPORT=1 NEXT_TELEMETRY_DISABLED=1 ./node_modules/.bin/next build >>"$LOG" 2>&1
+  cd "$PIPELINE_DIR"
+  "$FRONTEND_DIR/node_modules/.bin/wrangler" pages deploy "$FRONTEND_DIR/out" --project-name=influenza-dashboard >>"$LOG" 2>&1
+  log "deployed https://influenza-dashboard.pages.dev"
+else
+  log "WARN: no Cloudflare auth (CLOUDFLARE_API_TOKEN / ~/.cloudflare_api_token / ~/.wrangler) — deploy skipped"
+fi
 log "=== auto update complete ==="

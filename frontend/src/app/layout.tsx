@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -11,6 +11,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Global Influenza Forecast",
   description: "Probabilistic influenza forecasts using Chronos-2, trained on WHO surveillance data from 78 countries.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

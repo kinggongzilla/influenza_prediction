@@ -43,7 +43,28 @@ def load_mappings():
         'republic_of_moldova': 'MD',
         'lao_people\'s_democratic_republic': 'LA',
         'micronesia_(federated_states_of)': 'FM',
-        'united_republic_of_tanzania': 'TZ'
+        'united_republic_of_tanzania': 'TZ',
+        # Countries that passed quality screening but have no region in the
+        # 110m world-map geography (small-island territories, UK sub-regions,
+        # non-standard names). They get their own codes so every trained
+        # country has a detail page, even though it can't be colored on the map.
+        'american_samoa': 'AS',
+        'czechia': 'CZ',
+        'côte_d’ivoire': 'CI',
+        'french_polynesia': 'PF',
+        'kiribati': 'KI',
+        'kosovo_(in_accordance_with_un_security_council_resolution_1244_(1999))': 'XK',
+        'malta': 'MT',
+        'netherlands_(kingdom_of_the)': 'NL',
+        'northern_mariana_islands': 'MP',
+        'north_macedonia': 'MK',
+        'samoa': 'WS',
+        'singapore': 'SG',
+        'tonga': 'TO',
+        'united_kingdom,_england': 'ENG',
+        'united_kingdom,_northern_ireland': 'NIR',
+        'united_kingdom,_scotland': 'SCT',
+        'wallis_and_futuna': 'WF'
     }
     name_to_code.update(overrides)
     return name_to_code
