@@ -19,14 +19,15 @@ OUTPUT_FILE = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'influe
 # 4+ weeks old no longer covers "today".
 STALE_AFTER_DAYS = 4 * 7
 
-# UK sub-regions: the 110m world map only has a single GB polygon, so the
-# frontend layers dedicated polygons over it (public/data/uk_subregions.json,
-# built by make_uk_subregions.py from OSM admin-4 boundaries). Pseudo ISO
-# numeric codes — real 3166-1 numerics are 3 digits, so these can't collide.
-UK_SUBREGIONS = {
-    'ENG': ('82601', 'England (UK)'),
-    'SCT': ('82602', 'Scotland (UK)'),
-    'NIR': ('82603', 'Northern Ireland (UK)'),
+# The WHO feed reports the UK's devolved administrations as separate series
+# (and the 110m map only has a single GB polygon), so the site shows the UK
+# as one country: the map entry below is built by summing the component
+# series (see combine_uk_details in generate_country_details.py, which
+# writes details/GB.json).
+UK_PART_NAMES = {
+    'united_kingdom,_england',
+    'united_kingdom,_scotland',
+    'united_kingdom,_northern_ireland',
 }
 
 
@@ -55,12 +56,7 @@ def load_mappings():
         'republic_of_moldova': 'MD',
         'lao_people\'s_democratic_republic': 'LA',
         'micronesia_(federated_states_of)': 'FM',
-        'united_republic_of_tanzania': 'TZ',
-        # UK sub-regions: WHO reports them individually; the map layers real
-        # polygons for them over the single GB base polygon (see UK_SUBREGIONS).
-        'united_kingdom,_england': 'ENG',
-        'united_kingdom,_scotland': 'SCT',
-        'united_kingdom,_northern_ireland': 'NIR'
+        'united_republic_of_tanzania': 'TZ'
     }
     name_to_code.update(overrides)
     return name_to_code
@@ -133,6 +129,7 @@ def process_countries():
     name_to_code = load_mappings()
     map_data = []
     today = datetime.now()
+    uk_part_dirs = []
 
     country_dirs = glob.glob(os.path.join(RESULTS_DIR, '*'))
     print(f"Processing {len(country_dirs)} directories...")
@@ -143,6 +140,12 @@ def process_countries():
 
         country_folder_name = os.path.basename(country_dir)
         normalized_name = country_folder_name.lower()
+
+        # UK sub-regions are combined into a single United Kingdom entry
+        # (built below); skip them in the per-country loop.
+        if normalized_name in UK_PART_NAMES:
+            uk_part_dirs.append(country_dir)
+            continue
 
         code = name_to_code.get(normalized_name)
         if not code:
@@ -188,13 +191,9 @@ def process_countries():
             stale = last_obs is None or (today - last_obs).days >= STALE_AFTER_DAYS
 
             # Get Numeric Code for Map Matching
-            if code in UK_SUBREGIONS:
-                numeric_code = UK_SUBREGIONS[code][0]
-                display_name = UK_SUBREGIONS[code][1]
-            else:
-                country_obj = pycountry.countries.get(alpha_2=code)
-                numeric_code = country_obj.numeric if country_obj else None
-                display_name = country_folder_name.replace('_', ' ')
+            country_obj = pycountry.countries.get(alpha_2=code)
+            numeric_code = country_obj.numeric if country_obj else None
+            display_name = country_folder_name.replace('_', ' ')
 
             # Detect data type from extracted data file
             data_type = "ILI"
@@ -287,6 +286,83 @@ def process_countries():
         except Exception as e:
             print(f"Error reading {country_folder_name}: {e}")
 
+    # --- United Kingdom (combined from England + Scotland + N. Ireland) ----
+    gb_detail_path = os.path.join(DETAILS_DIR, 'GB.json')
+    if os.path.exists(gb_detail_path):
+        with open(gb_detail_path, 'r') as f:
+            gb_detail = json.load(f)
+
+        # Staleness: the combined series is as fresh as its freshest part.
+        last_obs = None
+        for part_dir in uk_part_dirs:
+            part_path = find_extracted_file(os.path.basename(part_dir))
+            part_obs = get_last_observation_date(part_path) if part_path else None
+            if part_obs is not None:
+                last_obs = part_obs if last_obs is None else max(last_obs, part_obs)
+        last_obs_str = last_obs.strftime('%Y-%m-%d') if last_obs is not None else None
+        stale = last_obs is None or (today - last_obs).days >= STALE_AFTER_DAYS
+
+        if stale:
+            map_data.append({
+                "id": "GB",
+                "numeric": 826,
+                "name": gb_detail.get('country', 'United Kingdom'),
+                "data_type": gb_detail.get('data_type', 'ILI'),
+                "value": None,
+                "zscore": None,
+                "score": None,
+                "status": "stale",
+                "stale": True,
+                "last_update": last_obs_str,
+                "forecast_weeks": [],
+            })
+        else:
+            current_value = get_value_for_today(gb_detail, today)
+            if current_value is not None:
+                # Z-score baseline: the combined series' full historical
+                # context (same spirit as per-country, which uses each
+                # component's full context window).
+                hist_vals = [p['historical'] for p in gb_detail['points'] if p['historical'] is not None]
+                hist_mean = float(np.mean(hist_vals)) if hist_vals else 0.0
+                hist_std = float(np.std(hist_vals)) if hist_vals else 0.0
+
+                if hist_std > 0:
+                    zscore = (current_value - hist_mean) / hist_std
+                else:
+                    zscore = 0.0
+                score = max(0.0, min(1.0, zscore / 2.0))
+                status = "high" if zscore >= 1.0 else "low"
+
+                forecast_weeks = []
+                for p in gb_detail['points']:
+                    if p['forecast'] is None:
+                        continue
+                    v = float(p['forecast'])
+                    wz = (v - hist_mean) / hist_std if hist_std > 0 else 0.0
+                    forecast_weeks.append({
+                        "date": p['date'],
+                        "value": round(v, 1),
+                        "zscore": round(float(wz), 2),
+                        "score": float(max(0.0, min(1.0, wz / 2.0))),
+                        "status": "high" if wz >= 1.0 else "low",
+                    })
+
+                map_data.append({
+                    "id": "GB",
+                    "numeric": 826,
+                    "name": gb_detail.get('country', 'United Kingdom'),
+                    "data_type": gb_detail.get('data_type', 'ILI'),
+                    "value": round(float(current_value), 1),
+                    "zscore": round(float(zscore), 2),
+                    "score": float(score),
+                    "status": status,
+                    "stale": False,
+                    "last_update": last_obs_str,
+                    "forecast_weeks": forecast_weeks,
+                })
+            else:
+                print("UK: no current value available, skipping")
+
     return map_data
 
 if __name__ == "__main__":
@@ -330,9 +406,6 @@ if __name__ == "__main__":
     display_names = {
         'Kosovo (in accordance with UN Security Council resolution 1244 (1999))': 'Kosovo',
         'Netherlands (Kingdom of the)': 'Netherlands',
-        'United Kingdom, England': 'England (UK)',
-        'United Kingdom, Scotland': 'Scotland (UK)',
-        'United Kingdom, Northern Ireland': 'Northern Ireland (UK)',
     }
     map_ids = {c['id'] for c in data}
     rows = []

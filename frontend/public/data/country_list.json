@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-23 14:05",
-  "total": 89,
-  "on_map": 75,
+  "generated_at": "2026-08-23 20:49",
+  "total": 87,
+  "on_map": 73,
   "countries": [
     {
       "name": "Afghanistan",
@@ -198,15 +198,6 @@
       "data_type": "ILI",
       "since": "2009-09-07",
       "last_update": "2026-08-10",
-      "stale": false,
-      "on_map": true
-    },
-    {
-      "name": "England (UK)",
-      "code": "ENG",
-      "data_type": "ILI",
-      "since": "2019-12-30",
-      "last_update": "2026-08-03",
       "stale": false,
       "on_map": true
     },
@@ -544,15 +535,6 @@
       "on_map": false
     },
     {
-      "name": "Northern Ireland (UK)",
-      "code": "NIR",
-      "data_type": "ILI",
-      "since": "2019-12-30",
-      "last_update": "2026-08-10",
-      "stale": false,
-      "on_map": true
-    },
-    {
       "name": "Northern Mariana Islands",
       "code": "MP",
       "data_type": "ILI",
@@ -639,15 +621,6 @@
       "data_type": "ILI",
       "since": "2016-12-26",
       "last_update": "2026-07-13",
-      "stale": true,
-      "on_map": true
-    },
-    {
-      "name": "Scotland (UK)",
-      "code": "SCT",
-      "data_type": "ILI",
-      "since": "2019-12-30",
-      "last_update": "2026-05-11",
       "stale": true,
       "on_map": true
     },
@@ -755,6 +728,15 @@
       "code": "UA",
       "data_type": "ILI",
       "since": "2009-07-06",
+      "last_update": "2026-08-10",
+      "stale": false,
+      "on_map": true
+    },
+    {
+      "name": "United Kingdom",
+      "code": "GB",
+      "data_type": "ILI",
+      "since": "2019-12-30",
       "last_update": "2026-08-10",
       "stale": false,
       "on_map": true

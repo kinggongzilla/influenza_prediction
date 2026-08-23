@@ -7,7 +7,6 @@ import { interpolateRdYlGn } from "d3-scale-chromatic";
 import { Tooltip } from "react-tooltip";
 
 const geoUrl = "/data/countries-110m.json";
-const ukSubregionsUrl = "/data/uk_subregions.json";
 
 interface ForecastWeek {
   date: string;
@@ -95,7 +94,9 @@ const MapChart = () => {
     return { value: w.value, zscore: w.zscore, score: w.score, status: w.status, date: w.date };
   };
 
-  // Shared by both geography layers (base world + UK sub-region overlay).
+  // Shared renderer for the world-map geographies. The UK is a single GB
+  // polygon (its map value is the sum of the England/Scotland/N. Ireland
+  // series — see generate_map_data.py).
   const renderGeography = (geo: any) => {
     const geoId = geo.id ? parseInt(geo.id, 10) : -1;
     const d = dataMap.get(geoId);
@@ -193,12 +194,6 @@ const MapChart = () => {
         >
           <Graticule stroke="#e2e8f0" strokeWidth={0.4} />
           <Geographies geography={geoUrl}>
-            {({ geographies }) => geographies.map(renderGeography)}
-          </Geographies>
-          {/* UK sub-regions: a separate GeoJSON layer drawn on top of the
-              single GB base polygon (Wales has no data, so it stays on the
-              base). */}
-          <Geographies geography={ukSubregionsUrl}>
             {({ geographies }) => geographies.map(renderGeography)}
           </Geographies>
         </ComposableMap>

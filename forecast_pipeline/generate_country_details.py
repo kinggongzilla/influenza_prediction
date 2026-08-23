@@ -96,6 +96,57 @@ def find_extracted_file(country_folder_name):
 
     return None, None
 
+UK_PARTS = ('ENG', 'SCT', 'NIR')
+
+def combine_uk_details(parts):
+    """Combine the UK sub-region detail dicts (England, Scotland,
+    Northern Ireland) into one 'United Kingdom' detail dict.
+
+    The WHO feed reports the UK's devolved administrations as separate
+    series and the 110m map only has a single GB polygon, so the site
+    shows the UK as one country whose weekly values are the sum of the
+    available component series. Intervals are the sum of the component
+    intervals (close approximation of the interval of the sum). Wales
+    is a separate WHO series and is not included.
+    """
+    fields = ('historical', 'forecast', 'lower', 'upper', 'lower_50', 'upper_50')
+    by_date = {}
+    last_update = None
+    data_types = []
+    for det, last_date in parts:
+        if last_date:
+            last_update = last_date if last_update is None else max(last_update, last_date)
+        if det.get('data_type'):
+            data_types.append(det['data_type'])
+        for p in det['points']:
+            slot = by_date.setdefault(p['date'], {f: None for f in fields})
+            for f in fields:
+                if p.get(f) is not None:
+                    slot[f] = (slot[f] or 0.0) + float(p[f])
+
+    points = []
+    for date in sorted(by_date):
+        pt = by_date[date]
+        pt['date'] = date
+        points.append(pt)
+
+    today = datetime.now()
+    stale = last_update is None or (today - last_update).days >= STALE_AFTER_DAYS
+    if stale:
+        for p in points:
+            for f in ('forecast', 'lower', 'upper', 'lower_50', 'upper_50'):
+                p[f] = None
+
+    dtype = max(set(data_types), key=data_types.count) if data_types else 'ILI'
+    return {
+        'country': 'United Kingdom',
+        'id': 'GB',
+        'data_type': dtype,
+        'stale': bool(stale),
+        'last_update': last_update.strftime('%Y-%m-%d') if last_update is not None else None,
+        'points': points,
+    }
+
 def process_countries():
     name_to_code = load_mappings()
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -104,6 +155,7 @@ def process_countries():
     print(f"Processing {len(country_dirs)} directories...")
     
     count = 0
+    uk_parts = []
     for country_dir in country_dirs:
         if not os.path.isdir(country_dir):
             continue
@@ -163,7 +215,6 @@ def process_countries():
         today = datetime.now()
         stale = last_date is None or (today - last_date).days >= STALE_AFTER_DAYS
         last_update = last_date.strftime('%Y-%m-%d') if last_date is not None else None
-
         try:
             df = pd.read_csv(results_csv_file)
             
@@ -230,15 +281,33 @@ def process_countries():
                     point["lower_50"] = None
                     point["upper_50"] = None
 
-            # Save JSON
-            with open(os.path.join(OUTPUT_DIR, f"{code}.json"), 'w') as f:
-                json.dump(output_data, f, indent=2)
-            
-            count += 1
+            # Save JSON (UK sub-regions are combined into a single
+            # 'United Kingdom' detail page instead of individual files)
+            if code in UK_PARTS:
+                uk_parts.append((output_data, last_date))
+            else:
+                with open(os.path.join(OUTPUT_DIR, f"{code}.json"), 'w') as f:
+                    json.dump(output_data, f, indent=2)
+                count += 1
             
         except Exception as e:
             print(f"Error processing {country_folder_name}: {e}")
             
+    if uk_parts:
+        if len(uk_parts) < 3:
+            print(f"Warning: only {len(uk_parts)} UK sub-region(s) available for combining")
+        gb_detail = combine_uk_details(uk_parts)
+        with open(os.path.join(OUTPUT_DIR, 'GB.json'), 'w') as f:
+            json.dump(gb_detail, f, indent=2)
+        count += 1
+        # Remove sub-region detail files left over from earlier runs.
+        for part_code in UK_PARTS:
+            part_file = os.path.join(OUTPUT_DIR, f"{part_code}.json")
+            if os.path.exists(part_file):
+                os.remove(part_file)
+        print(f"Wrote combined United Kingdom detail (parts: "
+              f"{[p[0]['id'] for p in uk_parts]}, stale: {gb_detail['stale']}).")
+
     print(f"Successfully generated details for {count} countries.")
 
 if __name__ == "__main__":
