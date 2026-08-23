@@ -8,42 +8,121 @@ import { Tooltip } from "react-tooltip";
 
 const geoUrl = "/data/countries-110m.json";
 
-interface CountryData {
-  id: string;
-  numeric: string | null;
-  name: string;
+interface ForecastWeek {
+  date: string;
   value: number;
   zscore: number;
   score: number;
   status: "high" | "low";
-  data_type?: string;
 }
+
+interface CountryData {
+  id: string;
+  numeric: string | null;
+  name: string;
+  value: number | null;
+  zscore: number | null;
+  score: number | null;
+  status: "high" | "low" | "stale";
+  stale?: boolean;
+  last_update?: string | null;
+  data_type?: string;
+  forecast_weeks?: ForecastWeek[];
+}
+
+interface MapData {
+  generated_at?: string;
+  default_week?: string | null;
+  weeks?: string[];
+  countries: CountryData[];
+}
+
+/** Format "2026-08-17" as "17 Aug 2026" without timezone pitfalls. */
+const fmtWeek = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 const MapChart = () => {
   const router = useRouter();
-  const [data, setData] = useState<CountryData[]>([]);
+  const [mapData, setMapData] = useState<MapData | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState("");
 
   useEffect(() => {
     fetch("/data/influenza_status.json")
       .then((res) => res.json())
-      .then((data) => setData(data))
+      .then((data: MapData) => setMapData(data))
       .catch((err) => console.error("Failed to load data", err));
   }, []);
+
+  const data = mapData?.countries ?? [];
+  const weeks = mapData?.weeks ?? [];
+  const defaultWeek = mapData?.default_week ?? null;
 
   const dataMap = useMemo(() => {
     const map = new Map<number, CountryData>();
     data.forEach((d) => {
-      if (d.numeric) {
-        map.set(parseInt(d.numeric, 10), d);
-      }
+      const n = d.numeric != null ? parseInt(String(d.numeric), 10) : NaN;
+      if (!Number.isNaN(n)) map.set(n, d);
     });
     return map;
   }, [data]);
 
+  // The value shown for a country in the current view:
+  // null view = "current" (latest data / forecast closest to today);
+  // a selected week = that country's prediction for exactly that week.
+  const weekEntry = (d: CountryData): {
+    value: number;
+    zscore: number | null;
+    score: number;
+    status: string;
+    date: string | null;
+  } | null => {
+    if (selectedWeek == null) {
+      const v = d.value;
+      const s = d.score;
+      if (v == null || s == null) return null;
+      return { value: v, zscore: d.zscore, score: s, status: d.status, date: null };
+    }
+    const w = d.forecast_weeks?.find((w) => w.date === selectedWeek) ?? null;
+    if (!w) return null;
+    return { value: w.value, zscore: w.zscore, score: w.score, status: w.status, date: w.date };
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        {/* Prediction-week selector */}
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <div className="text-sm">
+            <span className="font-medium text-gray-900">
+              {selectedWeek
+                ? `Predicted activity for the week of ${fmtWeek(selectedWeek)}`
+                : `Current activity — week of ${defaultWeek ? fmtWeek(defaultWeek) : "latest"}`}
+            </span>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <span className="hidden sm:inline">Prediction week</span>
+            <select
+              value={selectedWeek ?? ""}
+              onChange={(e) => setSelectedWeek(e.target.value || null)}
+              className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            >
+              <option value="">Current (week of {defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
+              {weeks.map((w) => (
+                <option key={w} value={w}>
+                  Week of {fmtWeek(w)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <ComposableMap
           projection="geoNaturalEarth1"
           projectionConfig={{ scale: 160 }}
@@ -55,16 +134,27 @@ const MapChart = () => {
               geographies.map((geo) => {
                 const geoId = geo.id ? parseInt(geo.id, 10) : -1;
                 const d = dataMap.get(geoId);
+                const entry = d && !d.stale ? weekEntry(d) : null;
 
                 let fillColor = "#e2e8f0";
                 let hoverContent = "";
 
-                if (d) {
-                  const score = Math.max(0, Math.min(1, d.score));
+                if (d && !d.stale && entry) {
+                  const score = Math.max(0, Math.min(1, entry.score));
                   fillColor = interpolateRdYlGn(1 - score);
                   const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-                  const sign = d.zscore >= 0 ? "+" : "";
-                  hoverContent = `${d.name} [${dtype}]: Predicted ${d.value.toFixed(1)} (${sign}${d.zscore.toFixed(1)} SD)`;
+                  const sign = entry.zscore != null && entry.zscore >= 0 ? "+" : "";
+                  if (selectedWeek) {
+                    hoverContent = `${d.name} [${dtype}]: ${entry.value.toFixed(1)} predicted for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
+                  } else {
+                    hoverContent = `${d.name} [${dtype}]: Predicted ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD)`;
+                  }
+                } else if (d && d.stale) {
+                  const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
+                  hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 4+ weeks old)`;
+                } else if (d && !d.stale && selectedWeek) {
+                  const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
+                  hoverContent = `${d.name} [${dtype}]: no forecast for the week of ${fmtWeek(selectedWeek)}`;
                 } else {
                   hoverContent = geo.properties.name || "Unknown";
                 }
@@ -100,6 +190,7 @@ const MapChart = () => {
           </Geographies>
         </ComposableMap>
       </div>
+
       <Tooltip
         id="map-tooltip"
         style={{
@@ -117,6 +208,8 @@ const MapChart = () => {
         <span>Low</span>
         <div className="w-48 h-3 rounded-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 opacity-80"></div>
         <span>High</span>
+        <span className="ml-6">{selectedWeek ? "No forecast for this week" : "No current data"}</span>
+        <div className="w-6 h-3 rounded bg-slate-200 border border-slate-300"></div>
       </div>
     </div>
   );

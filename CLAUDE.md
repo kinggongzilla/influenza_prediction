@@ -78,6 +78,10 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 
 Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages.
 
+The map JSON (`influenza_status.json`) is an object: `{generated_at, default_week, weeks, countries}`. Each fresh country has `forecast_weeks: [{date, value, zscore, score, status}]` restricted to the **display window: `default_week` (the week closest to today) + the next 3 weeks** — the map only offers those 4 weeks in its selector (all countries share one weekly grid). Picking a week re-colors the map from that week's per-country z-score; countries without a forecast for that week go gray. Detail JSONs (`details/<CODE>.json`) carry `points[]` with `historical`/`forecast`/quantiles per week; the detail page has a Range selector (1Y / 3Y / 5Y / All).
+
+**Current-activity rule**: the model forecasts 4 weeks ahead, so a prediction is only displayed for "today" if the country's last data point is less than 4 weeks old (`STALE_AFTER_DAYS = 28` in `generate_map_data.py` / `generate_country_details.py`). Countries at or beyond that gap are marked `stale`: gray on the map (tooltip shows last-update date), and their detail JSON has all forecast fields nulled (history only, with a banner). This prevents e.g. a country that stopped reporting in 2022 from showing a 2023 forecast as current activity. Seasonally-reporting countries (e.g. Italy: winter season only, ILI→ARI switch in Oct 2025) go gray during their summer break — that is intended.
+
 ## Gotchas
 
 - Excluded from training (data quality / outlier rWIS / MAPE): Thailand, Belarus, Colombia, Peru, Ukraine, Mexico, Oman, Viet Nam, North Macedonia, Croatia, New Caledonia, Nigeria. Listed in `training_countries.json` `excluded_from_training`.

@@ -30,6 +30,8 @@ interface CountryDetails {
   country: string;
   id: string;
   data_type?: "ILI" | "ARI";
+  stale?: boolean;
+  last_update?: string | null;
   points: DataPoint[];
 }
 
@@ -114,6 +116,9 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
   }
 
   const todayTimestamp = new Date().getTime();
+  const windowStart = filteredData.length ? Math.min(...filteredData.map((p) => p.date as number)) : 0;
+  const windowEnd = filteredData.length ? Math.max(...filteredData.map((p) => p.date as number)) : 0;
+  const todayInView = todayTimestamp >= windowStart && todayTimestamp <= windowEnd;
 
   return (
     <main className="min-h-screen bg-[#fafafa]">
@@ -131,7 +136,7 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
                     {data.country} <span className="text-gray-400 text-lg font-normal">({id})</span>
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">
-                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases and 12-month forecast
+                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast — data is stale)" : " and 12-month forecast"}
                 </p>
             </div>
             <div className="flex items-center gap-2">
@@ -150,6 +155,13 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
             </div>
           </div>
         </header>
+
+        {data.stale && (
+          <div className="mb-4 bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-lg px-4 py-3">
+            Surveillance data last updated <strong>{data.last_update ?? "unknown"}</strong> — 4 weeks or more ago.
+            No forecast is shown because predictions are anchored to the latest data and only cover the next 4 weeks.
+          </div>
+        )}
 
         <div className="w-full h-[500px] bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <ResponsiveContainer width="100%" height="100%">
@@ -217,10 +229,12 @@ export default function CountryPage({ params }: { params: Promise<{ id: string }
                 name="Forecast (Mean)"
               />
 
-              {/* Today Reference Line */}
-              <ReferenceLine x={todayTimestamp} stroke="#ef4444" strokeDasharray="3 3">
-                <Label value="Today" position="insideTopLeft" fill="#ef4444" fontSize={12} />
-              </ReferenceLine>
+              {/* Today Reference Line (only when inside the visible window) */}
+              {todayInView && (
+                <ReferenceLine x={todayTimestamp} stroke="#ef4444" strokeDasharray="3 3">
+                  <Label value="Today" position="insideTopLeft" fill="#ef4444" fontSize={12} />
+                </ReferenceLine>
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>

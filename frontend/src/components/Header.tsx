@@ -14,20 +14,29 @@ export default function Header() {
           Global Influenza Forecast
         </Link>
         <nav className="flex items-center gap-6 text-sm">
-          <Link
-            href="/"
-            className={`transition-colors ${isHome ? "text-blue-600 font-medium" : "text-gray-500 hover:text-gray-900"}`}
-          >
-            Dashboard
-          </Link>
-          <a
-            href="https://github.com/WHO-Collaboratory"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Data Source
-          </a>
+          {[
+            ["/", "Dashboard", false],
+            ["/methodology", "Methodology", false],
+            ["/about", "About", false],
+            [
+              "https://www.who.int/teams/global-influenza-programme/surveillance-and-monitoring/influenza-surveillance-outputs",
+              "Data Source",
+              true,
+            ],
+          ].map(([href, label, external]) => (
+            <Link
+              key={label as string}
+              href={href as string}
+              {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={`transition-colors ${
+                !external && pathname === href
+                  ? "text-blue-600 font-medium"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              {label as string}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>
