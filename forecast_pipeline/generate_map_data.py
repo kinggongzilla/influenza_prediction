@@ -19,6 +19,17 @@ OUTPUT_FILE = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'influe
 # 4+ weeks old no longer covers "today".
 STALE_AFTER_DAYS = 4 * 7
 
+# UK sub-regions: the 110m world map only has a single GB polygon, so the
+# frontend layers dedicated polygons over it (public/data/uk_subregions.json,
+# built by make_uk_subregions.py from OSM admin-4 boundaries). Pseudo ISO
+# numeric codes — real 3166-1 numerics are 3 digits, so these can't collide.
+UK_SUBREGIONS = {
+    'ENG': ('82601', 'England (UK)'),
+    'SCT': ('82602', 'Scotland (UK)'),
+    'NIR': ('82603', 'Northern Ireland (UK)'),
+}
+
+
 def load_mappings():
     with open(BOUNDING_BOXES_FILE, 'r') as f:
         bboxes = json.load(f)
@@ -44,7 +55,12 @@ def load_mappings():
         'republic_of_moldova': 'MD',
         'lao_people\'s_democratic_republic': 'LA',
         'micronesia_(federated_states_of)': 'FM',
-        'united_republic_of_tanzania': 'TZ'
+        'united_republic_of_tanzania': 'TZ',
+        # UK sub-regions: WHO reports them individually; the map layers real
+        # polygons for them over the single GB base polygon (see UK_SUBREGIONS).
+        'united_kingdom,_england': 'ENG',
+        'united_kingdom,_scotland': 'SCT',
+        'united_kingdom,_northern_ireland': 'NIR'
     }
     name_to_code.update(overrides)
     return name_to_code
@@ -172,8 +188,13 @@ def process_countries():
             stale = last_obs is None or (today - last_obs).days >= STALE_AFTER_DAYS
 
             # Get Numeric Code for Map Matching
-            country_obj = pycountry.countries.get(alpha_2=code)
-            numeric_code = country_obj.numeric if country_obj else None
+            if code in UK_SUBREGIONS:
+                numeric_code = UK_SUBREGIONS[code][0]
+                display_name = UK_SUBREGIONS[code][1]
+            else:
+                country_obj = pycountry.countries.get(alpha_2=code)
+                numeric_code = country_obj.numeric if country_obj else None
+                display_name = country_folder_name.replace('_', ' ')
 
             # Detect data type from extracted data file
             data_type = "ILI"
@@ -195,7 +216,7 @@ def process_countries():
                 map_data.append({
                     "id": code,
                     "numeric": numeric_code,
-                    "name": country_folder_name.replace('_', ' '),
+                    "name": display_name,
                     "data_type": data_type,
                     "value": None,
                     "zscore": None,
@@ -252,7 +273,7 @@ def process_countries():
             map_data.append({
                 "id": code,
                 "numeric": numeric_code,
-                "name": country_folder_name.replace('_', ' '),
+                "name": display_name,
                 "data_type": data_type,
                 "value": round(float(current_value), 1),
                 "zscore": round(float(zscore), 2),

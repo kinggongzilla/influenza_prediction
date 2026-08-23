@@ -67,9 +67,7 @@ export default function MethodologyPage() {
           <p>
             Selection criteria are applied identically to all countries and are deliberately
             data-driven rather than judgment-based, to avoid cherry-picking easy-to-predict
-            series. A few of them — small-island territories and the UK sub-regions that WHO
-            reports separately — have no matching region in the 110m map geography, so their
-            forecasts are linked from the list below instead of being shown on the map.
+            series.
           </p>
           <CountryList />
         </Section>

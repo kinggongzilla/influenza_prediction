@@ -92,7 +92,7 @@ export default function CountryList() {
             Show less
           </button>
           <p className="text-xs text-gray-400">
-            † no matching region on the 110m world map (small-island territory or UK sub-region) —
+            † no matching region on the 110m world map (small-island territory) —
             the forecast is available via the country page.
             {data.excluded_from_training.length > 0 && (
               <> Excluded from training after out-of-sample evaluation: {data.excluded_from_training.join(", ")}.</>
@@ -102,8 +102,7 @@ export default function CountryList() {
       ) : (
         <div className="my-4 bg-white border border-gray-200 rounded-lg p-4">
           <p className="text-[15px] leading-7 text-gray-700">
-            Every country with a page on this site is included in the list below — including the
-            ones that can&apos;t be colored on the world map.
+            Every country with a page on this site is included in the list below.
           </p>
           <button
             onClick={() => setExpanded(true)}

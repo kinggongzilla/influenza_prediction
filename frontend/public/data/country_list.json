@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-23 13:33",
+  "generated_at": "2026-08-23 14:05",
   "total": 89,
-  "on_map": 72,
+  "on_map": 75,
   "countries": [
     {
       "name": "Afghanistan",
@@ -208,7 +208,7 @@
       "since": "2019-12-30",
       "last_update": "2026-08-03",
       "stale": false,
-      "on_map": false
+      "on_map": true
     },
     {
       "name": "Estonia",
@@ -550,7 +550,7 @@
       "since": "2019-12-30",
       "last_update": "2026-08-10",
       "stale": false,
-      "on_map": false
+      "on_map": true
     },
     {
       "name": "Northern Mariana Islands",
@@ -649,7 +649,7 @@
       "since": "2019-12-30",
       "last_update": "2026-05-11",
       "stale": true,
-      "on_map": false
+      "on_map": true
     },
     {
       "name": "Senegal",

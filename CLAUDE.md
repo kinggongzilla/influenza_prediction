@@ -4,7 +4,7 @@ All commands run from `forecast_pipeline/`.
 
 ## Architecture
 
-Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 89 countries (72 map onto the 110m world map; the other 17 — small-island territories and UK sub-regions — are only reachable via their country pages). Produces probabilistic 4-week-ahead forecasts with prediction intervals.
+Chronos-2 (patch-based transformer, quantile regression loss) fine-tuned on WHO ILI/ARI surveillance data from 89 countries (75 appear on the world map, including England/Scotland/N. Ireland as separate clickable regions; the remaining 14 small-island territories are only reachable via their country pages). Produces probabilistic 4-week-ahead forecasts with prediction intervals.
 
 ## Key Data Concepts
 
@@ -36,6 +36,7 @@ Models trained with covariates can be evaluated without covariates. Simple/stati
 - **weather_fetcher.py**: `fetch_weather_data()` (Open-Meteo API), `get_country_coordinates()`, `aggregate_weather_to_weekly()`, `normalize_weather_features()`. Rate-limited with retry backoff.
 - **country_neighbors.py**: `get_neighbors()` returns geographically neighboring countries.
 - **chronos_inference.py**: Low-level inference wrapper.
+- **make_uk_subregions.py**: One-shot generator for `frontend/public/data/uk_subregions.json` (OSM admin-4 boundaries for England/Scotland/N. Ireland via Overpass, ring-assembly + Douglas-Peucker). Re-run only if the file is lost; needs a User-Agent header on the Overpass request.
 
 ## Weather System
 
@@ -76,7 +77,7 @@ Several scripts have a `COUNTRY_NAME_MAP` dict that maps WHO country names to sh
 
 ## Frontend
 
-Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages. Branding: header logo `public/images/logo.svg` (globe + epidemic curve); favicon is `src/app/icon.svg` (same design; the default `favicon.ico` was removed).
+Next.js app in `frontend/`. Reads JSON from `frontend/public/data/`. World map + per-country detail pages. Branding: header logo `public/images/logo.svg` (globe + epidemic curve); favicon is `src/app/icon.svg` (same design; the default `favicon.ico` was removed). The map overlays UK sub-region polygons (`public/data/uk_subregions.json`, England/Scotland/N. Ireland with pseudo ISO numerics 82601/02/03, built by `make_uk_subregions.py` from OSM admin-4 boundaries) on top of the single GB base polygon; Wales has no WHO series and stays on the base. `MapChart.tsx` fetches and merges both GeoJSONs.
 
 The map JSON (`influenza_status.json`) is an object: `{generated_at, default_week, weeks, countries}`. Each fresh country has `forecast_weeks: [{date, value, zscore, score, status}]` restricted to the **display window: `default_week` (the week closest to today) + the next 3 weeks** — the map only offers those 4 weeks in its selector (all countries share one weekly grid). Picking a week re-colors the map from that week's per-country z-score; countries without a forecast for that week go gray. Detail JSONs (`details/<CODE>.json`, one per trained country — 89 total, 72 also on the map) carry `points[]` with `historical`/`forecast`/quantiles per week. The detail page's Range selector (1Y / 3Y / 5Y / All, **1Y is the default**) shows the last N weeks of *history* plus the near-term 8-week forecast, anchored to the last historical week; `All` shows the full series including the whole forecast horizon. The methodology page renders `data/country_list.json` (written by `generate_map_data.py`) as a linked table of every trained country, including the 17 that can't be colored on the map.
 
@@ -99,7 +100,7 @@ The site is 100% static at runtime (all data is client-side `fetch` from `/data/
 ## Gotchas
 
 - **Public copy says "78 countries" on purpose** — it must stay consistent with the ESCAIDE abstract/citation, which say 78. The actual training set is 89 (see `training_countries.json`). Do not "fix" the dashboard copy to 89 unless the abstract and citation are updated too.
-- Excluded from training after out-of-sample evaluation (outlier rWIS/MAPE): currently just **Thailand** (the old 12-country list is stale). The live list is in `training_countries.json` → `excluded_from_training` and is data-driven, so it can change as quality thresholds or eval results change. 89 countries are trained; 72 map to the 110m world map, 17 (small-island territories + UK sub-regions) are country-page-only.
+- Excluded from training after out-of-sample evaluation (outlier rWIS/MAPE): currently just **Thailand** (the old 12-country list is stale). The live list is in `training_countries.json` → `excluded_from_training` and is data-driven, so it can change as quality thresholds or eval results change. 89 countries are trained; 75 appear on the world map (72 countries + the UK sub-regions layered over the GB polygon), 14 small-island territories are country-page-only.
 - `assess_data_quality.py` was deleted; its functionality is now in `prepare_finetune_data.py --assess_only`.
 - Chronos-2 uses dict-based input when covariates are present: `{"target": array, "past_covariates": {...}, "future_covariates": {...}}`.
 - Future covariates: `data_type`, `hemisphere`, `week_sin`, `week_cos` are passed as both past and future covariates during training and evaluation (defined in `FUTURE_KNOWN_COVARIATES` in `prepare_finetune_data.py`). Weather and neighbors are past-only.

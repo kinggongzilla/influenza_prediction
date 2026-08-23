@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-23 13:33",
+  "generated_at": "2026-08-23 14:05",
   "default_week": "2026-08-24",
   "weeks": [
     "2026-08-24",
@@ -172,6 +172,48 @@
       "stale": true,
       "last_update": "2017-09-25",
       "forecast_weeks": []
+    },
+    {
+      "id": "ENG",
+      "numeric": "82601",
+      "name": "England (UK)",
+      "data_type": "ILI",
+      "value": 313.7,
+      "zscore": -0.38,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
+      "last_update": "2026-08-03",
+      "forecast_weeks": [
+        {
+          "date": "2026-08-24",
+          "value": 313.7,
+          "zscore": -0.38,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-08-31",
+          "value": 364.1,
+          "zscore": -0.32,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 395.3,
+          "zscore": -0.29,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 432.7,
+          "zscore": -0.24,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "ID",
@@ -1044,6 +1086,19 @@
       ]
     },
     {
+      "id": "SCT",
+      "numeric": "82602",
+      "name": "Scotland (UK)",
+      "data_type": "ILI",
+      "value": null,
+      "zscore": null,
+      "score": null,
+      "status": "stale",
+      "stale": true,
+      "last_update": "2026-05-11",
+      "forecast_weeks": []
+    },
+    {
       "id": "JM",
       "numeric": "388",
       "name": "Jamaica",
@@ -1233,6 +1288,48 @@
       "stale": true,
       "last_update": "2026-07-13",
       "forecast_weeks": []
+    },
+    {
+      "id": "NIR",
+      "numeric": "82603",
+      "name": "Northern Ireland (UK)",
+      "data_type": "ILI",
+      "value": 41.6,
+      "zscore": -0.33,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
+      "last_update": "2026-08-10",
+      "forecast_weeks": [
+        {
+          "date": "2026-08-24",
+          "value": 41.6,
+          "zscore": -0.33,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-08-31",
+          "value": 45.2,
+          "zscore": -0.31,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 50.3,
+          "zscore": -0.27,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 55.0,
+          "zscore": -0.24,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "ES",

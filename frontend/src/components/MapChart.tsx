@@ -7,6 +7,7 @@ import { interpolateRdYlGn } from "d3-scale-chromatic";
 import { Tooltip } from "react-tooltip";
 
 const geoUrl = "/data/countries-110m.json";
+const ukSubregionsUrl = "/data/uk_subregions.json";
 
 interface ForecastWeek {
   date: string;
@@ -50,6 +51,7 @@ const fmtWeek = (iso: string) => {
 const MapChart = () => {
   const router = useRouter();
   const [mapData, setMapData] = useState<MapData | null>(null);
+  const [geoData, setGeoData] = useState<object | undefined>(undefined);
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState("");
 
@@ -58,6 +60,20 @@ const MapChart = () => {
       .then((res) => res.json())
       .then((data: MapData) => setMapData(data))
       .catch((err) => console.error("Failed to load data", err));
+  }, []);
+
+  // Base 110m world + UK sub-region polygons (England/Scotland/N. Ireland are
+  // drawn on top of the single GB base polygon; Wales stays on the base).
+  useEffect(() => {
+    Promise.all([
+      fetch(geoUrl).then((r) => r.json()),
+      fetch(ukSubregionsUrl).then((r) => r.json()).catch(() => null),
+    ])
+      .then(([base, uk]) => {
+        const features = uk ? [...base.features, ...uk.features] : base.features;
+        setGeoData({ ...base, features });
+      })
+      .catch((err) => console.error("Failed to load map geography", err));
   }, []);
 
   const data = mapData?.countries ?? [];
@@ -129,7 +145,7 @@ const MapChart = () => {
           height={420}
         >
           <Graticule stroke="#e2e8f0" strokeWidth={0.4} />
-          <Geographies geography={geoUrl}>
+          <Geographies geography={geoData}>
             {({ geographies }) =>
               geographies.map((geo) => {
                 const geoId = geo.id ? parseInt(geo.id, 10) : -1;
