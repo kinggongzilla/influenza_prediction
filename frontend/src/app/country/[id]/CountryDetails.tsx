@@ -37,6 +37,57 @@ interface CountryData {
   points: DataPoint[];
 }
 
+/** Custom tooltip: shows real prediction-interval *ranges* (lower–upper)
+    and never the raw lower/upper dataKeys (those Areas exist only to
+    draw the bands). Rows are skipped when their value is missing, so
+    historical weeks show only the observed cases. */
+function ChartTooltip(props: {
+  active?: boolean;
+  payload?: Array<{ payload?: DataPoint }>;
+  label?: number;
+  points: DataPoint[];
+  dataType?: "ILI" | "ARI";
+  showPI90: boolean;
+  showPI50: boolean;
+}) {
+  const { active, payload, label, points, dataType, showPI90, showPI50 } = props;
+  if (!active || !payload || payload.length === 0) return null;
+
+  const entry = (payload[0]?.payload as DataPoint | undefined) ?? points.find((p) => p.date === label);
+  if (!entry) return null;
+
+  const num = (v: number | null | undefined): number | null =>
+    typeof v === "number" && Number.isFinite(v) ? v : null;
+  const fmt = (v: number) => Math.round(v).toLocaleString();
+
+  const rows: { name: string; value: string; swatch: string }[] = [];
+  const l90 = num(entry.lower), u90 = num(entry.upper);
+  if (showPI90 && l90 != null && u90 != null)
+    rows.push({ name: "90% prediction interval", value: `${fmt(l90)} – ${fmt(u90)}`, swatch: "rgba(59, 130, 246, 0.35)" });
+  const l50 = num(entry.lower_50), u50 = num(entry.upper_50);
+  if (showPI50 && l50 != null && u50 != null)
+    rows.push({ name: "50% prediction interval", value: `${fmt(l50)} – ${fmt(u50)}`, swatch: "rgba(59, 130, 246, 0.6)" });
+  const fc = num(entry.forecast);
+  if (fc != null) rows.push({ name: "Forecast (mean)", value: fmt(fc), swatch: "#2563eb" });
+  const hist = num(entry.historical);
+  if (hist != null) rows.push({ name: dataType === "ARI" ? "Historical ARI cases" : "Historical ILI cases", value: fmt(hist), swatch: "#64748b" });
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-md shadow-md px-3 py-2 text-[13px] text-gray-800">
+      <div className="font-semibold text-gray-500 mb-1">{format(new Date(label as number), "MMM d, yyyy")}</div>
+      {rows.map((r) => (
+        <div key={r.name} className="flex items-center gap-2 leading-5">
+          <span className="inline-block h-2.5 w-2.5 rounded-sm shrink-0" style={{ backgroundColor: r.swatch }} />
+          <span className="text-gray-500">{r.name}:</span>
+          <span className="font-medium">{r.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CountryDetails({ id }: { id: string }) {
 
   const router = useRouter();
@@ -205,18 +256,8 @@ export default function CountryDetails({ id }: { id: string }) {
               />
               <YAxis stroke="#94a3b8" fontSize={12} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#ffffff", borderColor: "#e2e8f0", color: "#1a1a2e", borderRadius: "6px", fontSize: "13px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-                labelFormatter={(label) => format(new Date(label), "MMM d, yyyy")}
-                formatter={(value, name) => {
-                  const n = name ?? "";
-                  if (Array.isArray(value)) {
-                    const a = Math.round(Number(value[0] ?? 0));
-                    const b = Math.round(Number(value[1] ?? 0));
-                    return [`${a}–${b}`, n];
-                  }
-                  const v = Number(value);
-                  return [Number.isFinite(v) ? v.toFixed(0) : "0", n];
-                }}
+                wrapperStyle={{ outline: "none" }}
+                content={<ChartTooltip points={filteredData} dataType={data.data_type} showPI90={showPI90} showPI50={showPI50} />}
               />
               <Legend
                 content={({ payload }) => {
