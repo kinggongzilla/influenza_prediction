@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Weekly automated influenza data update.
+# Daily automated influenza data update.
 #
 #   WHO fluID download -> per-country extraction -> inference (frozen best model)
 #   -> frontend JSON -> deploy
@@ -9,8 +9,11 @@
 #   - set -euo pipefail: any failing step aborts the run.
 #   - A failing run NEVER deploys: the live site keeps the last good data.
 #   - The WHO guard aborts if the fresh file is older or drastically smaller
-#     than the backup (protects against partial WHO releases).
-#   - Catch-up safe: if a week is missed, the next run picks up all new weeks.
+#     than the backup (protects against partial WHO releases); if the file
+#     is byte-identical to the previous pull the run is skipped entirely
+#     (no pipeline work, no deploy) — this keeps no-change days free, which
+#     matters because WHO syncs the feed continuously (roughly daily).
+#   - Catch-up safe: if a run is missed, the next one picks up all changes.
 #
 # Log: auto_update.log (this directory).
 set -euo pipefail
@@ -30,29 +33,62 @@ log "=== auto update start ==="
 # 1. WHO download (backs up the previous CSV; exits non-zero on failure)
 python3 update_who_data.py --backup 2>&1 | tee -a "$LOG"
 
-# 2. WHO guard: fresh data must not be older / drastically smaller than the backup.
+# 2. WHO guard: fresh data must not be older / drastically smaller than the
+#    backup. If the file is byte-identical to the previous pull (exit 42)
+#    the whole run is skipped — no pipeline work, no deploy.
 #    (heredoc on the same command as the output redirect; stdout goes to the log)
-python3 - >>"$LOG" 2>&1 <<'EOF'
+rc=0
+python3 - >>"$LOG" 2>&1 <<'EOF' || rc=$?
+import hashlib
 import os
 import sys
 import pandas as pd
 
 new_path = "data/who_flu_data.csv"
 bak_path = "data/who_flu_data.csv.bak"
-new = pd.read_csv(new_path, usecols=["ISO_WEEKSTARTDATE"], low_memory=False)
-if not os.path.exists(bak_path):
-    print("guard: no previous file to compare against — skipping")
-    sys.exit(0)
-prev = pd.read_csv(bak_path, usecols=["ISO_WEEKSTARTDATE"], low_memory=False)
 
-new_max = str(new["ISO_WEEKSTARTDATE"].dropna().max())
-prev_max = str(prev["ISO_WEEKSTARTDATE"].dropna().max())
-print(f"guard: latest week new={new_max} previous={prev_max} rows {len(prev)} -> {len(new)}")
-if new_max < prev_max:
-    sys.exit(f"aborting: new data ends BEFORE previous data ({new_max} < {prev_max}) — possible partial WHO release")
-if len(new) < 0.5 * len(prev):
-    sys.exit(f"aborting: row count dropped from {len(prev)} to {len(new)} — suspicious WHO file")
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def latest_week(df):
+    # errors='coerce': the feed occasionally contains garbage date values
+    # (e.g. a bare "7") that must not pollute the max.
+    d = pd.to_datetime(df["ISO_WEEKSTARTDATE"], errors="coerce").dropna()
+    return str(d.max().date()) if len(d) else None
+
+new_hash = sha256(new_path)
+if os.path.exists(bak_path) and sha256(bak_path) == new_hash:
+    print(f"guard: WHO file unchanged since last pull (sha256 {new_hash[:12]}…) — skipping run")
+    sys.exit(42)
+print(f"guard: WHO file changed (sha256 {new_hash[:12]}…)")
+
+new = pd.read_csv(new_path, usecols=["ISO_WEEKSTARTDATE"], low_memory=False)
+prev = (pd.read_csv(bak_path, usecols=["ISO_WEEKSTARTDATE"], low_memory=False)
+        if os.path.exists(bak_path) else None)
+new_max, prev_max = latest_week(new), (latest_week(prev) if prev is not None else None)
+print(f"guard: latest week new={new_max} previous={prev_max} "
+      f"rows {0 if prev is None else len(prev)} -> {len(new)}")
+if new_max is None:
+    sys.exit("aborting: no parseable ISO_WEEKSTARTDATE in new file — possible partial WHO release")
+if prev is not None:
+    if prev_max is not None and new_max < prev_max:
+        sys.exit(f"aborting: new data ends BEFORE previous data ({new_max} < {prev_max}) — possible partial WHO release")
+    if len(new) < 0.5 * len(prev):
+        sys.exit(f"aborting: row count dropped from {len(prev)} to {len(new)} — suspicious WHO file")
+else:
+    print("guard: no previous file to compare against — proceeding")
 EOF
+if [ "$rc" -eq 42 ]; then
+  log "WHO data unchanged since last pull — skipping run, site already current"
+  exit 0
+elif [ "$rc" -ne 0 ]; then
+  log "!!! WHO guard failed (rc=$rc) — aborting, live site keeps last good data."
+  exit "$rc"
+fi
 log "WHO guard passed"
 
 # 3. Per-country extraction (data/extracted_data/*_combined.csv)
