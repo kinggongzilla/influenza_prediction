@@ -137,7 +137,23 @@ export default function CountryDetails({ id }: { id: string }) {
     const t = RANGES[timeRange] ?? RANGES["1Y"];
     const hist = points.filter((p) => p.historical != null).slice(-t.hist);
     const fc = points.filter((p) => p.forecast != null).slice(0, t.fc);
-    return [...hist, ...fc].sort((a, b) => (a.date as number) - (b.date as number));
+    const rows = [...hist, ...fc].sort((a, b) => (a.date as number) - (b.date as number));
+
+    // Bridge the forecast line to the last observed point: the forecast series
+    // starts at the week after the last reported week, which on the time axis
+    // leaves a one-week break between history and forecast. Copying the last
+    // observed value onto its row makes the forecast start exactly where the
+    // history ends (the prediction-interval band still begins at the first
+    // genuine forecast week, one week ahead).
+    const lastHist = [...rows].reverse().find((p) => p.historical != null);
+    if (lastHist && rows.some((p) => p.date > lastHist.date && p.forecast != null)) {
+      return rows.map((p) =>
+        p.date === lastHist.date && p.historical != null && p.forecast == null
+          ? { ...p, forecast: p.historical }
+          : p
+      );
+    }
+    return rows;
   }, [data, timeRange]);
 
   if (loading) {
