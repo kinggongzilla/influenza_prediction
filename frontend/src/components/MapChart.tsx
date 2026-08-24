@@ -64,12 +64,6 @@ const MapChart = () => {
   const data = mapData?.countries ?? [];
   const weeks = mapData?.weeks ?? [];
   const defaultWeek = mapData?.default_week ?? null;
-  // Future weeks no country can forecast (beyond every country's 4-week
-  // horizon) would render an all-gray map, so they're hidden; they
-  // reappear as the data gets fresher.
-  const futureWeeks = weeks.filter(
-    (w) => w !== defaultWeek && data.some((c) => c.forecast_weeks?.some((fw) => fw.date === w))
-  );
 
   const dataMap = useMemo(() => {
     const map = new Map<number, CountryData>();
@@ -184,7 +178,7 @@ const MapChart = () => {
               className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
               <option value="">Nowcast ({defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
-              {futureWeeks.map((w) => (
+              {weeks.filter((w) => w !== defaultWeek).map((w) => (
                 <option key={w} value={w}>
                   Week of {fmtWeek(w)}
                 </option>
