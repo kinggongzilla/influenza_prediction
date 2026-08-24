@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24 13:46",
+  "generated_at": "2026-08-24 23:02",
   "total": 87,
   "on_map": 73,
   "countries": [
@@ -45,7 +45,7 @@
       "data_type": "ILI",
       "since": "2009-07-06",
       "last_update": "2026-07-27",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -126,7 +126,7 @@
       "data_type": "ILI",
       "since": "2011-09-26",
       "last_update": "2026-07-20",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -162,7 +162,7 @@
       "data_type": "ILI",
       "since": "2018-12-31",
       "last_update": "2026-07-20",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -171,7 +171,7 @@
       "data_type": "ILI",
       "since": "2009-07-06",
       "last_update": "2026-07-20",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -297,7 +297,7 @@
       "data_type": "ILI",
       "since": "2018-08-13",
       "last_update": "2026-07-20",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -324,7 +324,7 @@
       "data_type": "ILI",
       "since": "2012-06-11",
       "last_update": "2026-07-06",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -405,7 +405,7 @@
       "data_type": "ILI",
       "since": "2020-11-23",
       "last_update": "2026-07-06",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -594,7 +594,7 @@
       "data_type": "ILI",
       "since": "2021-12-27",
       "last_update": "2026-07-06",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -603,7 +603,7 @@
       "data_type": "ILI",
       "since": "2009-07-06",
       "last_update": "2026-07-06",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -621,7 +621,7 @@
       "data_type": "ILI",
       "since": "2016-12-26",
       "last_update": "2026-07-13",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {
@@ -675,7 +675,7 @@
       "data_type": "ILI",
       "since": "2021-08-23",
       "last_update": "2026-07-13",
-      "stale": true,
+      "stale": false,
       "on_map": true
     },
     {

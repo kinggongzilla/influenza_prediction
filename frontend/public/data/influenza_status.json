@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24 13:46",
+  "generated_at": "2026-08-24 23:02",
   "default_week": "2026-08-24",
   "weeks": [
     "2026-08-24",
@@ -14,28 +14,58 @@
       "numeric": "634",
       "name": "Qatar",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 21.1,
+      "value_source": "forecast",
+      "zscore": -0.4,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-06",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 21.2,
+          "zscore": -0.39,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "HR",
       "numeric": "191",
       "name": "Croatia",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 0.0,
+      "value_source": "forecast",
+      "zscore": -0.45,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-20",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 0.0,
+          "zscore": -0.45,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 0.0,
+          "zscore": -0.45,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 0.0,
+          "zscore": -0.45,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "LA",
@@ -85,14 +115,43 @@
       "numeric": "040",
       "name": "Austria",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 172.6,
+      "value_source": "forecast",
+      "zscore": -0.7,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-27",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 124.9,
+          "zscore": -0.87,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 214.2,
+          "zscore": -0.55,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 259.6,
+          "zscore": -0.4,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 240.1,
+          "zscore": -0.46,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "KH",
@@ -156,14 +215,22 @@
       "numeric": "360",
       "name": "Indonesia",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 95.3,
+      "value_source": "forecast",
+      "zscore": 1.02,
+      "score": 0.5120553363092679,
+      "status": "high",
+      "stale": false,
       "last_update": "2026-07-06",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 97.8,
+          "zscore": 1.09,
+          "score": 0.5433847549049245,
+          "status": "high"
+        }
+      ]
     },
     {
       "id": "PY",
@@ -255,6 +322,13 @@
           "zscore": 0.65,
           "score": 0.32378474334240454,
           "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 450.8,
+          "zscore": 0.58,
+          "score": 0.2918147610450112,
+          "status": "low"
         }
       ]
     },
@@ -290,6 +364,13 @@
           "value": 120.8,
           "zscore": 0.16,
           "score": 0.08153828926610689,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 109.7,
+          "zscore": 0.05,
+          "score": 0.02349232408847727,
           "status": "low"
         }
       ]
@@ -412,6 +493,13 @@
           "value": 36.1,
           "zscore": 0.07,
           "score": 0.03657837508209705,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 31.8,
+          "zscore": 0.0,
+          "score": 0.0007125079815533642,
           "status": "low"
         }
       ]
@@ -819,6 +907,13 @@
           "zscore": 0.29,
           "score": 0.14481822075867465,
           "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 303.9,
+          "zscore": 0.28,
+          "score": 0.1380452351810058,
+          "status": "low"
         }
       ]
     },
@@ -912,6 +1007,13 @@
           "zscore": -0.21,
           "score": 0.0,
           "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 161.0,
+          "zscore": -0.2,
+          "score": 0.0,
+          "status": "low"
         }
       ]
     },
@@ -963,14 +1065,22 @@
       "numeric": "422",
       "name": "Lebanon",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 12.2,
+      "value_source": "forecast",
+      "zscore": -0.65,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-06",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 11.8,
+          "zscore": -0.66,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "GE",
@@ -1004,6 +1114,13 @@
           "value": 170.6,
           "zscore": 0.19,
           "score": 0.09287760341562788,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 196.7,
+          "zscore": 0.39,
+          "score": 0.1972260392834794,
           "status": "low"
         }
       ]
@@ -1055,6 +1172,13 @@
           "zscore": -0.32,
           "score": 0.0,
           "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 113.9,
+          "zscore": -0.32,
+          "score": 0.0,
+          "status": "low"
         }
       ]
     },
@@ -1063,28 +1187,58 @@
       "numeric": "324",
       "name": "Guinea",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 57.9,
+      "value_source": "forecast",
+      "zscore": -0.76,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-20",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 58.6,
+          "zscore": -0.74,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 58.9,
+          "zscore": -0.73,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 60.2,
+          "zscore": -0.69,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "RU",
       "numeric": "643",
       "name": "Russian Federation",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 516.2,
+      "value_source": "forecast",
+      "zscore": -0.35,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-06",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 606.3,
+          "zscore": -0.34,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "BD",
@@ -1162,6 +1316,13 @@
           "zscore": 0.21,
           "score": 0.10645995048228139,
           "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 178.2,
+          "zscore": 0.24,
+          "score": 0.11960773799268028,
+          "status": "low"
         }
       ]
     },
@@ -1184,14 +1345,29 @@
       "numeric": "682",
       "name": "Saudi Arabia",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 568.2,
+      "value_source": "forecast",
+      "zscore": 1.13,
+      "score": 0.5639211596877133,
+      "status": "high",
+      "stale": false,
       "last_update": "2026-07-13",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 576.7,
+          "zscore": 1.16,
+          "score": 0.5789055174094776,
+          "status": "high"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 586.0,
+          "zscore": 1.19,
+          "score": 0.5954424751402049,
+          "status": "high"
+        }
+      ]
     },
     {
       "id": "ES",
@@ -1241,14 +1417,36 @@
       "numeric": "188",
       "name": "Costa Rica",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 31.7,
+      "value_source": "forecast",
+      "zscore": -0.79,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-20",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 28.4,
+          "zscore": -0.79,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 27.9,
+          "zscore": -0.79,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 28.5,
+          "zscore": -0.79,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "AF",
@@ -1282,6 +1480,13 @@
           "value": 4501.9,
           "zscore": 0.94,
           "score": 0.47173362615448833,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 4608.6,
+          "zscore": 0.98,
+          "score": 0.49087680476396306,
           "status": "low"
         }
       ]
@@ -1876,28 +2081,65 @@
       "numeric": "706",
       "name": "Somalia",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 21.8,
+      "value_source": "forecast",
+      "zscore": -0.54,
+      "score": 0.0,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-13",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 21.7,
+          "zscore": -0.54,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 21.9,
+          "zscore": -0.54,
+          "score": 0.0,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "CM",
       "numeric": "120",
       "name": "Cameroon",
       "data_type": "ILI",
-      "value": null,
-      "value_source": null,
-      "zscore": null,
-      "score": null,
-      "status": "stale",
-      "stale": true,
+      "value": 42.7,
+      "value_source": "forecast",
+      "zscore": 0.1,
+      "score": 0.04823190994829758,
+      "status": "low",
+      "stale": false,
       "last_update": "2026-07-20",
-      "forecast_weeks": []
+      "forecast_weeks": [
+        {
+          "date": "2026-08-31",
+          "value": 42.8,
+          "zscore": 0.1,
+          "score": 0.049327854426799336,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 42.6,
+          "zscore": 0.09,
+          "score": 0.046033373559289784,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 43.6,
+          "zscore": 0.13,
+          "score": 0.06366365202248125,
+          "status": "low"
+        }
+      ]
     },
     {
       "id": "US",
@@ -1931,6 +2173,13 @@
           "value": 36962.6,
           "zscore": 0.14,
           "score": 0.06993907429661425,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 38047.7,
+          "zscore": 0.17,
+          "score": 0.08590702830778447,
           "status": "low"
         }
       ]
@@ -2067,6 +2316,13 @@
           "value": 373.4,
           "zscore": 0.58,
           "score": 0.2900638086553994,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 361.4,
+          "zscore": 0.53,
+          "score": 0.26288448046158974,
           "status": "low"
         }
       ]

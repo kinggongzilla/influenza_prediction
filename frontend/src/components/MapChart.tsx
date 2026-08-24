@@ -122,7 +122,7 @@ const MapChart = () => {
       }
     } else if (d && d.stale) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-      hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 4+ weeks old)`;
+      hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 8+ weeks old)`;
     } else if (d && !d.stale && selectedWeek) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
       hoverContent = `${d.name} [${dtype}]: no forecast for the week of ${fmtWeek(selectedWeek)}`;

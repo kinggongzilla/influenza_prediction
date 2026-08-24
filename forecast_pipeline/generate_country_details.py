@@ -6,10 +6,10 @@ import numpy as np
 from datetime import datetime, timedelta
 import pycountry
 
-# Surveillance data at least this old is considered stale: the model forecasts
-# 4 weeks ahead, so a prediction anchored to data that is 4+ weeks old no longer
-# covers "today" and must not be shown.
-STALE_AFTER_DAYS = 4 * 7
+# Surveillance data at least this old is considered stale: the detail pages show
+# 8 weeks of forecast, so a prediction anchored to data that is 8+ weeks old no
+# longer covers "today" and must not be shown.
+STALE_AFTER_DAYS = 8 * 7
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -211,7 +211,7 @@ def process_countries():
             print(f"Skipping {country_folder_name}: Could not determine start date")
             continue
 
-        # Stale data (e.g. stopped reporting, or seasonal gap > 4 weeks) -> no forecast is shown
+        # Stale data (e.g. stopped reporting, or seasonal gap > 8 weeks) -> no forecast is shown
         today = datetime.now()
         stale = last_date is None or (today - last_date).days >= STALE_AFTER_DAYS
         last_update = last_date.strftime('%Y-%m-%d') if last_date is not None else None

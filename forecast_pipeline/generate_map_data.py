@@ -15,16 +15,16 @@ BOUNDING_BOXES_FILE = os.path.join(BASE_DIR, 'data', 'country_bounding_boxes.jso
 OUTPUT_FILE = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'influenza_status.json')
 
 # Surveillance data at least this old is not shown as a current prediction:
-# the model forecasts 4 weeks ahead, so a forecast anchored to data that is
-# 4+ weeks old no longer covers "today".
-STALE_AFTER_DAYS = 4 * 7
+# the detail pages show 8 weeks of forecast, so a forecast anchored to data
+# that is 8+ weeks old no longer covers "today".
+STALE_AFTER_DAYS = 8 * 7
 
 # A forecast point is displayed for a selected week only if it is within
-# this many days of the country's latest data point. Wider than the
-# evaluated 4-week model horizon on purpose: it lets the dashboard's
-# nowcast + 4-week selector stay fully covered even when the WHO feed
-# lags the calendar (typical in summer).
-FORECAST_HORIZON_DAYS = 6 * 7
+# this many days of the country's latest data point. Matched to the 8-week
+# detail-page forecast window (and the 8-week staleness cutoff): it keeps
+# the nowcast + 4-week selector covered for every non-stale country, even
+# when the WHO feed lags the calendar (typical in summer).
+FORECAST_HORIZON_DAYS = 8 * 7
 
 # The WHO feed reports the UK's devolved administrations as separate series
 # (and the 110m map only has a single GB polygon), so the site shows the UK
@@ -100,7 +100,7 @@ def get_value_for_week(detail, week_str):
 
     Returns (value, source) with source 'actual' or 'forecast', or
     (None, None) if the series has neither for that week (e.g. the model's
-    4-week horizon does not reach it).
+    8-week forecast window does not reach it).
     """
     for p in detail['points']:
         if p['date'] == week_str:
@@ -120,7 +120,7 @@ def process_countries(current_week_str, future_weeks):
     current_week_str: the nowcast week — the calendar's current ISO week
         (see __main__). Each country shows its ACTUAL value for that week
         if one has been reported, otherwise its FORECAST for it (only
-        exists within the 4-week horizon).
+        exists within the 8-week forecast window).
     future_weeks: the 4 Mondays after that — the selectable forecast
         weeks in the map dropdown (always forecasts).
     """
@@ -383,7 +383,7 @@ if __name__ == "__main__":
     # value for that week if one has been reported yet — the WHO feed
     # fills in during the week as countries report — otherwise the
     # model's forecast for it. The selectable future weeks are always
-    # forecasts (up to 4 weeks ahead, the model's horizon).
+    # forecasts (up to 4 weeks ahead on the calendar).
     today = datetime.now()
     current_week = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
     future_weeks = [(datetime.strptime(current_week, '%Y-%m-%d') + timedelta(days=7 * i)).strftime('%Y-%m-%d') for i in range(1, 5)]

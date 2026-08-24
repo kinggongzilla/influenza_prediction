@@ -266,8 +266,8 @@ export default function CountryDetails({ id }: { id: string }) {
 
         {data.stale && (
           <div className="mb-4 bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-lg px-4 py-3">
-            Surveillance data last updated <strong>{data.last_update ?? "unknown"}</strong> — 4 weeks or more ago.
-            No forecast is shown because predictions are anchored to the latest data and only cover the next 4 weeks.
+            Surveillance data last updated <strong>{data.last_update ?? "unknown"}</strong> — 8 weeks or more ago.
+            No forecast is shown because predictions are anchored to the latest data and only cover the next 8 weeks.
           </div>
         )}
 
