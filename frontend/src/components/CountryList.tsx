@@ -75,7 +75,7 @@ export default function CountryList() {
                       stale
                     </span>
                   ) : (
-                    <span className="inline-block rounded-full bg-green-100 text-green-800 px-2 py-0.5 text-xs">
+                    <span className="inline-block rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-xs">
                       reporting
                     </span>
                   )}

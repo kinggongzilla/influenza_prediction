@@ -337,12 +337,15 @@ export default function CountryDetails({ id }: { id: string }) {
                 </>
               )}
 
-              {/* Historical Data */}
+              {/* Historical Data — dashed so it is distinguishable from the
+                  forecast line by shape as well as color (redundant coding,
+                  Color Universal Design) */}
               <Line
                 type="monotone"
                 dataKey="historical"
                 stroke="#64748b"
                 strokeWidth={2}
+                strokeDasharray="6 4"
                 dot={false}
                 name={data.data_type === "ARI" ? "Historical ARI Cases" : "Historical ILI Cases"}
               />
@@ -357,10 +360,12 @@ export default function CountryDetails({ id }: { id: string }) {
                 name="Forecast (Mean)"
               />
 
-              {/* Today Reference Line (only when inside the visible window) */}
+              {/* Today Reference Line (only when inside the visible window). */}
+              {/* Vermilion instead of red: red reads as dim/dark for red-green
+                  colorblind users (Color Universal Design rule 4). */}
               {todayInView && (
-                <ReferenceLine x={todayTimestamp} stroke="#ef4444" strokeDasharray="3 3">
-                  <Label value="Today" position="insideTopLeft" fill="#ef4444" fontSize={12} />
+                <ReferenceLine x={todayTimestamp} stroke="#D55E00" strokeDasharray="3 3">
+                  <Label value="Today" position="insideTopLeft" fill="#D55E00" fontSize={12} />
                 </ReferenceLine>
               )}
             </ComposedChart>

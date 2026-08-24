@@ -158,7 +158,7 @@ export default function MethodologyPage() {
                     </td>
                     <td
                       className={`px-3 py-1.5 text-right tabular-nums ${
-                        m.rwis < 1 ? "text-green-700 font-medium" : "text-gray-500"
+                        m.rwis < 1 ? "text-blue-700 font-medium" : "text-gray-500"
                       }`}
                     >
                       {m.rwis.toFixed(2)}

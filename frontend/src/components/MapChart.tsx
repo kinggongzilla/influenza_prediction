@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ComposableMap, Geographies, Geography, Graticule } from "react-simple-maps";
-import { interpolateRdYlGn } from "d3-scale-chromatic";
+import { interpolateRdYlBu } from "d3-scale-chromatic";
 import { Tooltip } from "react-tooltip";
 
 const geoUrl = "/data/countries-110m.json";
@@ -111,7 +111,7 @@ const MapChart = () => {
 
     if (d && !d.stale && entry) {
       const score = Math.max(0, Math.min(1, entry.score));
-      fillColor = interpolateRdYlGn(1 - score);
+      fillColor = interpolateRdYlBu(1 - score); // red (high) - pale (average) - blue (low): colorblind-safe (deuteranopia/protanopia simulation: ends stay separated)
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
       const sign = entry.zscore != null && entry.zscore >= 0 ? "+" : "";
       const src = entry.source === "actual" ? "Actual" : "Predicted";
@@ -219,7 +219,7 @@ const MapChart = () => {
       {/* Legend */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-gray-600 text-sm">
         <span>Low</span>
-        <div className="w-36 sm:w-48 h-3 rounded-full bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 opacity-80"></div>
+        <div className="w-36 sm:w-48 h-3 rounded-full bg-gradient-to-r from-blue-700 via-yellow-100 to-red-700 opacity-80"></div>
         <span>High</span>
         <span className="ml-4 sm:ml-6">{selectedWeek ? "No forecast for this week" : "No current data"}</span>
         <div className="w-6 h-3 rounded bg-slate-200 border border-slate-300"></div>
