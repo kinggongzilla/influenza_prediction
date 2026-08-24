@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24 13:19",
+  "generated_at": "2026-08-24 13:46",
   "default_week": "2026-08-24",
   "weeks": [
     "2026-08-24",
@@ -677,40 +677,40 @@
       "numeric": "792",
       "name": "T\u00fcrkiye",
       "data_type": "ILI",
-      "value": 2383.7,
+      "value": 2364.7,
       "value_source": "forecast",
-      "zscore": 0.17,
-      "score": 0.08371286060573196,
+      "zscore": 0.14,
+      "score": 0.06978152604752386,
       "status": "low",
       "stale": false,
       "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 2740.2,
-          "zscore": 0.34,
-          "score": 0.16828299573483274,
+          "value": 2662.7,
+          "zscore": 0.28,
+          "score": 0.13987814617083505,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 3603.3,
-          "zscore": 0.75,
-          "score": 0.37303899245561395,
+          "value": 3429.2,
+          "zscore": 0.64,
+          "score": 0.3201835782003581,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 4507.7,
-          "zscore": 1.18,
-          "score": 0.5875673265420216,
+          "value": 4355.3,
+          "zscore": 1.08,
+          "score": 0.5380437759100055,
           "status": "high"
         },
         {
           "date": "2026-09-21",
-          "value": 5153.0,
-          "zscore": 1.48,
-          "score": 0.7406480122294217,
+          "value": 5082.0,
+          "zscore": 1.42,
+          "score": 0.7089810339341667,
           "status": "high"
         }
       ]
@@ -1091,33 +1091,40 @@
       "numeric": "050",
       "name": "Bangladesh",
       "data_type": "ILI",
-      "value": 211.2,
+      "value": 202.3,
       "value_source": "forecast",
-      "zscore": 1.31,
-      "score": 0.652899707921537,
+      "zscore": 1.19,
+      "score": 0.5952152444937031,
       "status": "high",
       "stale": false,
-      "last_update": "2026-08-03",
+      "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 211.9,
-          "zscore": 1.32,
-          "score": 0.6576844027636491,
+          "value": 203.9,
+          "zscore": 1.21,
+          "score": 0.6050229297636478,
           "status": "high"
         },
         {
           "date": "2026-09-07",
-          "value": 209.9,
-          "zscore": 1.29,
-          "score": 0.6446387171119008,
+          "value": 205.0,
+          "zscore": 1.22,
+          "score": 0.6122941130304332,
           "status": "high"
         },
         {
           "date": "2026-09-14",
-          "value": 209.1,
-          "zscore": 1.28,
-          "score": 0.639488885450718,
+          "value": 202.7,
+          "zscore": 1.2,
+          "score": 0.5978900150084512,
+          "status": "high"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 202.5,
+          "zscore": 1.19,
+          "score": 0.59646749309062,
           "status": "high"
         }
       ]
@@ -1897,33 +1904,33 @@
       "numeric": "840",
       "name": "United States of America",
       "data_type": "ILI",
-      "value": 33529.6,
+      "value": 33538.9,
       "value_source": "forecast",
       "zscore": 0.04,
-      "score": 0.018957922148037893,
+      "score": 0.019556327186488382,
       "status": "low",
       "stale": false,
       "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 35901.8,
+          "value": 35908.6,
           "zscore": 0.11,
-          "score": 0.05383140587349588,
+          "score": 0.05442787802634896,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 36087.0,
+          "value": 36104.4,
           "zscore": 0.11,
-          "score": 0.05655476263182173,
+          "score": 0.05731029183958039,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 36945.0,
+          "value": 36962.6,
           "zscore": 0.14,
-          "score": 0.06916722822282763,
+          "score": 0.06993907429661425,
           "status": "low"
         }
       ]

@@ -1,5 +1,5 @@
 country,total_ili_cases,total_ari_cases,data_types
-2022,0.0,0.0,None
+201526,0.0,0.0,None
 Afghanistan,1998643.0,0.0,ILI
 Albania,10769.0,17274073.0,"ILI, ARI"
 Algeria,121653.0,0.0,ILI
@@ -14,7 +14,7 @@ Austria,393394.0,0.0,ILI
 Azerbaijan,945942.0,176742.0,"ILI, ARI"
 Bahamas,5803.0,1413.0,"ILI, ARI"
 Bahrain,516296.0,0.0,ILI
-Bangladesh,86554.0,0.0,ILI
+Bangladesh,86893.0,0.0,ILI
 Barbados,8446.0,9207.0,"ILI, ARI"
 Belarus,46041.0,72351256.0,"ILI, ARI"
 Belgium,219368.0,2129635.0,"ILI, ARI"
@@ -73,7 +73,7 @@ Haiti,0.0,0.0,None
 Honduras,383871.0,0.0,ILI
 Hungary,4025121.0,10881296.0,"ILI, ARI"
 Iceland,68411.0,681852.0,"ILI, ARI"
-Indonesia,63148.0,0.0,ILI
+Indonesia,63305.0,0.0,ILI
 Iran (Islamic Republic of),6104.0,0.0,ILI
 Iraq,7762.0,0.0,ILI
 Ireland,87379.0,60962.0,"ILI, ARI"
@@ -81,7 +81,7 @@ Israel,936542.0,0.0,ILI
 Italy,6187340.0,1188050.0,"ILI, ARI"
 Jamaica,7582.0,1373120.0,"ILI, ARI"
 Jordan,7170.0,0.0,ILI
-Kazakhstan,1106431.0,52621653.0,"ILI, ARI"
+Kazakhstan,1106447.0,52622201.0,"ILI, ARI"
 Kenya,7244.0,0.0,ILI
 Kiribati,209517.0,0.0,ILI
 Kosovo (in accordance with UN Security Council resolution 1244 (1999)),1477429.0,159832.0,"ILI, ARI"
@@ -117,7 +117,7 @@ Nicaragua,3862.0,17923801.0,"ILI, ARI"
 Niger,379775.0,0.0,ILI
 Nigeria,18443.0,0.0,ILI
 Niue,4557.0,0.0,ILI
-North Macedonia,607581.0,0.0,ILI
+North Macedonia,598958.0,0.0,ILI
 Northern Mariana Islands,19694.0,0.0,ILI
 Norway,2735407.0,0.0,ILI
 Oman,22677441.0,24136.0,"ILI, ARI"
@@ -161,7 +161,7 @@ Switzerland,153026.0,0.0,ILI
 Syrian Arab Republic,56.0,0.0,ILI
 Tajikistan,41093.0,1843652.0,"ILI, ARI"
 Thailand,37661993.0,0.0,ILI
-Timor-Leste,14010.0,0.0,ILI
+Timor-Leste,14161.0,0.0,ILI
 Togo,30210.0,0.0,ILI
 Tokelau,2877.0,0.0,ILI
 Tonga,68599.0,0.0,ILI
@@ -170,7 +170,7 @@ Tunisia,0.0,0.0,None
 Turkmenistan,3355.0,152654.0,"ILI, ARI"
 Turks and Caicos Islands,2450.0,0.0,ILI
 Tuvalu,9838.0,0.0,ILI
-Türkiye,3471785.0,882.0,"ILI, ARI"
+Türkiye,3500021.0,318.0,"ILI, ARI"
 Uganda,3504.0,0.0,ILI
 Ukraine,11350116.0,148029342.0,"ILI, ARI"
 United Arab Emirates,574964.0,0.0,ILI
@@ -178,15 +178,14 @@ United Kingdom of Great Britain and Northern Ireland,36252.0,937786.0,"ILI, ARI"
 "United Kingdom, England",292112.0,13675520.0,"ILI, ARI"
 "United Kingdom, Northern Ireland",63126.0,1359885.0,"ILI, ARI"
 "United Kingdom, Scotland",170692.0,5752624.0,"ILI, ARI"
-"United Kingdom, Wales",10749.0,329108.0,"ILI, ARI"
-"United Kingdom, Waleted Kingdom, Wales",2.0,169.0,"ILI, ARI"
+"United Kingdom, Wales",10716.0,328574.0,"ILI, ARI"
 United Republic of Tanzania,3921.0,0.0,ILI
-United States of America,55794478.0,0.0,ILI
+United States of America,55529870.0,0.0,ILI
 Uruguay,698.0,0.0,ILI
 Uzbekistan,112118.0,2009653.0,"ILI, ARI"
 Vanuatu,165483.0,0.0,ILI
 Viet Nam,87228.0,0.0,ILI
 Wallis and Futuna,25455.0,0.0,ILI
-Yemen,5770.0,0.0,ILI
+Yemen,7323.0,0.0,ILI
 Zambia,711388.0,0.0,ILI
 "occupied Palestinian territory, including east Jerusalem",744.0,0.0,ILI
