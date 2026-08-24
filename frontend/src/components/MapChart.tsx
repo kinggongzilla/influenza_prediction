@@ -21,6 +21,7 @@ interface CountryData {
   numeric: string | null;
   name: string;
   value: number | null;
+  value_source?: "actual" | "forecast" | null;
   zscore: number | null;
   score: number | null;
   status: "high" | "low" | "stale";
@@ -74,24 +75,26 @@ const MapChart = () => {
   }, [data]);
 
   // The value shown for a country in the current view:
-  // null view = "current" (latest data / forecast closest to today);
-  // a selected week = that country's prediction for exactly that week.
+  // null view = "this week" (actual if reported, otherwise the forecast
+  // for that week); a selected week = that country's forecast for exactly
+  // that week (future weeks are always forecasts).
   const weekEntry = (d: CountryData): {
     value: number;
     zscore: number | null;
     score: number;
     status: string;
     date: string | null;
+    source: "actual" | "forecast";
   } | null => {
     if (selectedWeek == null) {
       const v = d.value;
       const s = d.score;
       if (v == null || s == null) return null;
-      return { value: v, zscore: d.zscore, score: s, status: d.status, date: null };
+      return { value: v, zscore: d.zscore, score: s, status: d.status, date: null, source: d.value_source ?? "forecast" };
     }
     const w = d.forecast_weeks?.find((w) => w.date === selectedWeek) ?? null;
     if (!w) return null;
-    return { value: w.value, zscore: w.zscore, score: w.score, status: w.status, date: w.date };
+    return { value: w.value, zscore: w.zscore, score: w.score, status: w.status, date: w.date, source: "forecast" };
   };
 
   // Shared renderer for the world-map geographies. The UK is a single GB
@@ -110,10 +113,11 @@ const MapChart = () => {
       fillColor = interpolateRdYlGn(1 - score);
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
       const sign = entry.zscore != null && entry.zscore >= 0 ? "+" : "";
+      const src = entry.source === "actual" ? "Actual" : "Predicted";
       if (selectedWeek) {
-        hoverContent = `${d.name} [${dtype}]: ${entry.value.toFixed(1)} predicted for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
+        hoverContent = `${d.name} [${dtype}]: ${src} ${entry.value.toFixed(1)} for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
       } else {
-        hoverContent = `${d.name} [${dtype}]: Predicted ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD)`;
+        hoverContent = `${d.name} [${dtype}]: ${src} ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD this week)`;
       }
     } else if (d && d.stale) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
@@ -162,7 +166,7 @@ const MapChart = () => {
             <span className="font-medium text-gray-900">
               {selectedWeek
                 ? `Predicted activity for the week of ${fmtWeek(selectedWeek)}`
-                : `Current activity — week of ${defaultWeek ? fmtWeek(defaultWeek) : "latest"}`}
+                : `Current week — ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise forecast)`}
             </span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -172,8 +176,8 @@ const MapChart = () => {
               onChange={(e) => setSelectedWeek(e.target.value || null)}
               className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
-              <option value="">Current (week of {defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
-              {weeks.map((w) => (
+              <option value="">Current week ({defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
+              {weeks.filter((w) => w !== defaultWeek).map((w) => (
                 <option key={w} value={w}>
                   Week of {fmtWeek(w)}
                 </option>
