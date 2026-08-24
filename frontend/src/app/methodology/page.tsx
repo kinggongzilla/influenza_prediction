@@ -224,7 +224,7 @@ export default function MethodologyPage() {
         <footer className="mt-12 pt-6 border-t border-gray-200">
           <p className="text-sm leading-6 text-gray-400">
             <strong className="text-gray-500">AI use.</strong> An AI coding assistant
-            (Claude, Anthropic) was used throughout this project as a development tool: it
+            was used throughout this project as a development tool: it
             wrote most of the data-pipeline code and built this website. The research
             questions, data and model selection, evaluation design, and verification of the
             results were done by the author.
