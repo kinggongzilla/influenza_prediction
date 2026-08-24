@@ -69,10 +69,10 @@ function ChartTooltip(props: {
   const rows: { name: string; value: string; swatch: string }[] = [];
   const l90 = num(entry.lower), u90 = num(entry.upper);
   if (showPI90 && l90 != null && u90 != null)
-    rows.push({ name: "90% prediction interval", value: `${fmt(l90)} – ${fmt(u90)}`, swatch: "rgba(59, 130, 246, 0.35)" });
+    rows.push({ name: "90% prediction interval", value: `${fmt(l90)} – ${fmt(u90)}`, swatch: "#dbeafe" });
   const l50 = num(entry.lower_50), u50 = num(entry.upper_50);
   if (showPI50 && l50 != null && u50 != null)
-    rows.push({ name: "50% prediction interval", value: `${fmt(l50)} – ${fmt(u50)}`, swatch: "rgba(59, 130, 246, 0.6)" });
+    rows.push({ name: "50% prediction interval", value: `${fmt(l50)} – ${fmt(u50)}`, swatch: "#93c5fd" });
   const fc = num(entry.forecast);
   if (fc != null) rows.push({ name: "Forecast (mean)", value: fmt(fc), swatch: "#2563eb" });
   const hist = num(entry.historical);
@@ -161,6 +161,22 @@ export default function CountryDetails({ id }: { id: string }) {
     }
     return rows;
   }, [data, timeRange]);
+
+  // Numeric y-domain spanning every visible series (history, forecast, both
+  // PI bands). Feeds the Areas' baseValue: recharts' default 'auto' baseline
+  // snaps to 0 whenever 0 is inside the domain, which erases the lower half
+  // of any PI that straddles zero. Pinning all bands to the plot bottom keeps
+  // every part of the interval visible (same range as the old 'auto' domain).
+  const yDomain = useMemo(() => {
+    const vals: number[] = [];
+    for (const p of filteredData)
+      for (const v of [p.historical, p.forecast, p.lower, p.lower_50, p.upper, p.upper_50])
+        if (v != null && Number.isFinite(v)) vals.push(v);
+    if (vals.length === 0) return [0, 1] as [number, number];
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (lo === hi) { lo -= 1; hi += 1; }
+    return [lo, hi] as [number, number];
+  }, [filteredData]);
 
   if (loading) {
     return (
@@ -276,7 +292,7 @@ export default function CountryDetails({ id }: { id: string }) {
                 minTickGap={50}
                 fontSize={12}
               />
-              <YAxis stroke="#94a3b8" fontSize={12} />
+              <YAxis domain={yDomain} stroke="#94a3b8" fontSize={12} />
               <Tooltip
                 wrapperStyle={{ outline: "none" }}
                 content={<ChartTooltip points={filteredData} dataType={data.data_type} showPI90={showPI90} showPI50={showPI50} />}
@@ -299,9 +315,9 @@ export default function CountryDetails({ id }: { id: string }) {
                                 width: isPI ? 12 : 14,
                                 height: isPI ? 12 : 3,
                                 backgroundColor: v === "90% prediction interval"
-                                  ? "rgba(59, 130, 246, 0.35)"
+                                  ? "#dbeafe"
                                   : v === "50% prediction interval"
-                                    ? "rgba(59, 130, 246, 0.6)"
+                                    ? "#93c5fd"
                                     : v === "Forecast (Mean)"
                                       ? "#2563eb"
                                       : "#64748b",
@@ -316,30 +332,34 @@ export default function CountryDetails({ id }: { id: string }) {
                 }}
               />
 
-              {/* Prediction intervals (toggle via checkboxes). Recharts Areas
-                  fill down to the baseline, so each band is built from a
-                  colored area plus an eraser area beneath it. Stacking
-                  order: 90% light fill, 50% dark fill, then erasers that
-                  expose the 90% band's lower shoulder and the plain area
-                  below it. */}
+              {/* Prediction intervals (toggle via checkboxes). A recharts Area
+                  fills from its line down to its baseline, so each band is
+                  built from a colored area plus an opaque "eraser" area
+                  beneath it. All bands are pinned to the plot bottom with
+                  baseValue (see yDomain). Opaque fills mean every region
+                  between the four boundary lines carries exactly one color:
+                  the 90% band pale blue, the 50% band darker blue, symmetric
+                  above and below the mean. (With alpha fills the layers
+                  stack and the lower shoulder always ends up darker.)
+                  Trade-off: grid lines are hidden beneath the bands. */}
               {showPI90 && showPI50 && (
                 <>
-                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.12} activeDot={BAND_DOT} name="90% prediction interval" />
-                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.3} activeDot={BAND_DOT} name="50% prediction interval" />
-                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#3b82f6" fillOpacity={0.12} activeDot={BAND_DOT} />
-                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#dbeafe" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#93c5fd" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#dbeafe" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} />
                 </>
               )}
               {showPI90 && !showPI50 && (
                 <>
-                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.2} activeDot={BAND_DOT} name="90% prediction interval" />
-                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#dbeafe" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} />
                 </>
               )}
               {showPI50 && !showPI90 && (
                 <>
-                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.28} activeDot={BAND_DOT} name="50% prediction interval" />
-                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#93c5fd" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#ffffff" fillOpacity={1} baseValue={yDomain[0]} activeDot={BAND_DOT} />
                 </>
               )}
 
