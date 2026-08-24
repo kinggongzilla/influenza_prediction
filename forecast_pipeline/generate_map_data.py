@@ -19,6 +19,13 @@ OUTPUT_FILE = os.path.join(BASE_DIR, '..', 'frontend', 'public', 'data', 'influe
 # 4+ weeks old no longer covers "today".
 STALE_AFTER_DAYS = 4 * 7
 
+# A forecast point is displayed for a selected week only if it is within
+# this many days of the country's latest data point. Wider than the
+# evaluated 4-week model horizon on purpose: it lets the dashboard's
+# nowcast + 4-week selector stay fully covered even when the WHO feed
+# lags the calendar (typical in summer).
+FORECAST_HORIZON_DAYS = 6 * 7
+
 # The WHO feed reports the UK's devolved administrations as separate series
 # (and the 110m map only has a single GB polygon), so the site shows the UK
 # as one country: the map entry below is built by summing the component
@@ -248,14 +255,14 @@ def process_countries(current_week_str, future_weeks):
 
             # Per-week forecast values for the selectable future weeks
             # (same z-score scale as the current value). Forecasts are only
-            # offered up to 4 weeks (STALE_AFTER_DAYS) after the country's
-            # last data point — the model's evaluated horizon; beyond that
-            # the week isn't offered for that country (gray).
+            # offered within FORECAST_HORIZON_DAYS of the country's last
+            # data point; beyond that the week isn't offered for that
+            # country (gray).
             forecast_weeks = []
             for p in detail['points']:
                 if p['date'] not in future_set or p['forecast'] is None:
                     continue
-                if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > STALE_AFTER_DAYS:
+                if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > FORECAST_HORIZON_DAYS:
                     continue
                 # Clamp at zero: the model mean can go slightly negative on
                 # low-activity series (display artifact, not a real forecast).
@@ -339,7 +346,7 @@ def process_countries(current_week_str, future_weeks):
                 for p in gb_detail['points']:
                     if p['date'] not in future_set or p['forecast'] is None:
                         continue
-                    if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > STALE_AFTER_DAYS:
+                    if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > FORECAST_HORIZON_DAYS:
                         continue
                     v = max(0.0, float(p['forecast']))
                     wz = (v - hist_mean) / hist_std if hist_std > 0 else 0.0
