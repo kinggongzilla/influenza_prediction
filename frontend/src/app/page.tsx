@@ -38,15 +38,6 @@ export default function Home() {
             >
               WHO FluID / FluMart
             </a>
-            <span>· Weather data (research):</span>
-            <a
-              href="https://open-meteo.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-gray-600 hover:underline"
-            >
-              Open-Meteo
-            </a>
             <span>· Model:</span>
             <a
               href="https://github.com/amazon-science/chronos-forecasting"

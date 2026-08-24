@@ -100,7 +100,7 @@ export default function CountryDetails({ id }: { id: string }) {
   const [data, setData] = useState<CountryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [timeRange, setTimeRange] = useState("1Y");
+  const [timeRange, setTimeRange] = useState("3Y");
   const [showPI90, setShowPI90] = useState(true);
   const [showPI50, setShowPI50] = useState(true);
 
