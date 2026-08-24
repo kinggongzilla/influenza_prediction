@@ -37,6 +37,12 @@ interface CountryData {
   points: DataPoint[];
 }
 
+/** Hover dot shared by all prediction-interval Areas. Recharts colors an
+    Area's default activeDot with that Area's own fill, which would make the
+    white "eraser" Areas (90%/50% lower lines) render blank white dots; the
+    explicit dot keeps all four interval boundaries visually identical. */
+const BAND_DOT = { r: 4, fill: "#3b82f6", stroke: "#ffffff", strokeWidth: 2 };
+
 /** Custom tooltip: shows real prediction-interval *ranges* (lower–upper)
     and never the raw lower/upper dataKeys (those Areas exist only to
     draw the bands). Rows are skipped when their value is missing, so
@@ -318,22 +324,22 @@ export default function CountryDetails({ id }: { id: string }) {
                   below it. */}
               {showPI90 && showPI50 && (
                 <>
-                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.12} name="90% prediction interval" />
-                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.3} name="50% prediction interval" />
-                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#3b82f6" fillOpacity={0.12} />
-                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} />
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.12} activeDot={BAND_DOT} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.3} activeDot={BAND_DOT} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#3b82f6" fillOpacity={0.12} activeDot={BAND_DOT} />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
                 </>
               )}
               {showPI90 && !showPI50 && (
                 <>
-                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.2} name="90% prediction interval" />
-                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} />
+                  <Area type="monotone" dataKey="upper" stroke="none" fill="#3b82f6" fillOpacity={0.2} activeDot={BAND_DOT} name="90% prediction interval" />
+                  <Area type="monotone" dataKey="lower" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
                 </>
               )}
               {showPI50 && !showPI90 && (
                 <>
-                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.28} name="50% prediction interval" />
-                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#ffffff" fillOpacity={1} />
+                  <Area type="monotone" dataKey="upper_50" stroke="none" fill="#3b82f6" fillOpacity={0.28} activeDot={BAND_DOT} name="50% prediction interval" />
+                  <Area type="monotone" dataKey="lower_50" stroke="none" fill="#ffffff" fillOpacity={1} activeDot={BAND_DOT} />
                 </>
               )}
 
