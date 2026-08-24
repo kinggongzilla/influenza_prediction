@@ -100,36 +100,20 @@ def get_value_for_week(detail, week_str):
             if p['historical'] is not None:
                 return float(p['historical']), 'actual'
             if p['forecast'] is not None:
-                return float(p['forecast']), 'forecast'
+                # Clamp at zero: the model mean can dip slightly negative
+                # on low-activity series (display artifact, not a real
+                # forecast). Actuals are never clamped.
+                return max(0.0, float(p['forecast'])), 'forecast'
     return None, None
-
-
-def latest_reported_week():
-    """The most recent weekly-grid date that has a reported (historical)
-    value in any detail JSON, or None."""
-    latest = None
-    for fn in os.listdir(DETAILS_DIR):
-        if not fn.endswith('.json'):
-            continue
-        try:
-            with open(os.path.join(DETAILS_DIR, fn)) as f:
-                d = json.load(f)
-            for p in d['points']:
-                if p['historical'] is not None and (latest is None or p['date'] > latest):
-                    latest = p['date']
-        except Exception:
-            continue
-    return latest
 
 
 def process_countries(current_week_str, future_weeks):
     """Build the map entries.
 
-    current_week_str: the dashboard's current week (see __main__: the
-        calendar's current ISO week, pulled back to the most recently
-        reported week while data lags). Each country shows its ACTUAL
-        value for that week if one was reported, otherwise its FORECAST
-        for it (only exists within the 4-week horizon).
+    current_week_str: the nowcast week — the calendar's current ISO week
+        (see __main__). Each country shows its ACTUAL value for that week
+        if one has been reported, otherwise its FORECAST for it (only
+        exists within the 4-week horizon).
     future_weeks: the 4 Mondays after that — the selectable forecast
         weeks in the map dropdown (always forecasts).
     """
@@ -239,8 +223,8 @@ def process_countries(current_week_str, future_weeks):
             with open(detail_path, 'r') as f:
                 detail = json.load(f)
 
-            # Default view: this week's actual if reported, otherwise the
-            # forecast for this week.
+            # Default view (nowcast): this week's actual if reported,
+            # otherwise the forecast for this week.
             current_value, current_source = get_value_for_week(detail, current_week_str)
             if current_value is None:
                 continue
@@ -263,10 +247,15 @@ def process_countries(current_week_str, future_weeks):
             status = "high" if zscore >= 1.0 else "low"
 
             # Per-week forecast values for the selectable future weeks
-            # (same z-score scale as the current value).
+            # (same z-score scale as the current value). Forecasts are only
+            # offered up to 4 weeks (STALE_AFTER_DAYS) after the country's
+            # last data point — the model's evaluated horizon; beyond that
+            # the week isn't offered for that country (gray).
             forecast_weeks = []
             for p in detail['points']:
                 if p['date'] not in future_set or p['forecast'] is None:
+                    continue
+                if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > STALE_AFTER_DAYS:
                     continue
                 # Clamp at zero: the model mean can go slightly negative on
                 # low-activity series (display artifact, not a real forecast).
@@ -350,6 +339,8 @@ def process_countries(current_week_str, future_weeks):
                 for p in gb_detail['points']:
                     if p['date'] not in future_set or p['forecast'] is None:
                         continue
+                    if (datetime.strptime(p['date'], '%Y-%m-%d') - last_obs).days > STALE_AFTER_DAYS:
+                        continue
                     v = max(0.0, float(p['forecast']))
                     wz = (v - hist_mean) / hist_std if hist_std > 0 else 0.0
                     forecast_weeks.append({
@@ -380,17 +371,14 @@ def process_countries(current_week_str, future_weeks):
     return map_data
 
 if __name__ == "__main__":
-    # The dashboard's default view is the CURRENT week: the calendar's
-    # current ISO week, pulled back to the most recently reported week
-    # while surveillance data lags the calendar (it typically does — the
-    # WHO feed reports week N about a week after it ends). Each country
-    # shows its actual value for that week if one was reported, otherwise
-    # the forecast for it; the selectable future weeks are always
+    # The dashboard's default view is the NOWCAST: the calendar's current
+    # ISO week (labeled by its Monday). Each country shows its actual
+    # value for that week if one has been reported yet — the WHO feed
+    # fills in during the week as countries report — otherwise the
+    # model's forecast for it. The selectable future weeks are always
     # forecasts (up to 4 weeks ahead, the model's horizon).
     today = datetime.now()
-    calendar_week = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
-    data_week = latest_reported_week()
-    current_week = min(calendar_week, data_week) if data_week else calendar_week
+    current_week = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
     future_weeks = [(datetime.strptime(current_week, '%Y-%m-%d') + timedelta(days=7 * i)).strftime('%Y-%m-%d') for i in range(1, 5)]
 
     data = process_countries(current_week, future_weeks)
@@ -406,8 +394,7 @@ if __name__ == "__main__":
     }
     with open(OUTPUT_FILE, 'w') as f:
         json.dump(out, f, indent=2)
-    print(f"Wrote data for {len(data)} countries (current week: {current_week}, "
-          f"calendar week: {calendar_week}, latest reported week: {data_week}, "
+    print(f"Wrote data for {len(data)} countries (nowcast week: {current_week}, "
           f"future weeks: {future_weeks}) to {OUTPUT_FILE}")
 
     # --- Country list for the methodology page ------------------------------

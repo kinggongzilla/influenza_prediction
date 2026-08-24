@@ -64,6 +64,12 @@ const MapChart = () => {
   const data = mapData?.countries ?? [];
   const weeks = mapData?.weeks ?? [];
   const defaultWeek = mapData?.default_week ?? null;
+  // Future weeks no country can forecast (beyond every country's 4-week
+  // horizon) would render an all-gray map, so they're hidden; they
+  // reappear as the data gets fresher.
+  const futureWeeks = weeks.filter(
+    (w) => w !== defaultWeek && data.some((c) => c.forecast_weeks?.some((fw) => fw.date === w))
+  );
 
   const dataMap = useMemo(() => {
     const map = new Map<number, CountryData>();
@@ -75,9 +81,10 @@ const MapChart = () => {
   }, [data]);
 
   // The value shown for a country in the current view:
-  // null view = "this week" (actual if reported, otherwise the forecast
-  // for that week); a selected week = that country's forecast for exactly
-  // that week (future weeks are always forecasts).
+  // null view = "nowcast" (the calendar's current week: actual if
+  // reported, otherwise the forecast for it); a selected week = that
+  // country's forecast for exactly that week (future weeks are always
+  // forecasts).
   const weekEntry = (d: CountryData): {
     value: number;
     zscore: number | null;
@@ -117,7 +124,7 @@ const MapChart = () => {
       if (selectedWeek) {
         hoverContent = `${d.name} [${dtype}]: ${src} ${entry.value.toFixed(1)} for week of ${fmtWeek(selectedWeek)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD vs historical mean)`;
       } else {
-        hoverContent = `${d.name} [${dtype}]: ${src} ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD this week)`;
+        hoverContent = `${d.name} [${dtype}]: Nowcast: ${src} ${entry.value.toFixed(1)} (${sign}${(entry.zscore ?? 0).toFixed(1)} SD)`;
       }
     } else if (d && d.stale) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
@@ -166,7 +173,7 @@ const MapChart = () => {
             <span className="font-medium text-gray-900">
               {selectedWeek
                 ? `Predicted activity for the week of ${fmtWeek(selectedWeek)}`
-                : `Current week — ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise forecast)`}
+                : `Nowcast — ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise predicted)`}
             </span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -176,8 +183,8 @@ const MapChart = () => {
               onChange={(e) => setSelectedWeek(e.target.value || null)}
               className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-400"
             >
-              <option value="">Current week ({defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
-              {weeks.filter((w) => w !== defaultWeek).map((w) => (
+              <option value="">Nowcast ({defaultWeek ? fmtWeek(defaultWeek) : "latest"})</option>
+              {futureWeeks.map((w) => (
                 <option key={w} value={w}>
                   Week of {fmtWeek(w)}
                 </option>
