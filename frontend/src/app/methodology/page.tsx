@@ -178,7 +178,7 @@ export default function MethodologyPage() {
           <p>
             Per-country performance varies with data quality: well-monitored countries with long
             stable series are predicted well, while countries with sparse or irregular
-            surveillance are much harder — and in a few cases the model adds no value over a
+            surveillance are much harder, and in a few cases the model adds no value over a
             naive baseline. We show per-country forecasts regardless, because even rough
             activity levels are better than nothing for countries that have no other
             operational forecast at all.
@@ -195,8 +195,8 @@ export default function MethodologyPage() {
             </li>
             <li>
               <strong>The target is not influenza-specific.</strong> ILI and ARI counts include
-              all acute respiratory illness — SARS-CoV-2, RSV, rhinovirus and others — not just
-              influenza virus. Co-circulating viruses can therefore distort both the target and
+              all acute respiratory illness, including SARS-CoV-2, RSV, rhinovirus and others,
+              not just influenza virus. Co-circulating viruses can therefore distort both the target and
               the forecasts.
             </li>
             <li>

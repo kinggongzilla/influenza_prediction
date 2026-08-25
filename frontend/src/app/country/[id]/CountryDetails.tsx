@@ -221,7 +221,7 @@ export default function CountryDetails({ id }: { id: string }) {
                     {data.country} <span className="text-gray-400 text-lg font-normal">({id})</span>
                 </h1>
                 <p className="text-gray-500 text-sm mt-1">
-                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast — data is stale)" : " and 8-week forecast"}
+                    Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast; data is stale)" : " and 8-week forecast"}
                 </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -266,7 +266,7 @@ export default function CountryDetails({ id }: { id: string }) {
 
         {data.stale && (
           <div className="mb-4 bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-lg px-4 py-3">
-            Surveillance data last updated <strong>{data.last_update ?? "unknown"}</strong> — 8 weeks or more ago.
+            The latest surveillance data is dated <strong>{data.last_update ?? "unknown"}</strong> and is at least 8 weeks old.
             No forecast is shown because predictions are anchored to the latest data and only cover the next 8 weeks.
           </div>
         )}
@@ -363,7 +363,7 @@ export default function CountryDetails({ id }: { id: string }) {
                 </>
               )}
 
-              {/* Historical Data — dashed so it is distinguishable from the
+              {/* Historical Data: dashed so it is distinguishable from the
                   forecast line by shape as well as color (redundant coding,
                   Color Universal Design) */}
               <Line

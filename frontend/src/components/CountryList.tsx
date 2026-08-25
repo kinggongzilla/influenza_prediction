@@ -60,15 +60,15 @@ export default function CountryList() {
                     {c.name}
                   </Link>
                   {!c.on_map && (
-                    <span className="ml-1.5 text-xs text-gray-400" title="No matching region on the 110m world map — linked here instead">
+                    <span className="ml-1.5 text-xs text-gray-400" title="No matching region on the 110m world map; linked here instead">
                       †
                     </span>
                   )}
                 </td>
                 <td className="px-3 py-1.5 text-gray-500">{c.code}</td>
                 <td className="px-3 py-1.5">{c.data_type}</td>
-                <td className="px-3 py-1.5 text-gray-500">{c.since ?? "—"}</td>
-                <td className="px-3 py-1.5 text-gray-500">{c.last_update ?? "—"}</td>
+                <td className="px-3 py-1.5 text-gray-500">{c.since ?? "N/A"}</td>
+                <td className="px-3 py-1.5 text-gray-500">{c.last_update ?? "N/A"}</td>
                 <td className="px-3 py-1.5">
                   {c.stale ? (
                     <span className="inline-block rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs">
@@ -92,8 +92,8 @@ export default function CountryList() {
             Show less
           </button>
           <p className="text-xs text-gray-400">
-            † no matching region on the 110m world map (small-island territory) —
-            the forecast is available via the country page.
+            † no matching region on the 110m world map (small-island territory).
+            The forecast is available via the country page.
             {data.excluded_from_training.length > 0 && (
               <> Excluded from training after out-of-sample evaluation: {data.excluded_from_training.join(", ")}.</>
             )}

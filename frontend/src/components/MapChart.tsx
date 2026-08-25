@@ -233,7 +233,7 @@ const MapChart = () => {
 
   // Shared renderer for the world-map geographies. The UK is a single GB
   // polygon (its map value is the sum of the England/Scotland/N. Ireland
-  // series — see generate_map_data.py).
+  // series; see generate_map_data.py).
   const renderGeography = (geo: any) => {
     const geoId = geo.id ? parseInt(geo.id, 10) : -1;
     const d = dataMap.get(geoId);
@@ -255,7 +255,7 @@ const MapChart = () => {
       }
     } else if (d && d.stale) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
-      hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"} — no current forecast (data is 8+ weeks old)`;
+      hoverContent = `${d.name} [${dtype}]: data last updated ${d.last_update ?? "unknown"}; no current forecast (data is 8+ weeks old)`;
     } else if (d && !d.stale && selectedWeek) {
       const dtype = d.data_type === "ARI" ? "ARI" : "ILI";
       hoverContent = `${d.name} [${dtype}]: no forecast for the week of ${fmtWeek(selectedWeek)}`;
@@ -302,7 +302,7 @@ const MapChart = () => {
             <span className="font-medium text-gray-900">
               {selectedWeek
                 ? `Predicted activity for the week of ${fmtWeek(selectedWeek)}`
-                : `Nowcast — ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise predicted)`}
+                : `Nowcast: ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise predicted)`}
             </span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -359,7 +359,7 @@ const MapChart = () => {
             </g>
           </ComposableMap>
 
-          {/* Zoom controls — mobile only; desktop stays a static map. */}
+          {/* Zoom controls: mobile only; desktop stays a static map. */}
           <div className="absolute right-2 top-2 flex flex-col gap-1.5 md:hidden">
             <button
               onClick={() => zoomBy(1.5)}
@@ -387,7 +387,7 @@ const MapChart = () => {
             </button>
           </div>
           <div className="absolute bottom-2 left-2 rounded bg-white/90 px-1.5 py-0.5 text-[11px] text-gray-500 md:hidden">
-            {view.k > 1 ? `zoomed ${view.k.toFixed(1)}× — drag to pan` : "pinch to zoom"}
+            {view.k > 1 ? `zoomed ${view.k.toFixed(1)}× · drag to pan` : "pinch to zoom"}
           </div>
         </div>
       </div>
