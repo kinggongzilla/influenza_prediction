@@ -271,6 +271,7 @@ const MapChart = () => {
         stroke="#cbd5e1"
         strokeWidth={0.4}
         vectorEffect="non-scaling-stroke"
+        className={d ? "active:brightness-90 [-webkit-tap-highlight-color:transparent]" : undefined}
         style={{
           default: { outline: "none", transition: "fill 200ms" },
           hover: {
@@ -390,6 +391,10 @@ const MapChart = () => {
           </div>
         </div>
       </div>
+
+      <p className="mt-3 text-center text-xs text-gray-500 md:hidden">
+        Tap a country to see its details
+      </p>
 
       <Tooltip
         id="map-tooltip"
