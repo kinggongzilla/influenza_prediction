@@ -278,8 +278,8 @@ export default function CountryDetails({ id }: { id: string }) {
               margin={{
                 top: 20,
                 right: 30,
-                left: 20,
-                bottom: 20,
+                left: 50,
+                bottom: 45,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -291,8 +291,25 @@ export default function CountryDetails({ id }: { id: string }) {
                 tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
                 minTickGap={50}
                 fontSize={12}
+                label={{
+                  value: "Date",
+                  position: "insideBottom",
+                  offset: 10,
+                  style: { fill: "#94a3b8", fontSize: 12, textAnchor: "middle" },
+                }}
               />
-              <YAxis domain={yDomain} stroke="#94a3b8" fontSize={12} />
+              <YAxis
+                domain={yDomain}
+                stroke="#94a3b8"
+                fontSize={12}
+                label={{
+                  value: `Weekly ${data.data_type} cases`,
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 8,
+                  style: { fill: "#94a3b8", fontSize: 12, textAnchor: "middle" },
+                }}
+              />
               <Tooltip
                 wrapperStyle={{ outline: "none" }}
                 content={<ChartTooltip points={filteredData} dataType={data.data_type} showPI90={showPI90} showPI50={showPI50} />}
