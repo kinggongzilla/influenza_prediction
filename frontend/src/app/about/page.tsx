@@ -5,7 +5,7 @@ export default function AboutPage() {
         <h1 className="text-3xl font-semibold text-gray-900 mb-2">About</h1>
         <p className="text-gray-500 mb-10 max-w-2xl">
           An independent research project: one fine-tuned time-series foundation model
-          producing probabilistic influenza forecasts for most of the world&apos;s countries
+          producing probabilistic ILI and ARI forecasts for most of the world&apos;s countries
           without disease-specific design or local modelling expertise.
         </p>
 

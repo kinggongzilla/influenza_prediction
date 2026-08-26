@@ -8,10 +8,10 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-8">
         <section className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            Influenza Activity Dashboard
+            ILI Activity Dashboard
           </h1>
           <p className="text-gray-500 text-sm max-w-2xl">
-            Current and near-term influenza activity for 78 countries, with quantified
+            Current and near-term ILI and ARI activity for 78 countries, with quantified
             uncertainty. Compare countries week by week and look up to four weeks ahead;
             open any country for its detailed forecast and prediction intervals.{" "}
             <Link href="/methodology" className="text-blue-600 hover:underline">

@@ -15,7 +15,7 @@ export default function Header() {
           className="flex items-center gap-2.5 text-base sm:text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors"
         >
           <img src="/images/logo.svg" alt="" className="h-8 w-8 md:h-9 md:w-9" />
-          Global Influenza Forecast
+          Global ILI Forecast
         </Link>
         <nav className="flex items-center justify-center md:justify-end gap-4 md:gap-6 text-sm">
           {[

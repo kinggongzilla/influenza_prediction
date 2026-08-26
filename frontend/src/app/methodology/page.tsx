@@ -73,6 +73,52 @@ export default function MethodologyPage() {
             data-driven rather than judgment-based, to avoid cherry-picking easy-to-predict
             series.
           </p>
+
+          <h3 className="text-base font-semibold text-gray-900 mt-6 mb-3">
+            What are these data, really?
+          </h3>
+          <div className="space-y-3">
+            <p>
+              <strong>ILI (influenza-like illness)</strong> is a symptom-based syndrome, not a
+              diagnosis. The standard definition used by the WHO and by many countries is a
+              person with fever (&ge; 38&nbsp;&deg;C / 100.4&nbsp;&deg;F, or a subjective feeling of
+              fever) plus cough and/or sore throat, typically with onset within the last 7 days.
+              <strong> ARI (acute respiratory infection)</strong> is a broader category: any
+              acute respiratory infection, usually defined by symptoms such as cough, fever,
+              sore throat or runny nose. Countries without an ILI programme often report ARI
+              instead, and some report the two in parallel or switch between them; this site
+              records which indicator each week uses.
+            </p>
+            <p>
+              <strong>The definitions are not the same everywhere.</strong> WHO FluID/FluMart
+              aggregates what each country submits under its own national case definition, using
+              whatever reporting system that country operates: sentinel general practices,
+              hospital admissions, laboratory-confirmed counts, call-centre data, and so on. The
+              age groups covered, the list of symptoms, the fever threshold, and whether cases
+              are syndromic or laboratory-confirmed all vary from country to country, and they
+              can change over time, even within a single series. No harmonisation is applied: a
+              country&apos;s numbers are what that country reported.
+            </p>
+            <p>
+              <strong>Reporting is weekly in principle, irregular in practice.</strong> The
+              database is organised in ISO weeks, but countries choose their own cadence: some
+              report every week, many report monthly or only during their winter season, and
+              there is always a lag between the end of a week and that week&apos;s data becoming
+              available (from a few weeks to several months). When a country has reported
+              nothing for 8 weeks or more, the dashboard marks it as stale (grey on the map)
+              rather than presenting an old value as current activity.
+            </p>
+            <p>
+              <strong>Countries are therefore not directly comparable.</strong> Absolute values
+              reflect different case definitions, scales (national totals vs. small sentinel
+              networks), populations and reporting intensities, so the site never ranks
+              countries by raw counts. Everything shown is relative to each country&apos;s own
+              history: the map colour is the current value expressed as a deviation (z-score)
+              from that country&apos;s own long-term average, which is what keeps the single
+              global view meaningful despite the lack of cross-country comparability.
+            </p>
+          </div>
+
           <CountryList />
         </Section>
 

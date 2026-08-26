@@ -37,6 +37,16 @@ interface CountryData {
   points: DataPoint[];
 }
 
+/** Human-readable data-freshness line for the page header,
+    e.g. "Data last updated: week of 10 Aug 2026 (2 weeks ago)". */
+function freshnessHint(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = parseISO(iso);
+  const weeks = Math.round((Date.now() - d.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const when = weeks <= 0 ? "this week" : weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+  return `Data last updated: week of ${format(d, "d MMM yyyy")} (${when})`;
+}
+
 /** Hover dot shared by all prediction-interval Areas. Recharts colors an
     Area's default activeDot with that Area's own fill, which would make the
     white "eraser" Areas (90%/50% lower lines) render blank white dots; the
@@ -201,6 +211,7 @@ export default function CountryDetails({ id }: { id: string }) {
   }
 
   const todayTimestamp = new Date().getTime();
+  const freshHint = freshnessHint(data.last_update);
   const windowStart = filteredData.length ? Math.min(...filteredData.map((p) => p.date as number)) : 0;
   const windowEnd = filteredData.length ? Math.max(...filteredData.map((p) => p.date as number)) : 0;
   const todayInView = todayTimestamp >= windowStart && todayTimestamp <= windowEnd;
@@ -223,6 +234,9 @@ export default function CountryDetails({ id }: { id: string }) {
                 <p className="text-gray-500 text-sm mt-1">
                     Historical {data.data_type === "ARI" ? "ARI (acute respiratory infection)" : "ILI (influenza-like illness)"} cases{data.stale ? " (no forecast; data is stale)" : " and 8-week forecast"}
                 </p>
+                {freshHint && (
+                    <p className="text-xs text-gray-400 mt-1">{freshHint}</p>
+                )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <div className="flex items-center gap-2">

@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Global Influenza Forecast",
-  description: "Probabilistic influenza forecasts using Chronos-2, trained on WHO surveillance data from 78 countries.",
+  title: "Global ILI Forecast",
+  description: "Probabilistic ILI and ARI forecasts using Chronos-2, trained on WHO surveillance data from 78 countries.",
 };
 
 export const viewport: Viewport = {
