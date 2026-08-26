@@ -5,6 +5,16 @@ Enhanced Country Data Extractor with ILI/ARI Fallback Logic
 This script extracts time series data for countries from the WHO FLUMART dataset,
 automatically choosing ILI data if available, or falling back to ARI data if ILI cases are zero.
 
+Parallel-reporting guard: some countries report ILI and ARI *simultaneously*, with the two
+series on very different scales (e.g. a small sentinel-style ILI network alongside national
+ARI totals). Mixing them in one series is unusable: weeks where the smaller series reports
+zero get filled with values from the larger one, splicing a different scale into the series
+(Russia: tens of ILI cases per week next to 100k+ ARI weeks). When both indicators are
+reported in parallel for a sustained period and their medians differ by more than an order
+of magnitude, keep only the larger-scale (usually national) indicator, provided it is a
+substantive series on its own (same floors as the quality screen, so a short pandemic-era
+series cannot replace a long one).
+
 The script is designed to support batch processing for running inference on all available countries.
 """
 
@@ -14,6 +24,13 @@ import os
 import re
 from typing import Optional, Tuple
 from datetime import datetime
+
+# Parallel-reporting guard thresholds (see extract_combined_data).
+# The first two mirror the quality-screen floors in scripts/prepare_finetune_data.py.
+PARALLEL_MIN_BOTH_WEEKS = 26    # ~half a year of weeks where both indicators are reported
+SCALE_RATIO_THRESHOLD = 10.0    # median-scale difference that makes mixing unusable
+MIN_WINNER_WEEKS = 156          # winner must have at least this many positive weeks
+MIN_WINNER_YEARS = 4.0          # winner must span at least this many years
 
 
 def find_country_code_and_name(country_name: str, df: pd.DataFrame) -> Tuple[str, str]:
@@ -169,6 +186,31 @@ def extract_combined_data(country_code: str, country_name: str, df: pd.DataFrame
 
     # Both available — merge and prefer ILI
     merged = ili_data.merge(ari_data, on='Time', how='outer').sort_values('Time').reset_index(drop=True)
+    # Raw WHO columns are object dtype (numeric strings, sometimes junk):
+    # coerce once so numeric comparisons below are safe (junk -> NaN).
+    merged['ILI_Cases'] = pd.to_numeric(merged['ILI_Cases'], errors='coerce')
+    merged['ARI_Cases'] = pd.to_numeric(merged['ARI_Cases'], errors='coerce')
+
+    # Parallel-reporting guard (see module docstring): if both indicators are
+    # reported simultaneously at very different scales, use the larger-scale
+    # one only instead of interleaving the two.
+    if int((merged['ILI_Cases'].notna() & merged['ARI_Cases'].notna()).sum()) >= PARALLEL_MIN_BOTH_WEEKS:
+        med_ili = merged.loc[merged['ILI_Cases'] > 0, 'ILI_Cases'].median()
+        med_ari = merged.loc[merged['ARI_Cases'] > 0, 'ARI_Cases'].median()
+        if (pd.notna(med_ili) and pd.notna(med_ari) and med_ili > 0 and med_ari > 0
+                and max(med_ili, med_ari) / min(med_ili, med_ari) > SCALE_RATIO_THRESHOLD):
+            winner_col = 'ARI_Cases' if med_ari > med_ili else 'ILI_Cases'
+            winner = merged[merged[winner_col] > 0]
+            if len(winner) >= MIN_WINNER_WEEKS:
+                dates = pd.to_datetime(winner['Time'])
+                span_years = (dates.max() - dates.min()).days / 365.25
+                if span_years >= MIN_WINNER_YEARS:
+                    label = 'ARI' if winner_col == 'ARI_Cases' else 'ILI'
+                    print(f"  [parallel-reporting guard] {country_name}: keeping {label} only "
+                          f"(medians ILI={med_ili:.0f}, ARI={med_ari:.0f}; {len(winner)} weeks, {span_years:.1f} yr span)")
+                    result = winner[['Time', winner_col]].rename(columns={winner_col: 'Cases'}).copy()
+                    result['DataType'] = 1 if label == 'ARI' else 0
+                    return result.reset_index(drop=True)
 
     merged['Cases'] = merged['ILI_Cases']
     merged['DataType'] = 0

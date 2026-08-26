@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24 23:02",
+  "generated_at": "2026-08-27 01:13",
   "default_week": "2026-08-24",
   "weeks": [
     "2026-08-24",
@@ -14,18 +14,39 @@
       "numeric": "634",
       "name": "Qatar",
       "data_type": "ILI",
-      "value": 21.1,
+      "value": 9.8,
       "value_source": "forecast",
-      "zscore": -0.4,
+      "zscore": -0.63,
       "score": 0.0,
       "status": "low",
       "stale": false,
-      "last_update": "2026-07-06",
+      "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 21.2,
-          "zscore": -0.39,
+          "value": 10.8,
+          "zscore": -0.61,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 11.6,
+          "zscore": -0.59,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 12.6,
+          "zscore": -0.57,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 12.6,
+          "zscore": -0.57,
           "score": 0.0,
           "status": "low"
         }
@@ -236,41 +257,41 @@
       "id": "PY",
       "numeric": "600",
       "name": "Paraguay",
-      "data_type": "ILI",
-      "value": 1770.2,
+      "data_type": "ARI",
+      "value": 31716.5,
       "value_source": "forecast",
-      "zscore": 1.29,
-      "score": 0.6456605456717622,
-      "status": "high",
+      "zscore": 0.68,
+      "score": 0.3380470269038075,
+      "status": "low",
       "stale": false,
-      "last_update": "2026-08-10",
+      "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 1728.5,
-          "zscore": 1.21,
-          "score": 0.6071349665057845,
-          "status": "high"
+          "value": 31439.3,
+          "zscore": 0.65,
+          "score": 0.3237450772808782,
+          "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 1674.0,
-          "zscore": 1.11,
-          "score": 0.5568351159454874,
-          "status": "high"
+          "value": 30782.0,
+          "zscore": 0.58,
+          "score": 0.28982974513742854,
+          "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 1599.6,
-          "zscore": 0.98,
-          "score": 0.48819128612030804,
+          "value": 29917.4,
+          "zscore": 0.49,
+          "score": 0.24521989636606087,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 1555.1,
-          "zscore": 0.89,
-          "score": 0.44707548218338145,
+          "value": 28934.5,
+          "zscore": 0.39,
+          "score": 0.1945039051795823,
           "status": "low"
         }
       ]
@@ -294,40 +315,40 @@
       "numeric": "242",
       "name": "Fiji",
       "data_type": "ILI",
-      "value": 483.8,
+      "value": 528.8,
       "value_source": "forecast",
-      "zscore": 0.7,
-      "score": 0.3499842081561732,
+      "zscore": 0.86,
+      "score": 0.4286517679059885,
       "status": "low",
       "stale": false,
-      "last_update": "2026-08-03",
+      "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 481.5,
-          "zscore": 0.69,
-          "score": 0.34598308389805593,
+          "value": 512.0,
+          "zscore": 0.8,
+          "score": 0.39900111224515467,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 468.0,
-          "zscore": 0.64,
-          "score": 0.32219933949991875,
+          "value": 502.4,
+          "zscore": 0.76,
+          "score": 0.3820403106538778,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 468.9,
-          "zscore": 0.65,
-          "score": 0.32378474334240454,
+          "value": 492.7,
+          "zscore": 0.73,
+          "score": 0.3649558217687265,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 450.8,
-          "zscore": 0.58,
-          "score": 0.2918147610450112,
+          "value": 476.9,
+          "zscore": 0.67,
+          "score": 0.33715811035262827,
           "status": "low"
         }
       ]
@@ -379,10 +400,10 @@
       "id": "PE",
       "numeric": "604",
       "name": "Peru",
-      "data_type": "ILI",
-      "value": 0.0,
+      "data_type": "ARI",
+      "value": 29758.9,
       "value_source": "forecast",
-      "zscore": -0.49,
+      "zscore": -0.64,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -390,29 +411,29 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 0.0,
-          "zscore": -0.49,
+          "value": 32775.4,
+          "zscore": -0.45,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 7.3,
-          "zscore": -0.49,
+          "value": 33719.5,
+          "zscore": -0.4,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 3.7,
-          "zscore": -0.49,
+          "value": 32883.2,
+          "zscore": -0.45,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 0.0,
-          "zscore": -0.49,
+          "value": 32052.1,
+          "zscore": -0.5,
           "score": 0.0,
           "status": "low"
         }
@@ -508,7 +529,7 @@
       "id": "SK",
       "numeric": "703",
       "name": "Slovakia",
-      "data_type": "ILI",
+      "data_type": "ARI",
       "value": null,
       "value_source": null,
       "zscore": null,
@@ -765,40 +786,40 @@
       "numeric": "792",
       "name": "T\u00fcrkiye",
       "data_type": "ILI",
-      "value": 2364.7,
+      "value": 2368.8,
       "value_source": "forecast",
-      "zscore": 0.14,
-      "score": 0.06978152604752386,
+      "zscore": 0.15,
+      "score": 0.07652978506275628,
       "status": "low",
       "stale": false,
       "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 2662.7,
-          "zscore": 0.28,
-          "score": 0.13987814617083505,
+          "value": 2677.2,
+          "zscore": 0.3,
+          "score": 0.14956433965343885,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 3429.2,
-          "zscore": 0.64,
-          "score": 0.3201835782003581,
+          "value": 3501.8,
+          "zscore": 0.69,
+          "score": 0.3448360280474052,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 4355.3,
-          "zscore": 1.08,
-          "score": 0.5380437759100055,
+          "value": 4410.6,
+          "zscore": 1.12,
+          "score": 0.5600381985684291,
           "status": "high"
         },
         {
           "date": "2026-09-21",
-          "value": 5082.0,
-          "zscore": 1.42,
-          "score": 0.7089810339341667,
+          "value": 5112.3,
+          "zscore": 1.45,
+          "score": 0.726206140596967,
           "status": "high"
         }
       ]
@@ -821,10 +842,10 @@
       "id": "CO",
       "numeric": "170",
       "name": "Colombia",
-      "data_type": "ILI",
-      "value": 0.0,
+      "data_type": "ARI",
+      "value": 110966.9,
       "value_source": "forecast",
-      "zscore": -0.78,
+      "zscore": -0.39,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -832,29 +853,29 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 53.1,
-          "zscore": -0.78,
+          "value": 112062.9,
+          "zscore": -0.35,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 0.0,
-          "zscore": -0.78,
+          "value": 113228.0,
+          "zscore": -0.32,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 0.0,
-          "zscore": -0.78,
+          "value": 113200.8,
+          "zscore": -0.32,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 0.0,
-          "zscore": -0.78,
+          "value": 111839.2,
+          "zscore": -0.36,
           "score": 0.0,
           "status": "low"
         }
@@ -879,40 +900,40 @@
       "numeric": "548",
       "name": "Vanuatu",
       "data_type": "ILI",
-      "value": 300.7,
+      "value": 317.8,
       "value_source": "forecast",
-      "zscore": 0.26,
-      "score": 0.13040727050999856,
+      "zscore": 0.34,
+      "score": 0.17096698985960795,
       "status": "low",
       "stale": false,
-      "last_update": "2026-08-03",
+      "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 305.4,
-          "zscore": 0.28,
-          "score": 0.14165369000276057,
+          "value": 321.8,
+          "zscore": 0.36,
+          "score": 0.18068469536684947,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 304.3,
-          "zscore": 0.28,
-          "score": 0.13888741876988644,
+          "value": 328.9,
+          "zscore": 0.4,
+          "score": 0.1977530616416919,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 306.7,
-          "zscore": 0.29,
-          "score": 0.14481822075867465,
+          "value": 325.6,
+          "zscore": 0.38,
+          "score": 0.18983280061865898,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 303.9,
-          "zscore": 0.28,
-          "score": 0.1380452351810058,
+          "value": 328.2,
+          "zscore": 0.39,
+          "score": 0.1960778792812764,
           "status": "low"
         }
       ]
@@ -978,42 +999,42 @@
       "id": "FI",
       "numeric": "246",
       "name": "Finland",
-      "data_type": "ILI",
-      "value": 152.4,
+      "data_type": "ARI",
+      "value": 49103.8,
       "value_source": "forecast",
-      "zscore": -0.21,
-      "score": 0.0,
-      "status": "low",
+      "zscore": 1.06,
+      "score": 0.5317127268685778,
+      "status": "high",
       "stale": false,
       "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 156.2,
-          "zscore": -0.21,
-          "score": 0.0,
-          "status": "low"
+          "value": 52715.5,
+          "zscore": 1.23,
+          "score": 0.6134175386631776,
+          "status": "high"
         },
         {
           "date": "2026-09-07",
-          "value": 165.3,
-          "zscore": -0.2,
-          "score": 0.0,
-          "status": "low"
+          "value": 51040.5,
+          "zscore": 1.15,
+          "score": 0.5755243532144309,
+          "status": "high"
         },
         {
           "date": "2026-09-14",
-          "value": 158.2,
-          "zscore": -0.21,
-          "score": 0.0,
-          "status": "low"
+          "value": 51106.4,
+          "zscore": 1.15,
+          "score": 0.5770163347616528,
+          "status": "high"
         },
         {
           "date": "2026-09-21",
-          "value": 161.0,
-          "zscore": -0.2,
-          "score": 0.0,
-          "status": "low"
+          "value": 51953.2,
+          "zscore": 1.19,
+          "score": 0.5961712075444723,
+          "status": "high"
         }
       ]
     },
@@ -1065,18 +1086,39 @@
       "numeric": "422",
       "name": "Lebanon",
       "data_type": "ILI",
-      "value": 12.2,
+      "value": 9.3,
       "value_source": "forecast",
-      "zscore": -0.65,
+      "zscore": -0.68,
       "score": 0.0,
       "status": "low",
       "stale": false,
-      "last_update": "2026-07-06",
+      "last_update": "2026-07-27",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 11.8,
-          "zscore": -0.66,
+          "value": 9.0,
+          "zscore": -0.68,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-07",
+          "value": 9.0,
+          "zscore": -0.68,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 9.2,
+          "zscore": -0.68,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 8.6,
+          "zscore": -0.68,
           "score": 0.0,
           "status": "low"
         }
@@ -1222,10 +1264,10 @@
       "id": "RU",
       "numeric": "643",
       "name": "Russian Federation",
-      "data_type": "ILI",
-      "value": 516.2,
+      "data_type": "ARI",
+      "value": 171650.3,
       "value_source": "forecast",
-      "zscore": -0.35,
+      "zscore": -0.8,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -1233,8 +1275,8 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 606.3,
-          "zscore": -0.34,
+          "value": 219287.6,
+          "zscore": -0.44,
           "score": 0.0,
           "status": "low"
         }
@@ -1330,7 +1372,7 @@
       "id": "KZ",
       "numeric": "398",
       "name": "Kazakhstan",
-      "data_type": "ILI",
+      "data_type": "ARI",
       "value": null,
       "value_source": null,
       "zscore": null,
@@ -1345,26 +1387,40 @@
       "numeric": "682",
       "name": "Saudi Arabia",
       "data_type": "ILI",
-      "value": 568.2,
+      "value": 629.9,
       "value_source": "forecast",
-      "zscore": 1.13,
-      "score": 0.5639211596877133,
+      "zscore": 1.34,
+      "score": 0.6698230097162341,
       "status": "high",
       "stale": false,
-      "last_update": "2026-07-13",
+      "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 576.7,
-          "zscore": 1.16,
-          "score": 0.5789055174094776,
+          "value": 647.5,
+          "zscore": 1.4,
+          "score": 0.7009777672104514,
           "status": "high"
         },
         {
           "date": "2026-09-07",
-          "value": 586.0,
-          "zscore": 1.19,
-          "score": 0.5954424751402049,
+          "value": 637.1,
+          "zscore": 1.37,
+          "score": 0.6826448384904122,
+          "status": "high"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 635.8,
+          "zscore": 1.36,
+          "score": 0.6802984130147279,
+          "status": "high"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 634.4,
+          "zscore": 1.36,
+          "score": 0.6778565305616178,
           "status": "high"
         }
       ]
@@ -1373,10 +1429,10 @@
       "id": "ES",
       "numeric": "724",
       "name": "Spain",
-      "data_type": "ILI",
-      "value": 2246.9,
+      "data_type": "ARI",
+      "value": 92422.6,
       "value_source": "forecast",
-      "zscore": -0.38,
+      "zscore": -0.62,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -1384,29 +1440,29 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 2555.9,
-          "zscore": -0.37,
+          "value": 96960.6,
+          "zscore": -0.58,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 2631.5,
-          "zscore": -0.37,
+          "value": 103785.5,
+          "zscore": -0.52,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 3322.5,
-          "zscore": -0.37,
+          "value": 120177.9,
+          "zscore": -0.36,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 2836.1,
-          "zscore": -0.37,
+          "value": 135124.1,
+          "zscore": -0.22,
           "score": 0.0,
           "status": "low"
         }
@@ -1595,10 +1651,10 @@
       "id": "LT",
       "numeric": "440",
       "name": "Lithuania",
-      "data_type": "ILI",
-      "value": 55.9,
+      "data_type": "ARI",
+      "value": 7694.4,
       "value_source": "forecast",
-      "zscore": -0.47,
+      "zscore": -0.8,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -1606,30 +1662,30 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 61.1,
-          "zscore": -0.47,
+          "value": 10417.6,
+          "zscore": -0.51,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 74.0,
-          "zscore": -0.46,
-          "score": 0.0,
+          "value": 16107.6,
+          "zscore": 0.11,
+          "score": 0.05470223036915326,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 82.6,
-          "zscore": -0.46,
-          "score": 0.0,
+          "value": 17607.2,
+          "zscore": 0.27,
+          "score": 0.13598156971495903,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 66.7,
-          "zscore": -0.46,
-          "score": 0.0,
+          "value": 18231.2,
+          "zscore": 0.34,
+          "score": 0.16980326164858864,
           "status": "low"
         }
       ]
@@ -1795,24 +1851,24 @@
       "id": "MX",
       "numeric": "484",
       "name": "Mexico",
-      "data_type": "ILI",
+      "data_type": "ARI",
       "value": null,
       "value_source": null,
       "zscore": null,
       "score": null,
       "status": "stale",
       "stale": true,
-      "last_update": "2026-04-27",
+      "last_update": "2026-04-20",
       "forecast_weeks": []
     },
     {
       "id": "UA",
       "numeric": "804",
       "name": "Ukraine",
-      "data_type": "ILI",
-      "value": 66.2,
+      "data_type": "ARI",
+      "value": 42696.5,
       "value_source": "forecast",
-      "zscore": -0.54,
+      "zscore": -0.83,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -1820,29 +1876,29 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 86.7,
-          "zscore": -0.54,
+          "value": 49346.3,
+          "zscore": -0.74,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 61.2,
-          "zscore": -0.54,
+          "value": 55691.9,
+          "zscore": -0.66,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 183.4,
-          "zscore": -0.53,
+          "value": 57699.7,
+          "zscore": -0.63,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 91.1,
-          "zscore": -0.54,
+          "value": 61117.9,
+          "zscore": -0.59,
           "score": 0.0,
           "status": "low"
         }
@@ -1909,10 +1965,10 @@
       "id": "BE",
       "numeric": "056",
       "name": "Belgium",
-      "data_type": "ILI",
-      "value": 23.0,
+      "data_type": "ARI",
+      "value": 172.2,
       "value_source": "forecast",
-      "zscore": -0.5,
+      "zscore": -1.37,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -1920,29 +1976,29 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 29.9,
-          "zscore": -0.47,
+          "value": 255.5,
+          "zscore": -1.25,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 40.2,
-          "zscore": -0.42,
+          "value": 357.2,
+          "zscore": -1.11,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 43.9,
-          "zscore": -0.4,
+          "value": 398.7,
+          "zscore": -1.05,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 46.5,
-          "zscore": -0.39,
+          "value": 454.9,
+          "zscore": -0.97,
           "score": 0.0,
           "status": "low"
         }
@@ -2037,10 +2093,10 @@
       "id": "EE",
       "numeric": "233",
       "name": "Estonia",
-      "data_type": "ILI",
-      "value": 91.9,
+      "data_type": "ARI",
+      "value": 1683.1,
       "value_source": "forecast",
-      "zscore": -0.41,
+      "zscore": -0.78,
       "score": 0.0,
       "status": "low",
       "stale": false,
@@ -2048,30 +2104,30 @@
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 123.7,
-          "zscore": -0.16,
+          "value": 2119.8,
+          "zscore": -0.54,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 155.7,
-          "zscore": 0.1,
-          "score": 0.0486827451322141,
+          "value": 2997.7,
+          "zscore": -0.05,
+          "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 167.7,
-          "zscore": 0.19,
-          "score": 0.0964636349177258,
+          "value": 3237.0,
+          "zscore": 0.09,
+          "score": 0.04356142548717574,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 179.1,
-          "zscore": 0.28,
-          "score": 0.14202920939597347,
+          "value": 3277.8,
+          "zscore": 0.11,
+          "score": 0.054958436747671126,
           "status": "low"
         }
       ]
@@ -2081,25 +2137,39 @@
       "numeric": "706",
       "name": "Somalia",
       "data_type": "ILI",
-      "value": 21.8,
+      "value": 17.7,
       "value_source": "forecast",
-      "zscore": -0.54,
+      "zscore": -0.68,
       "score": 0.0,
       "status": "low",
       "stale": false,
-      "last_update": "2026-07-13",
+      "last_update": "2026-08-03",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 21.7,
-          "zscore": -0.54,
+          "value": 19.0,
+          "zscore": -0.64,
           "score": 0.0,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 21.9,
-          "zscore": -0.54,
+          "value": 18.9,
+          "zscore": -0.64,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-14",
+          "value": 19.7,
+          "zscore": -0.62,
+          "score": 0.0,
+          "status": "low"
+        },
+        {
+          "date": "2026-09-21",
+          "value": 19.9,
+          "zscore": -0.61,
           "score": 0.0,
           "status": "low"
         }
@@ -2231,7 +2301,7 @@
       "id": "BY",
       "numeric": "112",
       "name": "Belarus",
-      "data_type": "ILI",
+      "data_type": "ARI",
       "value": null,
       "value_source": null,
       "zscore": null,
@@ -2289,40 +2359,40 @@
       "numeric": "090",
       "name": "Solomon Islands",
       "data_type": "ILI",
-      "value": 375.5,
+      "value": 346.7,
       "value_source": "forecast",
-      "zscore": 0.59,
-      "score": 0.2948154719502858,
+      "zscore": 0.46,
+      "score": 0.2292983236743285,
       "status": "low",
       "stale": false,
-      "last_update": "2026-08-03",
+      "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 389.2,
-          "zscore": 0.65,
-          "score": 0.32584133187948944,
+          "value": 358.0,
+          "zscore": 0.51,
+          "score": 0.25488784132771636,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 381.8,
-          "zscore": 0.62,
-          "score": 0.3091411969093153,
+          "value": 373.0,
+          "zscore": 0.58,
+          "score": 0.2890672448473877,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 373.4,
-          "zscore": 0.58,
-          "score": 0.2900638086553994,
+          "value": 362.7,
+          "zscore": 0.53,
+          "score": 0.2655639087503897,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 361.4,
-          "zscore": 0.53,
-          "score": 0.26288448046158974,
+          "value": 355.3,
+          "zscore": 0.5,
+          "score": 0.24875142543513154,
           "status": "low"
         }
       ]
@@ -2331,41 +2401,41 @@
       "id": "GB",
       "numeric": 826,
       "name": "United Kingdom",
-      "data_type": "ILI",
-      "value": 355.3,
+      "data_type": "ARI",
+      "value": 40004.3,
       "value_source": "forecast",
-      "zscore": -0.33,
-      "score": 0.0,
+      "zscore": 0.38,
+      "score": 0.18769637048244078,
       "status": "low",
       "stale": false,
       "last_update": "2026-08-10",
       "forecast_weeks": [
         {
           "date": "2026-08-31",
-          "value": 409.3,
-          "zscore": -0.28,
-          "score": 0.0,
+          "value": 41760.0,
+          "zscore": 0.44,
+          "score": 0.22077080450363962,
           "status": "low"
         },
         {
           "date": "2026-09-07",
-          "value": 445.7,
-          "zscore": -0.25,
-          "score": 0.0,
+          "value": 43191.8,
+          "zscore": 0.5,
+          "score": 0.24774443989836933,
           "status": "low"
         },
         {
           "date": "2026-09-14",
-          "value": 487.7,
-          "zscore": -0.22,
-          "score": 0.0,
+          "value": 44509.9,
+          "zscore": 0.55,
+          "score": 0.2725752831071493,
           "status": "low"
         },
         {
           "date": "2026-09-21",
-          "value": 516.6,
-          "zscore": -0.2,
-          "score": 0.0,
+          "value": 46012.5,
+          "zscore": 0.6,
+          "score": 0.300883187790083,
           "status": "low"
         }
       ]

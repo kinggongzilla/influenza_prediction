@@ -1,5 +1,4 @@
 country,total_ili_cases,total_ari_cases,data_types
-201526,0.0,0.0,None
 Afghanistan,1998643.0,0.0,ILI
 Albania,10769.0,17274073.0,"ILI, ARI"
 Algeria,121653.0,0.0,ILI
@@ -75,13 +74,13 @@ Hungary,4025121.0,10881296.0,"ILI, ARI"
 Iceland,68411.0,681852.0,"ILI, ARI"
 Indonesia,63305.0,0.0,ILI
 Iran (Islamic Republic of),6104.0,0.0,ILI
-Iraq,7762.0,0.0,ILI
+Iraq,8334.0,0.0,ILI
 Ireland,87379.0,60962.0,"ILI, ARI"
 Israel,936542.0,0.0,ILI
 Italy,6187340.0,1188050.0,"ILI, ARI"
 Jamaica,7582.0,1373120.0,"ILI, ARI"
 Jordan,7170.0,0.0,ILI
-Kazakhstan,1106447.0,52622201.0,"ILI, ARI"
+Kazakhstan,1106431.0,52621653.0,"ILI, ARI"
 Kenya,7244.0,0.0,ILI
 Kiribati,209517.0,0.0,ILI
 Kosovo (in accordance with UN Security Council resolution 1244 (1999)),1477429.0,159832.0,"ILI, ARI"
@@ -89,7 +88,7 @@ Kuwait,198.0,0.0,ILI
 Kyrgyzstan,18705.0,6212538.0,"ILI, ARI"
 Lao People's Democratic Republic,290162.0,0.0,ILI
 Latvia,77512.0,1189744.0,"ILI, ARI"
-Lebanon,41554.0,0.0,ILI
+Lebanon,41572.0,0.0,ILI
 Lesotho,0.0,0.0,None
 Libya,3070.0,0.0,ILI
 Lithuania,1302398.0,25742221.0,"ILI, ARI"
@@ -117,11 +116,11 @@ Nicaragua,3862.0,17923801.0,"ILI, ARI"
 Niger,379775.0,0.0,ILI
 Nigeria,18443.0,0.0,ILI
 Niue,4557.0,0.0,ILI
-North Macedonia,598958.0,0.0,ILI
+North Macedonia,607581.0,0.0,ILI
 Northern Mariana Islands,19694.0,0.0,ILI
 Norway,2735407.0,0.0,ILI
 Oman,22677441.0,24136.0,"ILI, ARI"
-Pakistan,10258.0,0.0,ILI
+Pakistan,10514.0,0.0,ILI
 Palau,6961.0,0.0,ILI
 Panama,158298.0,610.0,"ILI, ARI"
 Papua New Guinea,1041.0,0.0,ILI
@@ -130,7 +129,7 @@ Peru,60039.0,42183045.0,"ILI, ARI"
 Pitcairn,49.0,0.0,ILI
 Poland,4437394.0,0.0,ILI
 Portugal,6502.0,1004.0,"ILI, ARI"
-Qatar,18204.0,0.0,ILI
+Qatar,18206.0,0.0,ILI
 Republic of Moldova,12610865.0,13943455.0,"ILI, ARI"
 Romania,33052.0,5499648.0,"ILI, ARI"
 Russian Federation,1886419.0,489635666.0,"ILI, ARI"
@@ -140,7 +139,7 @@ Saint Lucia,2468.0,3566.0,"ILI, ARI"
 Saint Vincent and the Grenadines,3426.0,13941.0,"ILI, ARI"
 Samoa,490223.0,0.0,ILI
 Sao Tome and Principe,0.0,0.0,None
-Saudi Arabia,231878.0,0.0,ILI
+Saudi Arabia,235082.0,0.0,ILI
 Senegal,71892.0,0.0,ILI
 Serbia,6446349.0,0.0,ILI
 Sierra Leone,9816.0,0.0,ILI
@@ -149,12 +148,12 @@ Sint Maarten (Dutch part),685.0,0.0,ILI
 Slovakia,6494126.0,61962430.0,"ILI, ARI"
 Slovenia,22590.0,1352075.0,"ILI, ARI"
 Solomon Islands,177194.0,0.0,ILI
-Somalia,18922.0,0.0,ILI
+Somalia,19214.0,0.0,ILI
 South Africa,26796.0,0.0,ILI
 South Sudan,65986.0,0.0,ILI
 Spain,3454800.0,97482947.0,"ILI, ARI"
 Sri Lanka,1762466.0,0.0,ILI
-Sudan,292.0,0.0,ILI
+Sudan,314.0,0.0,ILI
 Suriname,1348.0,44470.0,"ILI, ARI"
 Sweden,9702.0,0.0,ILI
 Switzerland,153026.0,0.0,ILI
@@ -170,7 +169,7 @@ Tunisia,0.0,0.0,None
 Turkmenistan,3355.0,152654.0,"ILI, ARI"
 Turks and Caicos Islands,2450.0,0.0,ILI
 Tuvalu,9838.0,0.0,ILI
-Türkiye,3500021.0,318.0,"ILI, ARI"
+Türkiye,3470668.0,882.0,"ILI, ARI"
 Uganda,3504.0,0.0,ILI
 Ukraine,11350116.0,148029342.0,"ILI, ARI"
 United Arab Emirates,574964.0,0.0,ILI
@@ -186,6 +185,6 @@ Uzbekistan,112118.0,2009653.0,"ILI, ARI"
 Vanuatu,165483.0,0.0,ILI
 Viet Nam,87228.0,0.0,ILI
 Wallis and Futuna,25455.0,0.0,ILI
-Yemen,7323.0,0.0,ILI
+Yemen,5928.0,0.0,ILI
 Zambia,711388.0,0.0,ILI
 "occupied Palestinian territory, including east Jerusalem",744.0,0.0,ILI

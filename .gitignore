@@ -39,3 +39,4 @@ poster/
 escaide_submission_info/
 forecast_pipeline/.next/
 forecast_pipeline/.wrangler/
+forecast_pipeline/logs/

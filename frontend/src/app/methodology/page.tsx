@@ -52,7 +52,11 @@ export default function MethodologyPage() {
             . Countries report either ILI (a clinical syndrome) or ARI (a broader respiratory
             category); countries that switched indicator mid-series (e.g. Italy, ILI to ARI in
             late 2025) are kept as a single continuous series with a marker for which indicator
-            each week belongs to, so the model can treat the regimes differently.
+            each week belongs to, so the model can treat the regimes differently. A small number
+            of countries report both indicators at the same time on very different scales (for
+            example, a small sentinel ILI network alongside national ARI totals); mixing two
+            scales in one series is unusable, so for those countries only the larger-scale
+            (usually national) indicator is used.
           </p>
           <p>
             Not every country&apos;s series is usable. Candidates were screened with fixed,
