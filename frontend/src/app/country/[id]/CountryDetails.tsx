@@ -309,7 +309,7 @@ export default function CountryDetails({ id }: { id: string }) {
                 top: 20,
                 right: 30,
                 left: 50,
-                bottom: 45,
+                bottom: 25,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -321,12 +321,6 @@ export default function CountryDetails({ id }: { id: string }) {
                 tickFormatter={(tick) => format(new Date(tick), "MMM yy")}
                 minTickGap={50}
                 fontSize={12}
-                label={{
-                  value: "Date",
-                  position: "insideBottom",
-                  offset: 10,
-                  style: { fill: "#94a3b8", fontSize: 12, textAnchor: "middle" },
-                }}
               />
               <YAxis
                 domain={yDomain}
