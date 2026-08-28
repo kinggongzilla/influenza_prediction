@@ -302,7 +302,7 @@ const MapChart = () => {
             <span className="font-medium text-gray-900">
               {selectedWeek
                 ? `Predicted activity for the week of ${fmtWeek(selectedWeek)}`
-                : `Nowcast: ${defaultWeek ? fmtWeek(defaultWeek) : "latest"} (actual where reported, otherwise predicted)`}
+                : `Nowcast: ${defaultWeek ? fmtWeek(defaultWeek) : "latest"}`}
             </span>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-600">
