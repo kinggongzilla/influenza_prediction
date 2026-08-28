@@ -47,6 +47,22 @@ function freshnessHint(iso: string | null | undefined): string | null {
   return `Data last updated: week of ${format(d, "d MMM yyyy")} (${when})`;
 }
 
+/** Compact y-axis tick label: 5 -> "5", 8300 -> "8.3k",
+    109215.9 -> "109k", 1234567 -> "1.2M". Recharts' default formatter
+    would print the raw float (e.g. "109215.90625"), which looks broken
+    once the axis spans hundreds of thousands of cases. */
+function formatTick(v: number): string {
+  const a = Math.abs(v);
+  if (a >= 1e6) return (v / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
+  if (a >= 1e4) return Math.round(v / 1e3) + "k";
+  if (a >= 1e3) {
+    const k = v / 1e3;
+    return (Number.isInteger(k) ? k : k.toFixed(1)) + "k";
+  }
+  if (a >= 1) return String(Math.round(v));
+  return v.toFixed(2);
+}
+
 /** Hover dot shared by all prediction-interval Areas. Recharts colors an
     Area's default activeDot with that Area's own fill, which would make the
     white "eraser" Areas (90%/50% lower lines) render blank white dots; the
@@ -314,6 +330,7 @@ export default function CountryDetails({ id }: { id: string }) {
               />
               <YAxis
                 domain={yDomain}
+                tickFormatter={formatTick}
                 stroke="#94a3b8"
                 fontSize={12}
                 label={{
