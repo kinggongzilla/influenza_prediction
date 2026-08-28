@@ -11,7 +11,7 @@ export default function Home() {
             ILI Activity Dashboard
           </h1>
           <p className="text-gray-500 text-sm max-w-2xl">
-            Current and near-term ILI and ARI activity for 78 countries, with quantified
+            Current and near-term ILI (influenza-like illness) and ARI (acute respiratory infection) activity for 78 countries, with quantified
             uncertainty. Compare countries week by week and look up to four weeks ahead;
             open any country for its detailed forecast and prediction intervals.{" "}
             <Link href="/methodology" className="text-blue-600 hover:underline">
