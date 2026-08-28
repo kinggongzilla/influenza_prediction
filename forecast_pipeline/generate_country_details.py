@@ -98,6 +98,31 @@ def find_extracted_file(country_folder_name):
 
 UK_PARTS = ('ENG', 'SCT', 'NIR')
 
+def data_type_changes(extracted_df):
+    """Weeks where the reported indicator switches (ILI<->ARI) in a combined
+    series, e.g. Italy (ILI until Apr 2025, ARI from Oct 2025). Each change is
+    keyed to the first week of the NEW type, which is where the chart draws
+    its divider line. Single-indicator files (no DataType column) yield [].
+    Returns [{"date": "YYYY-MM-DD", "from": "ILI"|"ARI", "to": "ILI"|"ARI"}, ...].
+    """
+    if 'DataType' not in extracted_df.columns or 'Time' not in extracted_df.columns:
+        return []
+    t = pd.to_datetime(extracted_df['Time'], errors='coerce')
+    out = []
+    prev = None
+    for ts, ty in zip(t, extracted_df['DataType']):
+        if pd.isna(ts) or pd.isna(ty):
+            continue
+        cur = int(ty)
+        if prev is not None and cur != prev:
+            out.append({
+                "date": ts.strftime('%Y-%m-%d'),
+                "from": "ARI" if prev == 1 else "ILI",
+                "to": "ARI" if cur == 1 else "ILI",
+            })
+        prev = cur
+    return out
+
 def combine_uk_details(parts):
     """Combine the UK sub-region detail dicts (England, Scotland,
     Northern Ireland) into one 'United Kingdom' detail dict.
@@ -113,11 +138,14 @@ def combine_uk_details(parts):
     by_date = {}
     last_update = None
     data_types = []
+    all_change_lists = []
     for det, last_date in parts:
         if last_date:
             last_update = last_date if last_update is None else max(last_update, last_date)
         if det.get('data_type'):
             data_types.append(det['data_type'])
+        all_change_lists.append(tuple(
+            (c['date'], c['from'], c['to']) for c in det.get('data_type_changes', [])))
         for p in det['points']:
             slot = by_date.setdefault(p['date'], {f: None for f in fields})
             for f in fields:
@@ -138,12 +166,18 @@ def combine_uk_details(parts):
                 p[f] = None
 
     dtype = max(set(data_types), key=data_types.count) if data_types else 'ILI'
+    # Only annotate when every component switched identically (the combined
+    # series then has one unambiguous switch point); otherwise leave it out.
+    gb_changes = []
+    if all_change_lists and all(cl == all_change_lists[0] for cl in all_change_lists) and all_change_lists[0]:
+        gb_changes = [{'date': d, 'from': f, 'to': to} for (d, f, to) in all_change_lists[0]]
     return {
         'country': 'United Kingdom',
         'id': 'GB',
         'data_type': dtype,
         'stale': bool(stale),
         'last_update': last_update.strftime('%Y-%m-%d') if last_update is not None else None,
+        'data_type_changes': gb_changes,
         'points': points,
     }
 
@@ -194,6 +228,7 @@ def process_countries():
         extracted_file, data_type = find_extracted_file(country_folder_name)
         start_date = None
         last_date = None
+        extracted_df = None
         if extracted_file:
             try:
                 extracted_df = pd.read_csv(extracted_file)
@@ -203,6 +238,7 @@ def process_countries():
                     last_date = parsed_times.dropna().max()
             except Exception as e:
                 print(f"Error reading extracted file for {country_folder_name}: {e}")
+        type_changes = data_type_changes(extracted_df) if extracted_df is not None else []
 
         if not start_date:
             # Fallback: Assume recent data if we can't find file, but better to skip or use dummy
@@ -225,6 +261,7 @@ def process_countries():
                 "data_type": data_type or "ILI",
                 "stale": bool(stale),
                 "last_update": last_update,
+                "data_type_changes": type_changes,
                 "points": []
             }
             

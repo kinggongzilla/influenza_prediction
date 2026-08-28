@@ -34,6 +34,7 @@ interface CountryData {
   data_type?: "ILI" | "ARI";
   stale?: boolean;
   last_update?: string | null;
+  data_type_changes?: { date: string; from: "ILI" | "ARI"; to: "ILI" | "ARI" }[];
   points: DataPoint[];
 }
 
@@ -253,6 +254,13 @@ export default function CountryDetails({ id }: { id: string }) {
                 {freshHint && (
                     <p className="text-xs text-gray-400 mt-1">{freshHint}</p>
                 )}
+                {data.data_type_changes && data.data_type_changes.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-1">
+                        {data.data_type_changes.map(c =>
+                            `Switched from ${c.from} to ${c.to} (week of ${format(parseISO(c.date), "d MMM yyyy")})`
+                        ).join("; ")}
+                    </p>
+                )}
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <div className="flex items-center gap-2">
@@ -436,6 +444,20 @@ export default function CountryDetails({ id }: { id: string }) {
                   <Label value="Today" position="insideTopLeft" fill="#D55E00" fontSize={12} />
                 </ReferenceLine>
               )}
+
+              {/* Data-type switch divider (e.g. Italy: ILI until Apr 2025,
+                  ARI from Oct 2025). Marks where the definition changed so
+                  the visible step in the line reads as a reporting change,
+                  not a data spike. */}
+              {data.data_type_changes?.map(c => {
+                const t = parseISO(c.date).getTime();
+                const inView = t >= windowStart && t <= windowEnd;
+                return inView ? (
+                  <ReferenceLine key={c.date} x={t} stroke="#9ca3af" strokeDasharray="4 4">
+                    <Label value={`${c.from} \u2192 ${c.to}`} position="insideTop" fill="#6b7280" fontSize={11} />
+                  </ReferenceLine>
+                ) : null;
+              })}
             </ComposedChart>
           </ResponsiveContainer>
         </div>

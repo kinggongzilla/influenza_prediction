@@ -37,6 +37,64 @@ UK_PART_NAMES = {
     'united_kingdom,_northern_ireland',
 }
 
+# A country that switched ILI<->ARI mid-series should be compared against
+# weeks of its CURRENT indicator only: a mixed-type baseline blends two
+# different scales (and often two different reporting systems) and skews the
+# z-score, which drives the map color and the high/low status. Fall back to
+# the full (mixed) baseline when too few same-type weeks exist to be
+# statistically reliable (~a quarter of a year).
+MIN_SAME_TYPE_WEEKS = 13
+
+
+def extracted_type_info(extracted_path):
+    """Per-week DataType map ('YYYY-MM-DD' -> 0=ILI/1=ARI), the indicator of
+    the last REPORTED week, and the first week date, for an extracted CSV.
+    Single-indicator files (_ili/_ari) yield a constant-type map. Returns
+    ({}, None, None) when there is no usable type information.
+    """
+    df = pd.read_csv(extracted_path)
+    t = pd.to_datetime(df['Time'], errors='coerce') if 'Time' in df.columns else None
+    start = None
+    if t is not None:
+        valid = t.dropna()
+        if len(valid) > 0:
+            start = valid.min()
+    if 'DataType' not in df.columns:
+        cur = 1 if extracted_path.endswith('_ari.csv') else 0
+        m = {}
+        if t is not None:
+            for ts in t:
+                if not pd.isna(ts):
+                    m[ts.strftime('%Y-%m-%d')] = cur
+        return m, cur, start
+    m = {}
+    for ts, ty in zip(t, df['DataType']):
+        if ts is not None and not pd.isna(ts) and not pd.isna(ty):
+            m[ts.strftime('%Y-%m-%d')] = int(ty)
+    cur = None
+    rep = df['Cases'].notna() & df['DataType'].notna()
+    if rep.any():
+        cur = int(df.loc[rep, 'DataType'].iloc[-1])
+    elif df['DataType'].notna().any():
+        cur = int(df['DataType'].dropna().iloc[-1])
+    return m, cur, start
+
+
+def type_aware_baseline(values, dates, type_map, current_type):
+    """Mean/std for the z-score baseline over aligned (values, dates).
+    If `current_type` is given and at least MIN_SAME_TYPE_WEEKS of the weeks
+    carry that type in `type_map`, restrict to those; otherwise use all
+    values (the old mixed baseline). std uses ddof=1 (sample), matching
+    pandas' .std() in the original per-country code, so unswitched
+    countries keep exactly the baseline they had before."""
+    if not values:
+        return 0.0, 0.0
+    if current_type is not None and type_map:
+        same = [v for v, d in zip(values, dates) if type_map.get(d) == current_type]
+        if len(same) >= MIN_SAME_TYPE_WEEKS:
+            return float(np.mean(same)), float(np.std(same, ddof=1))
+    return float(np.mean(values)), float(np.std(values, ddof=1))
+
 
 def load_mappings():
     with open(BOUNDING_BOXES_FILE, 'r') as f:
@@ -194,21 +252,24 @@ def process_countries(current_week_str, future_weeks):
             numeric_code = country_obj.numeric if country_obj else None
             display_name = country_folder_name.replace('_', ' ')
 
-            # Detect data type from extracted data file
+            # Detect data type from the extracted data file and build the
+            # per-week type map used by the same-type z-score baseline below
+            # (a mid-series ILI<->ARI switch must not mix two scales in the
+            # baseline). current_type = the indicator of the last reported
+            # week, i.e. what the current value is measured in.
             data_type = "ILI"
+            current_type = None
+            type_map = {}
+            type_start = None
             if extracted_path:
-                for ext_suffix in ['_combined.csv', '_ari.csv']:
-                    if extracted_path.endswith(ext_suffix):
-                        if ext_suffix == '_combined.csv':
-                            try:
-                                ext_df = pd.read_csv(extracted_path)
-                                if 'DataType' in ext_df.columns and int(ext_df['DataType'].iloc[-1]) == 1:
-                                    data_type = "ARI"
-                            except Exception:
-                                pass
-                        else:
-                            data_type = "ARI"
-                        break
+                try:
+                    type_map, current_type, type_start = extracted_type_info(extracted_path)
+                    if current_type is not None:
+                        data_type = "ARI" if current_type == 1 else "ILI"
+                    else:
+                        data_type = "ARI" if extracted_path.endswith('_ari.csv') else "ILI"
+                except Exception:
+                    pass
 
             if stale:
                 map_data.append({
@@ -236,8 +297,16 @@ def process_countries(current_week_str, future_weeks):
             if current_value is None:
                 continue
 
-            hist_mean = context_vals.mean()
-            hist_std = context_vals.std()
+            # Z-score baseline: mean/std of the context weeks of the country's
+            # CURRENT indicator (full mixed context if too few of those).
+            ctx_idx = df.index[df['context'].notna()]
+            ctx_vals = [float(v) for v in df.loc[ctx_idx, 'context']]
+            ctx_dates = []
+            if type_start is not None:
+                ctx_dates = [(type_start + timedelta(weeks=int(i))).strftime('%Y-%m-%d')
+                             for i in ctx_idx]
+            hist_mean, hist_std = type_aware_baseline(
+                ctx_vals, ctx_dates, type_map, current_type)
 
             # Z-score: how many SDs above/below the historical mean
             if hist_std > 0:
@@ -328,12 +397,35 @@ def process_countries(current_week_str, future_weeks):
         else:
             current_value, current_source = get_value_for_week(gb_detail, current_week_str)
             if current_value is not None:
-                # Z-score baseline: the combined series' full historical
-                # context (same spirit as per-country, which uses each
-                # component's full context window).
+                # Z-score baseline: the combined series' historical values,
+                # restricted to weeks where ALL reporting components are on
+                # the current indicator (falls back to the full history when
+                # that leaves too few weeks or the components disagree).
                 hist_vals = [p['historical'] for p in gb_detail['points'] if p['historical'] is not None]
-                hist_mean = float(np.mean(hist_vals)) if hist_vals else 0.0
-                hist_std = float(np.std(hist_vals)) if hist_vals else 0.0
+                hist_dates = [p['date'] for p in gb_detail['points'] if p['historical'] is not None]
+                part_maps, part_types = [], []
+                for part_dir in uk_part_dirs:
+                    part_path = find_extracted_file(os.path.basename(part_dir))
+                    if not part_path:
+                        continue
+                    try:
+                        pmap, ptype, _ = extracted_type_info(part_path)
+                    except Exception:
+                        continue
+                    part_maps.append(pmap)
+                    part_types.append(ptype)
+                gb_current = None
+                merged_map = {}
+                if part_types and all(pt == part_types[0] for pt in part_types) and part_types[0] is not None:
+                    gb_current = part_types[0]
+                    for pmap in part_maps:
+                        for d, ty in pmap.items():
+                            if d in merged_map and merged_map[d] is not None and merged_map[d] != ty:
+                                merged_map[d] = None  # components disagree this week
+                            else:
+                                merged_map[d] = ty
+                hist_mean, hist_std = type_aware_baseline(
+                    hist_vals, hist_dates, merged_map, gb_current)
 
                 if hist_std > 0:
                     zscore = (current_value - hist_mean) / hist_std
