@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 type Status = {
   generated_at?: string;
   default_week?: string;
+  latest_data_week?: string | null;
 };
 
 function fmt(d: string) {
@@ -31,10 +32,16 @@ export default function DataStamp() {
 
   if (!status?.generated_at) return null;
 
+  // "Data updated <run date>" was misleading: the run happens daily even when
+  // WHO has only added a week or two of reports. Stamp the newest week actually
+  // reported to the feed instead (falls back to the run date if the field is
+  // missing from an older JSON).
+  const dataWeek = status.latest_data_week ?? status.generated_at;
+
   return (
     <p className="text-xs text-gray-400">
-      Data updated {fmt(status.generated_at)}
-      {status.default_week ? ` · forecast week of ${fmt(status.default_week)}` : ""}
+      Data through week of {fmt(dataWeek)} · varies by country
+      {status.default_week ? ` · nowcast for week of ${fmt(status.default_week)}` : ""}
     </p>
   );
 }

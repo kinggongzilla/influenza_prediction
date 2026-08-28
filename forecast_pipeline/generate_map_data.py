@@ -485,9 +485,17 @@ if __name__ == "__main__":
 
     display_weeks = [current_week] + future_weeks
 
+    # The newest week actually reported to the feed (max of the per-country
+    # last-update dates). The front page stamps this instead of the run date,
+    # because that is when the data really came in (and countries lag at
+    # different rates).
+    last_updates = [c["last_update"] for c in data if c.get("last_update")]
+    latest_data_week = max(last_updates) if last_updates else None
+
     out = {
         "generated_at": today.strftime('%Y-%m-%d %H:%M'),
         "default_week": current_week,
+        "latest_data_week": latest_data_week,
         "weeks": display_weeks,
         "countries": data,
     }
