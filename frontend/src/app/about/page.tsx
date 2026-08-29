@@ -13,7 +13,7 @@ export default function AboutPage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-3">About the author</h2>
           <div className="flex items-start gap-4">
             <img
-              src="/images/david_avatar.png"
+              src="/images/david_avatar.jpg"
               alt="David Hauser"
               className="h-20 w-20 rounded-full border border-gray-200 object-cover"
             />
